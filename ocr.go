@@ -16,13 +16,17 @@ import (
 	pb "google.golang.org/genproto/googleapis/cloud/vision/v1"
 )
 
+// global regexes initialized during init
 var currency *regexp.Regexp
 var kviitung *regexp.Regexp
 var arve *regexp.Regexp
 var tax *regexp.Regexp
 var d *regexp.Regexp
 var wellKnown map[string]string
+var vendor *regexp.Regexp
 
+// lineDither is the number of pixels in the Y direction that two words should be considered to be on the same
+// line.  This is used to reconstruct multi-column receipt formats separated by large white space.
 const lineDither = int32(10)
 
 func init() {
@@ -31,12 +35,15 @@ func init() {
 	arve = regexp.MustCompile(`arve[^0-9]+([0-9]*)`)
 	tax = regexp.MustCompile(`EE\s?[0-9]{9}`)
 	d = regexp.MustCompile(`(01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31)\.?(01|02|03|04|05|06|07|08|09|10|11|12)\.?(2020|2021|20|21)`)
+	vendor = regexp.MustCompile(`[^/,]+\s(AS|TÜ|UÜ|OÜ|As|Tü|Uü|Oü)`)
 }
 
-type Result struct {
-	raw    []*pb.EntityAnnotation
-	lines  []string
-	File   string
+// Receipt
+type Receipt struct {
+	raw   []*pb.EntityAnnotation
+	lines []string
+	File  string
+	// date format dd/mm/yy or dd/mm/yyyy depending on how it is detected on the receipt
 	Date   string
 	Total  int
 	Tax    int
@@ -46,6 +53,8 @@ type Result struct {
 	Crop   Crop
 }
 
+// Crop returns the pixel location of the tightest crop that contains all
+// recognized text
 type Crop struct {
 	Top    int32
 	Bottom int32
@@ -53,7 +62,9 @@ type Crop struct {
 	Left   int32
 }
 
-func ProcessImage(fname string) (*Result, error) {
+// ProcessImage uses a pre-trained ML model to extract text from the receipt image, then
+// a series of regular expressions and text manipulation to find the VAT data
+func ProcessImage(fname string) (*Receipt, error) {
 	f, err := os.Open(fname)
 	if err != nil {
 		return nil, fmt.Errorf("error opening image %s: %v", fname, err)
@@ -92,21 +103,34 @@ func ProcessImage(fname string) (*Result, error) {
 	log.Printf("\ncurrencies: %v\n", currencies)
 	tax, total, _ := extractTaxTotal(currencies)
 
-	r := &Result{
-		Crop:  crop,
-		raw:   res,
-		lines: lines,
-		Tax:   tax,
-		Total: total,
-		TaxID: extractTaxID(lines),
-		Date:  extractDate(lines),
-		ID:    extractID(lines),
+	r := &Receipt{
+		Crop:   crop,
+		raw:    res,
+		lines:  lines,
+		Tax:    tax,
+		Total:  total,
+		Vendor: extractVendor(lines),
+		TaxID:  extractTaxID(lines),
+		Date:   extractDate(lines),
+		ID:     extractID(lines),
 	}
 
 	return r, nil
 
 }
 
+// extracts the vendor name from the receipt
+func extractVendor(lines []string) string {
+	for _, line := range lines {
+		c := vendor.FindAllStringSubmatch(line, -1)
+		if len(c) > 0 && len(c[0][0]) > 0 {
+			return c[0][0]
+		}
+	}
+	return ""
+}
+
+// determines the minimum bounding box for the text on the receipt
 func getCrop(raw []*pb.EntityAnnotation) Crop {
 	c := &Crop{
 		Top:    math.MaxInt32,
@@ -151,6 +175,7 @@ func extractCurrency(raw []string) []int {
 	return out
 }
 
+// extracts the receipt id number, looking for either kviitung or arve
 func extractID(lines []string) string {
 	k := idFinder(kviitung, lines)
 	if k == "" {
@@ -159,6 +184,7 @@ func extractID(lines []string) string {
 	return k
 }
 
+// subroutine for executing a substring match for given regex
 func idFinder(r *regexp.Regexp, lines []string) string {
 	for _, line := range lines {
 		k := r.FindAllStringSubmatch(line, -1)
@@ -171,6 +197,7 @@ func idFinder(r *regexp.Regexp, lines []string) string {
 	return ""
 }
 
+// looks for the tax ID starting with EE and 9 digits
 func extractTaxID(raw []string) string {
 	for _, line := range raw {
 		id := tax.FindString(line)
@@ -181,6 +208,7 @@ func extractTaxID(raw []string) string {
 	return ""
 }
 
+// finds all dates of the form ddmmyy dd.mm.yy dd.mm.yyyy ddmmyyyy
 func extractDate(raw []string) string {
 	for _, line := range raw {
 		r := d.FindAllStringSubmatch(line, -1)
@@ -193,7 +221,7 @@ func extractDate(raw []string) string {
 
 // math magic to determine tax and total by checking for 20% tax for every number on receipt
 // only works because the values are sorted and it starts looking at the number most likely to be total
-// TODO: doesn't handle the 9% or 10% tax brackets but fuck it
+// TODO: doesn't handle the 9% or 10% tax brackets
 func extractTaxTotal(in []int) (tax int, total int, err error) {
 	sort.Ints(in)
 	for i := len(in)/2 - 1; i >= 0; i-- {
@@ -226,20 +254,22 @@ func joinFollowing(in []string) []string {
 	return out
 }
 
-type ColEntry struct {
+type colEntry struct {
 	text string
 	x    int32
 	y    int32
 }
 
-type ColEntries []ColEntry
+// data structure to hold column entries.  Each potential column entry is compared based on X,Y coordinates
+// to selective join them into a line.
+type colEntries []colEntry
 
-func (c ColEntries) Len() int      { return len(c) }
-func (c ColEntries) Swap(i, j int) { c[i], c[j] = c[j], c[i] }
+func (c colEntries) Len() int      { return len(c) }
+func (c colEntries) Swap(i, j int) { c[i], c[j] = c[j], c[i] }
 
 // this orders entries by their spatial position, first checking the y position to see if it
 // is on a similar line +/- lineDither.  If they are on the same approximate line, order by x.
-func (c ColEntries) Less(i, j int) bool {
+func (c colEntries) Less(i, j int) bool {
 	switch {
 	case c[i].y <= c[j].y-lineDither:
 		return true
@@ -256,9 +286,9 @@ func joinBigFuckingColumns(in []*pb.EntityAnnotation) []string {
 	if len(in) <= 1 {
 		return nil
 	}
-	var cols ColEntries
+	var cols colEntries
 	for _, entity := range in[1:] {
-		e := ColEntry{
+		e := colEntry{
 			text: entity.Description,
 			x:    entity.BoundingPoly.Vertices[0].X,
 			y:    entity.BoundingPoly.Vertices[0].Y,
@@ -273,7 +303,7 @@ func joinBigFuckingColumns(in []*pb.EntityAnnotation) []string {
 
 // get out your compsci textbook kids, we are going recursive on this motherfucker to join
 // extracted text that appears to be on the same line
-func recursivelyUnfuckColumn(curr string, y int32, agg []string, rest []ColEntry) []string {
+func recursivelyUnfuckColumn(curr string, y int32, agg []string, rest []colEntry) []string {
 	if len(rest) == 0 {
 		return append(agg, curr)
 	}

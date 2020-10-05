@@ -31,10 +31,13 @@ import (
 //}
 
 func TestProcess(t *testing.T) {
-	fname := "./test_receipts/PXL_20201002_163142937.jpg"
+	fname := "./test_receipts/PXL_20201002_163306793.jpg"
 	res, err := ProcessImage(fname)
 	require.NoError(t, err)
 
-	fmt.Println("Result:::")
-	fmt.Printf("%v", res)
+	for _, line := range res.lines {
+		fmt.Println(line)
+	}
+
+	fmt.Printf("Result:\nVendor: %s\nTax ID: %s\nDate: %s\nTotal: %d\nTax: %d\nCheck: %s\n", res.Vendor, res.TaxID, res.Date, res.Total, res.Tax, res.ID)
 }

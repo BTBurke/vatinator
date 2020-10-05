@@ -1,15 +1,11 @@
 package vat
 
 import (
-	"bytes"
 	"fmt"
 	"image"
 	"image/color"
 	"image/draw"
-	"image/png"
-	"log"
 
-	"github.com/jung-kurt/gofpdf"
 	"github.com/nfnt/resize"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/inconsolata"
@@ -19,12 +15,14 @@ import (
 const HeaderHeight int = 20
 const HeaderText string = "Kviitung %d"
 
-var StampColor color.RGBA = color.RGBA{255, 0, 0, 255}
+var StampColor color.RGBA = color.RGBA{125, 3, 8, 125}
 
-// createStamps creates a minimum size stamp with the text given in lines with a transparent background
-// and text color given by StampColor
+// createStamp creates a minimum size stamp with the text given in lines with a transparent background
+// and text color given by StampColor.  If lines is empty, it will return a zero pixel image.
 func createStamp(lines []string) *image.RGBA {
-
+	if len(lines) == 0 {
+		return image.NewRGBA(image.Rect(0, 0, 0, 0))
+	}
 	// number of pixels on top and bottom to account for characters that
 	// hang below the baseline
 	topBtmPad := 5
@@ -88,6 +86,9 @@ func createHeader(num int, w int) *image.RGBA {
 	return img
 }
 
+// CompositeReceipt will create a composite image of the receipt appropriately scaled to fit on the page,
+// with a header showing the receipt number, and the superimposed stamp.  If the stamp is empty or nil, no stamp
+// is applied.  If stampY is 0, it will be placed in a default position about 1/3 down the receipt.
 func CompositeReceipt(num int, receipt image.Image, stamp []string, stampY int) *image.RGBA {
 
 	// Check receipt and resize to make it fit on letter size paper at 72 dpi
@@ -123,6 +124,10 @@ func CompositeReceipt(num int, receipt image.Image, stamp []string, stampY int) 
 	finalHeight := rcptHeight + headerHeight
 
 	// padding for stamp
+	if stampY == 0 {
+		// default place 1/3 down the page
+		stampY = rcptHeight / 3
+	}
 	stampLeft := (finalWidth - stampWidth) / 2
 	stampTop := headerHeight + stampY - stampHeight
 	if stampTop < 0 {
@@ -137,57 +142,7 @@ func CompositeReceipt(num int, receipt image.Image, stamp []string, stampY int) 
 	return img
 }
 
-// PDF handles creating PDFs
-type PDF struct {
-	p           *gofpdf.Fpdf
-	fname       string
-	numReceipts int
-}
-
-// NewPDF will create a new PDF handler with filename
-func NewPDF(fname string) *PDF {
-	p := &PDF{
-		p:     gofpdf.New("P", "pt", "Letter", ""),
-		fname: fname,
-	}
-	p.p.SetX(96.0)
-	p.p.SetY(96.0)
-	return p
-}
-
-// WriteReceipt will write a receipt to a new page in the PDF
-func (p *PDF) WriteReceipt(receipt *image.RGBA) error {
-
-	var buf bytes.Buffer
-	if err := png.Encode(&buf, receipt); err != nil {
-		return err
-	}
-	r := bytes.NewReader(buf.Bytes())
-
-	opt := gofpdf.ImageOptions{
-		ImageType:             "PNG",
-		ReadDpi:               true,
-		AllowNegativePosition: false,
-	}
-
-	p.p.AddPage()
-	itype := p.p.RegisterImageOptionsReader(fmt.Sprintf("k%d", p.numReceipts+1), opt, r)
-	if !p.p.Ok() {
-		return fmt.Errorf("error while registering image: %s", p.p.Error())
-	}
-	w, h := itype.Extent()
-	log.Printf("w: %f h: %f", w, h)
-
-	p.p.ImageOptions(fmt.Sprintf("k%d", p.numReceipts+1), 72.0, 10.0, w, h, true, opt, 0, "")
-	if !p.p.Ok() {
-		return fmt.Errorf("Error while creating receipt pdf file: %s", p.p.Error())
-	}
-	p.numReceipts++
-
-	return nil
-}
-
-// Save will write to the PDF file and close it
-func (p *PDF) Save() error {
-	return p.p.OutputFileAndClose(p.fname)
+// CropImage returns a copy of the image cropped to the top, right, bottom, and left point
+func CropImage(orig *image.RGBA, top, right, bottom, left int) image.Image {
+	return orig.SubImage(image.Rect(left, top, right, bottom))
 }
