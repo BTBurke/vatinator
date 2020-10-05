@@ -17,6 +17,62 @@ const HeaderText string = "Kviitung %d"
 
 var StampColor color.RGBA = color.RGBA{125, 3, 8, 125}
 
+// CompositeReceipt will create a composite image of the receipt appropriately scaled to fit on the page,
+// with a header showing the receipt number, and the superimposed stamp.  If the stamp is empty or nil, no stamp
+// is applied.  If stampY is 0, it will be placed in a default position about 1/3 down the receipt.
+func CompositeReceipt(num int, receipt image.Image, stamp []string, stampY int) *image.RGBA {
+
+	// Check receipt and resize to make it fit on letter size paper at 72 dpi
+	rcptWidth := receipt.Bounds().Max.X
+	rcptHeight := receipt.Bounds().Max.Y
+	if rcptHeight > 648 {
+		receipt = resize.Resize(0, 96*9, receipt, resize.Lanczos3)
+		rcptWidth = receipt.Bounds().Max.X
+		rcptHeight = receipt.Bounds().Max.Y
+	}
+	if rcptWidth > 468 {
+		receipt = resize.Resize(0, 96*6.5, receipt, resize.Lanczos3)
+		rcptWidth = receipt.Bounds().Max.X
+		rcptHeight = receipt.Bounds().Max.Y
+	}
+
+	stampImg := createStamp(stamp)
+	stampWidth := stampImg.Bounds().Max.X
+	stampHeight := stampImg.Bounds().Max.Y
+
+	headerImg := createHeader(num, rcptWidth)
+	headerWidth := headerImg.Bounds().Max.X
+	headerHeight := headerImg.Bounds().Max.Y
+
+	// TODO: hacky way of getting max width, should fix this
+	finalWidth := rcptWidth
+	if headerWidth > finalWidth {
+		finalWidth = headerWidth
+	}
+	if stampWidth > finalWidth {
+		finalWidth = stampWidth
+	}
+	finalHeight := rcptHeight + headerHeight
+
+	// padding for stamp
+	if stampY == 0 {
+		// default place 1/3 down the page
+		stampY = rcptHeight / 3
+	}
+	stampLeft := (finalWidth - stampWidth) / 2
+	stampTop := headerHeight + stampY - stampHeight
+	if stampTop < 0 {
+		stampTop = 0
+	}
+
+	img := image.NewRGBA(image.Rect(0, 0, finalWidth, finalHeight))
+	draw.Draw(img, image.Rect(0, 0, headerWidth, headerHeight), headerImg, image.Point{0, 0}, draw.Src)
+	draw.Draw(img, image.Rect(0, headerHeight, finalWidth, finalHeight), receipt, image.Point{0, 0}, draw.Src)
+	draw.Draw(img, image.Rect(stampLeft, stampTop, stampLeft+stampWidth, stampTop+stampHeight), stampImg, image.Point{0, 0}, draw.Over)
+
+	return img
+}
+
 // createStamp creates a minimum size stamp with the text given in lines with a transparent background
 // and text color given by StampColor.  If lines is empty, it will return a zero pixel image.
 func createStamp(lines []string) *image.RGBA {
@@ -82,62 +138,6 @@ func createHeader(num int, w int) *image.RGBA {
 		Dot:  fixed.Point26_6{X: fixed.Int26_6(leftPad * 64), Y: fixed.Int26_6(16 * 64)},
 	}
 	d.DrawString(text)
-
-	return img
-}
-
-// CompositeReceipt will create a composite image of the receipt appropriately scaled to fit on the page,
-// with a header showing the receipt number, and the superimposed stamp.  If the stamp is empty or nil, no stamp
-// is applied.  If stampY is 0, it will be placed in a default position about 1/3 down the receipt.
-func CompositeReceipt(num int, receipt image.Image, stamp []string, stampY int) *image.RGBA {
-
-	// Check receipt and resize to make it fit on letter size paper at 72 dpi
-	rcptWidth := receipt.Bounds().Max.X
-	rcptHeight := receipt.Bounds().Max.Y
-	if rcptHeight > 648 {
-		receipt = resize.Resize(0, 96*9, receipt, resize.Lanczos3)
-		rcptWidth = receipt.Bounds().Max.X
-		rcptHeight = receipt.Bounds().Max.Y
-	}
-	if rcptWidth > 468 {
-		receipt = resize.Resize(0, 96*6.5, receipt, resize.Lanczos3)
-		rcptWidth = receipt.Bounds().Max.X
-		rcptHeight = receipt.Bounds().Max.Y
-	}
-
-	stampImg := createStamp(stamp)
-	stampWidth := stampImg.Bounds().Max.X
-	stampHeight := stampImg.Bounds().Max.Y
-
-	headerImg := createHeader(num, rcptWidth)
-	headerWidth := headerImg.Bounds().Max.X
-	headerHeight := headerImg.Bounds().Max.Y
-
-	// TODO: hacky way of getting max width, should fix this
-	finalWidth := rcptWidth
-	if headerWidth > finalWidth {
-		finalWidth = headerWidth
-	}
-	if stampWidth > finalWidth {
-		finalWidth = stampWidth
-	}
-	finalHeight := rcptHeight + headerHeight
-
-	// padding for stamp
-	if stampY == 0 {
-		// default place 1/3 down the page
-		stampY = rcptHeight / 3
-	}
-	stampLeft := (finalWidth - stampWidth) / 2
-	stampTop := headerHeight + stampY - stampHeight
-	if stampTop < 0 {
-		stampTop = 0
-	}
-
-	img := image.NewRGBA(image.Rect(0, 0, finalWidth, finalHeight))
-	draw.Draw(img, image.Rect(0, 0, headerWidth, headerHeight), headerImg, image.Point{0, 0}, draw.Src)
-	draw.Draw(img, image.Rect(0, headerHeight, finalWidth, finalHeight), receipt, image.Point{0, 0}, draw.Src)
-	draw.Draw(img, image.Rect(stampLeft, stampTop, stampLeft+stampWidth, stampTop+stampHeight), stampImg, image.Point{0, 0}, draw.Over)
 
 	return img
 }
