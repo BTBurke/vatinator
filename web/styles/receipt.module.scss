@@ -1,0 +1,18 @@
+.vendor { grid-area: vendor; }
+.date { grid-area: date; }
+.taxid { grid-area: taxid; }
+.total { grid-area: total; }
+.vat { grid-area: vat; }
+.id { grid-area: id; }
+.btn { grid-area: btn; }
+
+.container {
+    display: grid;
+    grid-template-areas: 
+        'vendor vendor vendor date date'
+        'id id id taxid taxid'
+        'total total total vat vat'
+        'btn btn btn btn btn';
+    grid-gap: 0.75rem;
+    justify-content: space-around;
+} 

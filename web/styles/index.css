@@ -1,0 +1,44 @@
+@tailwind base;
+
+/* Write your own custom base styles here */
+body {
+  @apply bg-base;
+}
+
+img {
+  max-width:  100%;
+  max-height: 100%;
+  display: block;
+}
+
+.table td.fit, 
+.table th.fit {
+    white-space: nowrap;
+    width: 1%;
+}
+
+
+/* Start purging... */
+@tailwind components;
+/* Stop purging. */
+
+/* Write your own custom component styles here */
+.btn-blue {
+  @apply bg-blue-500 text-white font-bold py-2 px-4 rounded;
+}
+
+/* Start purging... */
+@tailwind utilities;
+/* Stop purging. */
+
+/* Your own custom utilities */
+
+.react-transform-component {
+  width: unset !important;
+  height: unset !important;
+}
+
+.react-transform-element {
+  width: unset !important;
+  height: unset !important;
+}
