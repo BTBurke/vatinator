@@ -14,6 +14,9 @@ import (
 
 const HeaderHeight int = 20
 const HeaderText string = "Kviitung %d"
+const CropPadding int = 10
+const ImageMaxHeight int = 648
+const ImageMaxWidth int = 468
 
 var StampColor color.RGBA = color.RGBA{125, 3, 8, 125}
 
@@ -25,13 +28,13 @@ func CompositeReceipt(num int, receipt image.Image, stamp []string, stampY int) 
 	// Check receipt and resize to make it fit on letter size paper at 72 dpi
 	rcptWidth := receipt.Bounds().Max.X
 	rcptHeight := receipt.Bounds().Max.Y
-	if rcptHeight > 648 {
-		receipt = resize.Resize(0, 96*9, receipt, resize.Lanczos3)
+	if rcptHeight > ImageMaxHeight {
+		receipt = resize.Resize(0, uint(ImageMaxHeight), receipt, resize.Lanczos3)
 		rcptWidth = receipt.Bounds().Max.X
 		rcptHeight = receipt.Bounds().Max.Y
 	}
-	if rcptWidth > 468 {
-		receipt = resize.Resize(0, 96*6.5, receipt, resize.Lanczos3)
+	if rcptWidth > ImageMaxWidth {
+		receipt = resize.Resize(uint(ImageMaxWidth), 0, receipt, resize.Lanczos3)
 		rcptWidth = receipt.Bounds().Max.X
 		rcptHeight = receipt.Bounds().Max.Y
 	}
@@ -142,7 +145,32 @@ func createHeader(num int, w int) *image.RGBA {
 	return img
 }
 
-// CropImage returns a copy of the image cropped to the top, right, bottom, and left point
+// CropImage returns a copy of the image cropped to the top, right, bottom, and left point.  CropPadding setting
+// will retain that number of pixels as a margin on all sides around the passed crop points.
 func CropImage(orig *image.RGBA, top, right, bottom, left int) image.Image {
+	left = max(0, left-CropPadding)
+	right = min(orig.Bounds().Max.X, right+CropPadding)
+	top = max(0, top-CropPadding)
+	bottom = min(orig.Bounds().Max.Y, bottom+CropPadding)
+
 	return orig.SubImage(image.Rect(left, top, right, bottom))
+}
+
+func max(x, y int) int {
+	switch {
+	case x > y:
+		return x
+	default:
+		return y
+	}
+}
+
+func min(x, y int) int {
+	switch {
+	case x < y:
+		return x
+	default:
+		return y
+	}
+
 }
