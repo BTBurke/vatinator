@@ -15,6 +15,8 @@ import (
 const HeaderHeight int = 20
 const HeaderText string = "Kviitung %d"
 const CropPadding int = 10
+
+// assumes 72 DPI, letter paper
 const ImageMaxHeight int = 648
 const ImageMaxWidth int = 468
 
