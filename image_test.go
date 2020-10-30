@@ -1,48 +1,53 @@
 package vat
 
 import (
+	"bytes"
 	"image/jpeg"
 	"image/png"
+	"io/ioutil"
 	"os"
 	"testing"
 
+	"github.com/BTBurke/snapshot"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestCreateStamp(t *testing.T) {
-	f, err := os.Create("test.png")
+	snap, err := snapshot.New(snapshot.Diffable(false))
 	require.NoError(t, err)
-	defer f.Close()
 
+	var f bytes.Buffer
 	img := createStamp([]string{"test 1", "test 2", "fucking jelly 3"})
 
-	if err := png.Encode(f, img); err != nil {
+	if err := png.Encode(&f, img); err != nil {
 		t.FailNow()
 	}
+	snap.Assert(t, f.Bytes())
 
 }
 
 func TestHeader(t *testing.T) {
-	f, err := os.Create("header.png")
+	snap, err := snapshot.New(snapshot.Diffable(false))
 	require.NoError(t, err)
-	defer f.Close()
+
+	var f bytes.Buffer
 
 	img := createHeader(1, 10)
 
-	if err := png.Encode(f, img); err != nil {
+	if err := png.Encode(&f, img); err != nil {
 		t.FailNow()
 	}
+	snap.Assert(t, f.Bytes())
 
 }
 
 func TestComposite(t *testing.T) {
-	f, err := os.Open("./test_receipts/PXL_20201002_163234312.jpg")
+	snap, err := snapshot.New(snapshot.Diffable(false))
 	require.NoError(t, err)
 
-	//rcpt := image.NewRGBA(image.Rect(0, 0, 100, 100))
-	//blue := color.RGBA{0, 0, 255, 255}
-	//draw.Draw(rcpt, rcpt.Bounds(), &image.Uniform{blue}, image.ZP, draw.Src)
+	f, err := os.Open("./test_receipts/PXL_20201002_163234312.jpg")
+	require.NoError(t, err)
 	defer f.Close()
 
 	rcpt, err := jpeg.Decode(f)
@@ -50,16 +55,19 @@ func TestComposite(t *testing.T) {
 
 	img := CompositeReceipt(1, rcpt, []string{"Bryan Burke", "US Embassy", "Kentmanni 20"}, 450)
 
-	out, err := os.Create("composite.png")
-	require.NoError(t, err)
-	defer out.Close()
+	var out bytes.Buffer
 
-	if err := png.Encode(out, img); err != nil {
+	if err := png.Encode(&out, img); err != nil {
 		assert.NoError(t, err)
 	}
+	snap.Assert(t, out.Bytes())
 }
 
 func TestPDF(t *testing.T) {
+	ign := `@@\s\-3728,2\s\+3728,2\s@@`
+	snap, err := snapshot.New(snapshot.IgnoreRegex(ign), snapshot.ContextLines(0))
+	require.NoError(t, err)
+
 	fname := "test.pdf"
 
 	f, err := os.Open("./test_receipts/PXL_20201002_163234312.jpg")
@@ -89,5 +97,11 @@ func TestPDF(t *testing.T) {
 	if err := pdf.Save(); err != nil {
 		assert.NoError(t, err)
 	}
+
+	pFile, err := ioutil.ReadFile(fname)
+	require.NoError(t, err)
+	require.NoError(t, os.Remove(fname))
+
+	snap.Assert(t, pFile)
 
 }
