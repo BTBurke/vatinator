@@ -149,7 +149,7 @@ func createHeader(num int, w int) *image.RGBA {
 
 // CropImage returns a copy of the image cropped to the top, right, bottom, and left point.  CropPadding setting
 // will retain that number of pixels as a margin on all sides around the passed crop points.
-func CropImage(orig *image.RGBA, top, right, bottom, left int) image.Image {
+func CropImage(orig *image.RGBA, top, left, bottom, right int) image.Image {
 	left = max(0, left-CropPadding)
 	right = min(orig.Bounds().Max.X, right+CropPadding)
 	top = max(0, top-CropPadding)
@@ -175,4 +175,40 @@ func min(x, y int) int {
 		return y
 	}
 
+}
+
+const (
+	cw int = iota
+	ccw
+)
+
+func RotateCW(img image.Image) image.Image {
+	return rotateImage(img, cw)
+}
+
+func RotateCCW(img image.Image) image.Image {
+	return rotateImage(img, ccw)
+}
+
+func rotateImage(orig image.Image, angle int) image.Image {
+	img := image.NewRGBA(image.Rect(0, 0, orig.Bounds().Max.Y, orig.Bounds().Max.X))
+	for i := 0; i < orig.Bounds().Max.X; i++ {
+		for j := 0; j < orig.Bounds().Max.Y; j++ {
+			x2, y2 := mapPoint(i, j, orig.Bounds().Max.X, orig.Bounds().Max.Y, angle)
+			img.Set(x2, y2, orig.At(i, j))
+		}
+	}
+	return img
+}
+
+func mapPoint(x, y, width, height int, angle int) (x2 int, y2 int) {
+	switch angle {
+	case cw:
+		x2 = height - y
+		y2 = x
+	default:
+		x2 = y
+		y2 = width - x
+	}
+	return
 }

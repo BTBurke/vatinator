@@ -2,9 +2,13 @@ package vat
 
 import (
 	"bytes"
+	"image"
+	"image/color"
+	"image/draw"
 	"image/jpeg"
 	"image/png"
 	"io/ioutil"
+
 	"os"
 	"testing"
 
@@ -103,5 +107,51 @@ func TestPDF(t *testing.T) {
 	require.NoError(t, os.Remove(fname))
 
 	snap.Assert(t, pFile)
+
+}
+
+// output should be 100x100 png with a 10pixel red border around blue center
+func TestCrop(t *testing.T) {
+	img := image.NewRGBA(image.Rect(0, 0, 120, 120))
+	draw.Draw(img, img.Bounds(), &image.Uniform{color.RGBA{255, 0, 0, 255}}, image.Point{0, 0}, draw.Src)
+	draw.Draw(img, image.Rect(20, 20, 100, 100), &image.Uniform{color.RGBA{0, 0, 255, 255}}, image.Point{0, 0}, draw.Src)
+
+	var f bytes.Buffer
+
+	imgCropped := CropImage(img, 20, 20, 100, 100)
+
+	if err := png.Encode(&f, imgCropped); err != nil {
+		t.FailNow()
+	}
+	snapshot.Assert(t, f.Bytes())
+}
+
+func TestRotateCW(t *testing.T) {
+	snap, err := snapshot.New(snapshot.Diffable(false))
+	require.NoError(t, err)
+
+	var f bytes.Buffer
+	img := createStamp([]string{"test 1", "test 2", "fucking jelly 3"})
+	imgR := RotateCW(img)
+
+	if err := png.Encode(&f, imgR); err != nil {
+		t.FailNow()
+	}
+	snap.Assert(t, f.Bytes())
+
+}
+
+func TestRotateCCW(t *testing.T) {
+	snap, err := snapshot.New(snapshot.Diffable(false))
+	require.NoError(t, err)
+
+	var f bytes.Buffer
+	img := createStamp([]string{"test 1", "test 2", "fucking jelly 3"})
+	imgR := RotateCCW(img)
+
+	if err := png.Encode(&f, imgR); err != nil {
+		t.FailNow()
+	}
+	snap.Assert(t, f.Bytes())
 
 }
