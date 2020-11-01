@@ -62,10 +62,13 @@ func (r r) GetBatch(accountID string, batchID string) ([]Receipt, error) {
 	return receipts, nil
 }
 
+func NewReceiptService(db *badger.DB) ReceiptService {
+	return r{db}
+}
+
 // returns all receipts for a batch
 // TODO: currently reverse iterates through all receipts associated with an account, might be a better
 // way to do this by recording start and ending receipt ID per batch or something
-
 func getReceiptsForBatch(txn *badger.Txn, key *BatchKey) ([]Receipt, error) {
 	account := key.AccountID
 	batch := key.BatchID

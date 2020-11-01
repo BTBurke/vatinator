@@ -98,4 +98,8 @@ func (b b) CloseBatch(accountID string, batchID string) error {
 	return nil
 }
 
+func NewBatchService(db *badger.DB) BatchService {
+	return b{db}
+}
+
 var _ BatchService = b{}

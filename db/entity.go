@@ -17,6 +17,7 @@ const (
 	Batch
 	Receipt
 	Export
+	Image
 )
 
 // EntityTypeError is returned when the value at key does not match the type of the expected entity that it is
