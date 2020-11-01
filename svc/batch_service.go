@@ -39,7 +39,10 @@ func (b b) GetBatch(acctID string, batchID string) (*Batch, error) {
 	batch := &Batch{}
 
 	if err := b.db.View(func(txn *badger.Txn) error {
-		return getBatch(txn, key, batch, false)
+		if _, err := getBatch(txn, key, batch, false); err != nil {
+			return err
+		}
+		return nil
 	}); err != nil {
 		return nil, err
 	}
@@ -49,19 +52,15 @@ func (b b) GetBatch(acctID string, batchID string) (*Batch, error) {
 // getBatch will return a materialized view of this batch.  If it is not closed, it will
 // get all receipts associated with the open batch to calculate the current value of the batch
 // IMPORTANT: setting persistView will save the materialized view and must be in a mutable badger transaction
-func getBatch(txn *badger.Txn, key *BatchKey, batch *Batch, persistView bool) error {
+func getBatch(txn *badger.Txn, key *BatchKey, batch *Batch, persistView bool) ([]Receipt, error) {
 	if err := db.Get(txn, key, batch); err != nil {
-		return err
-	}
-	// if batch is already closed, final materialized view is already saved
-	if batch.Closed != 0 {
-		return nil
+		return nil, err
 	}
 
-	// if open, materialize the view of receipt totals inside the transaction
+	// materialize the view of receipt totals inside the transaction
 	receipts, err := getReceiptsForBatch(txn, key)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	batch.NumReceipts = len(receipts)
@@ -76,9 +75,11 @@ func getBatch(txn *badger.Txn, key *BatchKey, batch *Batch, persistView bool) er
 	batch.Total = total
 
 	if persistView {
-		return db.Set(txn, key, batch)
+		if err := db.Set(txn, key, batch); err != nil {
+			return nil, err
+		}
 	}
-	return nil
+	return receipts, nil
 }
 
 func (b b) CloseBatch(accountID string, batchID string) error {
@@ -86,7 +87,7 @@ func (b b) CloseBatch(accountID string, batchID string) error {
 	batch := &Batch{}
 
 	if err := b.db.Update(func(txn *badger.Txn) error {
-		if err := getBatch(txn, key, batch, false); err != nil {
+		if _, err := getBatch(txn, key, batch, false); err != nil {
 			return err
 		}
 		batch.Closed = time.Now().Unix()

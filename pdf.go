@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image"
 	"image/png"
+	"io"
 	"log"
 
 	"github.com/jung-kurt/gofpdf"
@@ -12,16 +13,16 @@ import (
 
 // PDF handles creating PDFs
 type PDF struct {
+	Name        string
 	p           *gofpdf.Fpdf
-	fname       string
 	numReceipts int
 }
 
 // NewPDF will create a new PDF handler with filename
 func NewPDF(fname string) *PDF {
 	p := &PDF{
-		p:     gofpdf.New("P", "pt", "Letter", ""),
-		fname: fname,
+		p:    gofpdf.New("P", "pt", "Letter", ""),
+		Name: fname,
 	}
 	p.p.SetX(96.0)
 	p.p.SetY(96.0)
@@ -62,5 +63,10 @@ func (p *PDF) WriteReceipt(receipt *image.RGBA) error {
 
 // Save will write to the PDF file and close it
 func (p *PDF) Save() error {
-	return p.p.OutputFileAndClose(p.fname)
+	return p.p.OutputFileAndClose(p.Name)
+}
+
+// Write will write the PDF file to the destination
+func (p *PDF) Write(w io.WriteCloser) error {
+	return p.p.OutputAndClose(w)
 }
