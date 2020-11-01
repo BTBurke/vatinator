@@ -1,13 +1,27 @@
 package svc
 
 import (
+	"fmt"
+
 	"github.com/dgraph-io/badger/v2"
-	"github.com/pkg/errors"
-	"github.com/rs/xid"
 )
 
+type User struct {
+	Email     string
+	Password  string
+	AccountID string
+}
+
+type Account struct {
+	ID    string
+	Users []User
+}
+
 type AccountService interface {
-	Delete(id string) error
+	Create(a *Account) error
+	Get(accountID string) (*Account, error)
+	Update(a *Account) error
+	Delete(accountID string) error
 }
 
 type a struct {
@@ -15,11 +29,6 @@ type a struct {
 }
 
 func (a a) Delete(id string) error {
-	idB, err := xid.FromString(id)
-	if err != nil {
-		return errors.Wrap(err, "failed to delete account")
-	}
-	return a.db.DropPrefix(append([]byte("a"), idB.Bytes()...))
+	key := []byte(fmt.Sprintf("a/%s", id))
+	return a.db.DropPrefix(key)
 }
-
-var _ AccountService = a{}

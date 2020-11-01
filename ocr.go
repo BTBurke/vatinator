@@ -3,9 +3,9 @@ package vat
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"math"
-	"os"
 	"regexp"
 	"sort"
 	"strconv"
@@ -38,15 +38,15 @@ func init() {
 	vendor = regexp.MustCompile(`[^/,]+\s(AS|TÜ|UÜ|OÜ|As|Tü|Uü|Oü)`)
 }
 
-// Receipt
-type Receipt struct {
+// Result
+type Result struct {
 	raw   []*pb.EntityAnnotation
 	lines []string
 	File  string
 	// date format dd/mm/yy or dd/mm/yyyy depending on how it is detected on the receipt
 	Date   string
 	Total  int
-	Tax    int
+	VAT    int
 	Vendor string
 	TaxID  string
 	ID     string
@@ -64,14 +64,10 @@ type Crop struct {
 
 // ProcessImage uses a pre-trained ML model to extract text from the receipt image, then
 // a series of regular expressions and text manipulation to find the VAT data
-func ProcessImage(fname string) (*Receipt, error) {
-	f, err := os.Open(fname)
+func ProcessImage(imageSource io.Reader) (*Result, error) {
+	img, err := vision.NewImageFromReader(imageSource)
 	if err != nil {
-		return nil, fmt.Errorf("error opening image %s: %v", fname, err)
-	}
-	img, err := vision.NewImageFromReader(f)
-	if err != nil {
-		return nil, fmt.Errorf("error reading image %s: %v", fname, err)
+		return nil, fmt.Errorf("error reading image: %v", err)
 	}
 	ctx := context.Background()
 
@@ -85,29 +81,37 @@ func ProcessImage(fname string) (*Receipt, error) {
 		return nil, fmt.Errorf("error detecting text: %v", err)
 	}
 
+	// find the minimum bounding box for the receipt
 	crop := getCrop(res)
 
+	// get normal case lines, then add lowercase version for each value
 	lines := strings.Split(res[0].Description, "\n")
 	for _, l := range lines {
 		lines = append(lines, strings.ToLower(l))
 	}
 
+	// joins blocks of words that are close together to look for successive matches
 	lines = joinFollowing(lines)
+
+	// looks for wide columns by spatial comparison
 	extraLines := joinBigFuckingColumns(res)
 	for _, l := range extraLines {
 		extraLines = append(extraLines, strings.ToLower(l))
 	}
 	lines = append(lines, extraLines...)
 
+	// finds all currency-like numbers (2 digits)
+	// TODO: implement 3-digit currencies
 	currencies := extractCurrency(lines)
-	log.Printf("\ncurrencies: %v\n", currencies)
+
+	// find the likely tax and total
 	tax, total, _ := extractTaxTotal(currencies)
 
-	r := &Receipt{
+	r := &Result{
 		Crop:   crop,
 		raw:    res,
 		lines:  lines,
-		Tax:    tax,
+		VAT:    tax,
 		Total:  total,
 		Vendor: extractVendor(lines),
 		TaxID:  extractTaxID(lines),

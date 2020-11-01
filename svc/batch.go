@@ -1,62 +1,86 @@
 package svc
 
 import (
-	"github.com/dgraph-io/badger/v2"
-	"github.com/pkg/errors"
-	"github.com/rs/xid"
+	"fmt"
+	"strings"
+	"time"
+
+	"github.com/BTBurke/vatinator/db"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-type BatchService interface {
-	CreateBatch(acctID string, startID string) (*Batch, error)
-	GetBatch(acctID string, id string) (*Batch, error)
-	CloseBatch(acctID string, id string) error
-}
-
 type Batch struct {
-	StartID string
-	Closed  int64
+	StartID     string
+	NumReceipts int
+	VAT         int
+	Total       int
+	Closed      int64
 }
 
-type b struct {
-	db *badger.DB
+func (b *Batch) MarshalBinary() ([]byte, error) {
+	return msgpack.Marshal(b)
 }
 
-func (b b) CreateBatch(acctID string, startID string) (*Batch, error) {
-	batch := &Batch{StartID: startID}
-	bEnc, err := msgpack.Marshal(batch)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to marshal batch to msgpack")
+func (b *Batch) UnmarshalBinary(data []byte) error {
+	return msgpack.Unmarshal(data, b)
+}
+
+func (b *Batch) Type() byte {
+	return db.Batch
+}
+
+func (b *Batch) TTL() time.Duration {
+	// default - batches never expire
+	return 0
+}
+
+type BatchKey struct {
+	AccountID string
+	BatchID   string
+}
+
+func (b *BatchKey) MarshalBinary() ([]byte, error) {
+	if len(b.AccountID) == 0 || len(b.BatchID) == 0 {
+		return nil, fmt.Errorf("batch key error: acct: %s batch: %s", b.AccountID, b.BatchID)
+	}
+	return []byte(fmt.Sprintf("a/%s/b/%s", b.AccountID, b.BatchID)), nil
+}
+
+func (b *BatchKey) UnmarshalBinary(data []byte) error {
+	key := splitKey(data)
+	acctID, ok := key["a"]
+	if !ok {
+		return fmt.Errorf("batch missing account ID: %s", string(data))
+	}
+	batchID, ok := key["b"]
+	if !ok {
+		return fmt.Errorf("batch missing batch ID: %s", string(data))
 	}
 
-	if err := b.db.Update(func(txn *badger.Txn) error {
-		key, err := createBatchKey(acctID)
-		if err != nil {
-			return errors.Wrap(err, "failed to create batch key")
+	b.AccountID = acctID
+	b.BatchID = batchID
+
+	return nil
+}
+
+// splits key string like a/b/c/d and assembles pairwise map a=b, c=d
+func splitKey(b []byte) map[string]string {
+	out := make(map[string]string)
+
+	elements := strings.Split(string(b), "/")
+	if len(elements)%2 != 0 {
+		// TODO: replace panic here, but this should not happen, compile time guarantee
+		panic(fmt.Sprintf("unallowed key: %s", string(b)))
+	}
+
+	for i := 0; i < len(elements); i += 2 {
+		if i+1 > len(elements)-1 {
+			continue
 		}
-		if err := txn.Set(key, bEnc); err != nil {
-			return errors.Wrap(err, "failed to persist batch")
-		}
-		return nil
-	}); err != nil {
-		return nil, errors.Wrap(err, "failed to create batch")
-	}
-	return batch, nil
-}
-
-func createBatchKey(acctID string) ([]byte, error) {
-	id := xid.New()
-	aID, err := xid.FromString(acctID)
-	if err != nil {
-		return nil, err
-	}
-	return join([]byte("/a/"), aID.Bytes(), []byte("/b/"), id.Bytes()), nil
-}
-
-func join(b ...[]byte) []byte {
-	var out []byte
-	for _, b1 := range b {
-		out = append(out, b1...)
+		out[elements[i]] = elements[i+1]
 	}
 	return out
 }
+
+var _ db.Key = &BatchKey{}
+var _ db.Entity = &Batch{}

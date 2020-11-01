@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/BTBurke/vatinator/svc"
+
 	"github.com/tealeg/xlsx/v3"
 )
 
@@ -54,7 +56,7 @@ func WriteSubmissionMonth(month int, year int, f *xlsx.File) error {
 }
 
 // WriteVATLine writes a VAT line to the Excel spreadsheet
-func WriteVATLine(f *xlsx.File, r *Receipt, num int) error {
+func WriteVATLine(f *xlsx.File, r *svc.Receipt, num int) error {
 	if num > 17 {
 		return fmt.Errorf("unallowed row %d: greater than 17", num)
 	}
@@ -71,7 +73,7 @@ func WriteVATLine(f *xlsx.File, r *Receipt, num int) error {
 		setStringF(row, 2, r.ID, sh),
 		setStringF(row, 3, r.Date, sh),
 		setCurrencyF(row, 4, r.Total, sh),
-		setCurrencyF(row, 5, r.Tax, sh),
+		setCurrencyF(row, 5, r.VAT, sh),
 	}
 
 	var errs []string

@@ -45,7 +45,7 @@ export default function ReceiptPage() {
     });
 
     const rcpt = {
-        vendor_name: 'Bauhof Group AS',
+        vendor: 'Bauhof Group AS',
         date: '09/27/2020',
         receipt_number: '1010500205581',
         tax_id: 'EE100589638',
@@ -67,9 +67,9 @@ export default function ReceiptPage() {
                 </div>
                 <div className="max-h-1/3vh px-8 py-4 h-1/4vh"> 
                     <div className={styles.container}>
-                            <Field field="vendor" label="VENDOR" value={rcpt.vendor_name} editing={editing} setEditing={setEditing} setRef={setRef} />
+                            <Field field="vendor" label="VENDOR" value={rcpt.vendor} editing={editing} setEditing={setEditing} setRef={setRef} />
                             <Field field="date" label="DATE" value={rcpt.date} editing={editing} setEditing={setEditing} setRef={setRef}/>
-                            <Field field="id" label="RECEIPT NUMBER" value={rcpt.receipt_number} editing={editing} setEditing={setEditing} setRef={setRef} />
+                            <Field field="receipt_number" label="RECEIPT NUMBER" value={rcpt.receipt_number} editing={editing} setEditing={setEditing} setRef={setRef} />
                             <Field field="tax_id" label="TAX ID" value={rcpt.tax_id} editing={editing} setEditing={setEditing} setRef={setRef} />
                             <Field field="total" label="TOTAL" value={rcpt.total} editing={editing} setEditing={setEditing} setRef={setRef} />
                             <Field field="vat" label="VAT" value={rcpt.vat} editing={editing} setEditing={setEditing} setRef={setRef} />
