@@ -1,14 +1,22 @@
 package svc
 
 import (
+	"bytes"
+	"fmt"
+	"image"
+	"image/png"
+	"io"
+	"io/ioutil"
+
 	vat "github.com/BTBurke/vatinator"
-	"sync"
+	"github.com/dgraph-io/badger/v2"
+	"github.com/pkg/errors"
 )
 
 var cache map[string]Processor
 
 type Processor interface {
-	Add(r io.Reader) error
+	Add(name string, r io.Reader) error
 	Wait() error
 }
 
@@ -19,35 +27,47 @@ func init() {
 }
 
 type singleProcessor struct {
-	db *badger.DB
+	accountID string
+	batchID   string
+	db        *badger.DB
 }
 
-func (s *singleProcessor) Add(r io.Reader) error {
-	return process(r)
+func (s *singleProcessor) Add(name string, r io.Reader) error {
+	return process(s.db, s.accountID, s.batchID, name, r)
 }
 
-func process(r io.Reader) error {
-	image, err := ioutil.ReadAll(r)
+func process(db *badger.DB, accountID string, batchID string, name string, r io.Reader) error {
+	i, err := ioutil.ReadAll(r)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "failed to read: %s", name)
 	}
 
-	visionReader := bytes.NewReader(image)
+	//TODO: rotate based on exif, reencode as png
+	rotatedImage, err := vat.RotateByExif(bytes.NewReader(i))
+	if err != nil {
+		return errors.Wrapf(err, "failed to rotate: %s", name)
+	}
+	var b bytes.Buffer
+	if err := png.Encode(&b, rotatedImage); err != nil {
+		return errors.Wrapf(err, "failed to encode %s", name)
+	}
+
+	// process with google cloud vision
+	visionReader := bytes.NewReader(b.Bytes())
 
 	result, err := vat.ProcessImage(visionReader)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "failed to vision process %s", name)
 	}
 
-	// decode and crop image based on OCRed image
-	img, err := image.Decode(image)
+	// decode and crop image based on OCRed positions
+	img, _, err := image.Decode(bytes.NewReader(i))
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "failed to decode %s", name)
 	}
-	croppedImage, err := vat.CropImage(img, result.Crop.Top, result.Crop.Left, result.Crop.Bottom, result.Crop.Right)
-	if err != nil {
-		return err
-	}
+	croppedImage := vat.CropImage(img, int(result.Crop.Top), int(result.Crop.Left), int(result.Crop.Bottom), int(result.Crop.Right))
+
+	// store image and results
 	fmt.Println(croppedImage)
 
 	return nil

@@ -1,12 +1,20 @@
 package vat
 
 import (
+	"bytes"
 	"fmt"
 	"image"
 	"image/color"
 	"image/draw"
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
+	"io"
+	"io/ioutil"
+	"log"
 
 	"github.com/nfnt/resize"
+	"github.com/rwcarlsen/goexif/exif"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/inconsolata"
 	"golang.org/x/image/math/fixed"
@@ -155,7 +163,9 @@ func CropImage(orig image.Image, top, left, bottom, right int) image.Image {
 	top = max(0, top-CropPadding)
 	bottom = min(orig.Bounds().Max.Y, bottom+CropPadding)
 
-	return orig.SubImage(image.Rect(left, top, right, bottom))
+	out := image.NewRGBA(image.Rect(0, 0, (right - left), (bottom - top)))
+	draw.Draw(out, out.Bounds(), orig, image.Point{top, left}, draw.Src)
+	return out
 }
 
 func max(x, y int) int {
@@ -211,4 +221,44 @@ func mapPoint(x, y, width, height int, angle int) (x2 int, y2 int) {
 		y2 = width - x
 	}
 	return
+}
+
+// RotateByExif reads embedded EXIF data and rotates the image to the correct aspect
+func RotateByExif(imgReader io.Reader) (image.Image, error) {
+	i, err := ioutil.ReadAll(imgReader)
+	if err != nil {
+		return nil, err
+	}
+
+	e, _ := exif.Decode(bytes.NewReader(i))
+
+	img, _, err := image.Decode(bytes.NewReader(i))
+	if err != nil {
+		return nil, err
+	}
+
+	oField, err := e.Get(exif.Orientation)
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("raw o: %v", oField)
+
+	orientation, err := oField.Int(0)
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("orientation: %d", orientation)
+
+	switch orientation {
+	case 1:
+		return img, nil
+	case 8:
+		return RotateCCW(img), nil
+	case 3:
+		return RotateCCW(RotateCCW(img)), nil
+	case 6:
+		return RotateCW(img), nil
+	default:
+		return nil, fmt.Errorf("unknown exif rotation: %d", orientation)
+	}
 }

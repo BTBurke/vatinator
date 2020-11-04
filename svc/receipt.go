@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	vat "github.com/BTBurke/vatinator"
 	"github.com/BTBurke/vatinator/db"
 	"github.com/vmihailenco/msgpack/v5"
 )
@@ -38,6 +39,30 @@ func (r *Receipt) UnmarshalBinary(data []byte) error {
 	return msgpack.Unmarshal(data, r)
 }
 
+func (r *Receipt) GetVendor() string {
+	return r.Vendor
+}
+
+func (r *Receipt) GetReceiptNumber() string {
+	return r.ReceiptNumber
+}
+
+func (r *Receipt) GetTaxID() string {
+	return r.TaxID
+}
+
+func (r *Receipt) GetDate() string {
+	return r.Date
+}
+
+func (r *Receipt) GetTotal() int {
+	return r.Total
+}
+
+func (r *Receipt) GetVAT() int {
+	return r.VAT
+}
+
 type ReceiptKey struct {
 	AccountID string
 	ReceiptID string
@@ -69,3 +94,4 @@ func (rk *ReceiptKey) UnmarshalBinary(data []byte) error {
 
 var _ db.Entity = &Receipt{}
 var _ db.Key = &ReceiptKey{}
+var _ vat.VATLine = &Receipt{}

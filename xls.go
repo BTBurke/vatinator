@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/BTBurke/vatinator/svc"
-
 	"github.com/tealeg/xlsx/v3"
 )
 
@@ -56,11 +54,11 @@ func WriteSubmissionMonth(month int, year int, f *xlsx.File) error {
 }
 
 type VATLine interface {
-	Vendor() string
-	ReceiptNumber() string
-	Date() string
-	Total() int
-	VAT() int
+	GetVendor() string
+	GetReceiptNumber() string
+	GetDate() string
+	GetTotal() int
+	GetVAT() int
 }
 
 // WriteVATLine writes a VAT line to the Excel spreadsheet
@@ -77,11 +75,11 @@ func WriteVATLine(f *xlsx.File, r VATLine, num int) error {
 	sh := f.Sheets[0]
 	ops := []cellOp{
 		setNumF(row, 0, num, sh),
-		setStringF(row, 1, r.Vendor(), sh),
-		setStringF(row, 2, r.ReceiptNumber(), sh),
-		setStringF(row, 3, r.Date(), sh),
-		setCurrencyF(row, 4, r.Total(), sh),
-		setCurrencyF(row, 5, r.VAT(), sh),
+		setStringF(row, 1, r.GetVendor(), sh),
+		setStringF(row, 2, r.GetReceiptNumber(), sh),
+		setStringF(row, 3, r.GetDate(), sh),
+		setCurrencyF(row, 4, r.GetTotal(), sh),
+		setCurrencyF(row, 5, r.GetVAT(), sh),
 	}
 
 	var errs []string

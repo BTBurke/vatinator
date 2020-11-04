@@ -8,6 +8,7 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io/ioutil"
+	"path"
 
 	"os"
 	"testing"
@@ -154,4 +155,33 @@ func TestRotateCCW(t *testing.T) {
 	}
 	snap.Assert(t, f.Bytes())
 
+}
+
+func TestRotateByExif(t *testing.T) {
+	snap, err := snapshot.New(snapshot.Diffable(false))
+	require.NoError(t, err)
+
+	tt := []string{
+		"test_receipts/exif-6.jpg",
+		"test_receipts/exif-8.jpg",
+	}
+
+	for _, tc := range tt {
+		t.Run(tc, func(t *testing.T) {
+			wd, err := os.Getwd()
+			require.NoError(t, err)
+
+			f, err := os.Open(path.Join(wd, tc))
+			require.NoError(t, err)
+
+			img, err := RotateByExif(f)
+			require.NoError(t, err)
+
+			var out bytes.Buffer
+			if err := png.Encode(&out, img); err != nil {
+				t.FailNow()
+			}
+			snap.Assert(t, out.Bytes())
+		})
+	}
 }
