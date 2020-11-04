@@ -149,7 +149,7 @@ func createHeader(num int, w int) *image.RGBA {
 
 // CropImage returns a copy of the image cropped to the top, right, bottom, and left point.  CropPadding setting
 // will retain that number of pixels as a margin on all sides around the passed crop points.
-func CropImage(orig *image.RGBA, top, left, bottom, right int) image.Image {
+func CropImage(orig image.Image, top, left, bottom, right int) image.Image {
 	left = max(0, left-CropPadding)
 	right = min(orig.Bounds().Max.X, right+CropPadding)
 	top = max(0, top-CropPadding)

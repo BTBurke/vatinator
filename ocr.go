@@ -35,7 +35,7 @@ func init() {
 	arve = regexp.MustCompile(`arve[^0-9]+([0-9]*)`)
 	tax = regexp.MustCompile(`EE\s?[0-9]{9}`)
 	d = regexp.MustCompile(`(01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31)\.?(01|02|03|04|05|06|07|08|09|10|11|12)\.?(2020|2021|20|21)`)
-	vendor = regexp.MustCompile(`[^/,]+\s(AS|TÜ|UÜ|OÜ|As|Tü|Uü|Oü)`)
+	vendor = regexp.MustCompile(`[^/,]+\s(AS|TÜ|UÜ|OÜ|As|Tü|Uü|Oü|OU|Ou|TU|Tu|UU|Uu)`)
 }
 
 // Result
