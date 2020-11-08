@@ -19,10 +19,14 @@ type r struct {
 }
 
 func (r r) Upsert(accountID string, receipt *Receipt) error {
-	rk := &ReceiptKey{accountID, receipt.ID}
 	return r.db.Update(func(txn *badger.Txn) error {
-		return db.Set(txn, rk, receipt)
+		return upsertReceipt(txn, accountID, receipt)
 	})
+}
+
+func upsertReceipt(txn *badger.Txn, accountID string, receipt *Receipt) error {
+	rk := &ReceiptKey{accountID, receipt.ID}
+	return db.Set(txn, rk, receipt)
 }
 
 func (r r) Get(accountID string, receiptID string) (*Receipt, error) {

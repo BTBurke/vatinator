@@ -3,6 +3,7 @@ package db
 import (
 	"encoding"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/dgraph-io/badger/v2"
@@ -41,6 +42,7 @@ type Key interface {
 // Set will set a value in the database with an associated entity type and
 // TTL
 func Set(txn *badger.Txn, key Key, e Entity) error {
+	log.Printf("setting")
 	val, err := e.MarshalBinary()
 	if err != nil {
 		return err

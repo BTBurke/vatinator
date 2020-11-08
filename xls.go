@@ -3,7 +3,6 @@ package vat
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/tealeg/xlsx/v3"
@@ -53,12 +52,14 @@ func WriteSubmissionMonth(month int, year int, f *xlsx.File) error {
 	return nil
 }
 
+// VATLine is an interface to return strings properly formatted for entry into the
+// excel spreadsheet
 type VATLine interface {
 	GetVendor() string
 	GetReceiptNumber() string
 	GetDate() string
-	GetTotal() int
-	GetVAT() int
+	GetTotal() string
+	GetVAT() string
 }
 
 // WriteVATLine writes a VAT line to the Excel spreadsheet
@@ -78,8 +79,8 @@ func WriteVATLine(f *xlsx.File, r VATLine, num int) error {
 		setStringF(row, 1, r.GetVendor(), sh),
 		setStringF(row, 2, r.GetReceiptNumber(), sh),
 		setStringF(row, 3, r.GetDate(), sh),
-		setCurrencyF(row, 4, r.GetTotal(), sh),
-		setCurrencyF(row, 5, r.GetVAT(), sh),
+		setNumericF(row, 4, r.GetTotal(), sh),
+		setNumericF(row, 5, r.GetVAT(), sh),
 	}
 
 	var errs []string
@@ -111,21 +112,13 @@ func setString(row, col int, s string, sh *xlsx.Sheet) error {
 }
 
 // setCurrency takes a single unit currency and converts it to a float without loss of precision
-func setCurrency(row, col int, d int, sh *xlsx.Sheet) error {
+func setNumeric(row, col int, d string, sh *xlsx.Sheet) error {
 	c, err := sh.Cell(row, col)
 	if err != nil {
 		return err
 	}
-	ds := strconv.Itoa(d)
-	switch {
-	case d < 10:
-		c.SetNumeric(fmt.Sprintf("0.0%d", d))
-	case d >= 10 && d < 100:
-		c.SetNumeric(fmt.Sprintf("0.%d", d))
-	default:
-		c.SetNumeric(fmt.Sprintf("%s.%s", ds[0:len(ds)-2], ds[len(ds)-2:]))
-	}
-	if d == 0 {
+	c.SetNumeric(d)
+	if d == "???" {
 		style := xlsx.NewStyle()
 		style.Fill.FgColor = "FF0000FF"
 		c.SetStyle(style)
@@ -157,8 +150,8 @@ func setStringF(row, col int, s string, sh *xlsx.Sheet) func() error {
 	}
 }
 
-func setCurrencyF(row, col int, d int, sh *xlsx.Sheet) func() error {
+func setNumericF(row, col int, d string, sh *xlsx.Sheet) func() error {
 	return func() error {
-		return setCurrency(row, col, d, sh)
+		return setNumeric(row, col, d, sh)
 	}
 }

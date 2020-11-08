@@ -2,15 +2,16 @@ package svc
 
 import (
 	"bytes"
-	"fmt"
 	"image"
 	"image/png"
 	"io"
 	"io/ioutil"
+	"log"
 
 	vat "github.com/BTBurke/vatinator"
 	"github.com/dgraph-io/badger/v2"
 	"github.com/pkg/errors"
+	"github.com/rs/xid"
 )
 
 var cache map[string]Processor
@@ -23,6 +24,16 @@ type Processor interface {
 func init() {
 	if cache == nil {
 		cache = make(map[string]Processor)
+	}
+}
+
+// NewSingleProcessor returns a synchronous image processor that will run OCR and save the receipt
+// results and the image to the database
+func NewSingleProcessor(db *badger.DB, accountID string, batchID string) Processor {
+	return &singleProcessor{
+		accountID: accountID,
+		batchID:   batchID,
+		db:        db,
 	}
 }
 
@@ -42,7 +53,7 @@ func process(db *badger.DB, accountID string, batchID string, name string, r io.
 		return errors.Wrapf(err, "failed to read: %s", name)
 	}
 
-	//TODO: rotate based on exif, reencode as png
+	//TODO: evaluate whether exif rotation is desired and what format to save
 	rotatedImage, err := vat.RotateByExif(bytes.NewReader(i))
 	if err != nil {
 		return errors.Wrapf(err, "failed to rotate: %s", name)
@@ -68,7 +79,41 @@ func process(db *badger.DB, accountID string, batchID string, name string, r io.
 	croppedImage := vat.CropImage(img, int(result.Crop.Top), int(result.Crop.Left), int(result.Crop.Bottom), int(result.Crop.Right))
 
 	// store image and results
-	fmt.Println(croppedImage)
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, croppedImage); err != nil {
+		return errors.Wrapf(err, "failed to encode %s", name)
+	}
+
+	receipt := &Receipt{
+		ID:            xid.New().String(),
+		Vendor:        result.Vendor,
+		TaxID:         result.TaxID,
+		ReceiptNumber: result.ID,
+		Total:         result.Total,
+		VAT:           result.VAT,
+		Date:          result.Date,
+		BatchID:       batchID,
+	}
+
+	if err := db.Update(func(txn *badger.Txn) error {
+		log.Printf("insert receipt")
+		if err := upsertReceipt(txn, accountID, receipt); err != nil {
+			return err
+		}
+		if err := upsertImage(txn, accountID, receipt.ID, buf.Bytes()); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrapf(err, "failed to persist receipt and image: %s", name)
+	}
 
 	return nil
 }
+
+func (s *singleProcessor) Wait() error {
+	// returns immediately - synchronous
+	return nil
+}
+
+var _ Processor = &singleProcessor{}

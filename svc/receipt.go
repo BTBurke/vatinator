@@ -2,25 +2,42 @@ package svc
 
 import (
 	"fmt"
+	"log"
+	"strconv"
 	"time"
 
 	vat "github.com/BTBurke/vatinator"
 	"github.com/BTBurke/vatinator/db"
-	"github.com/vmihailenco/msgpack/v5"
+	"github.com/shamaton/msgpack"
 )
 
 // keep receipts for 95 days
 var ReceiptDuration time.Duration = 24 * time.Hour * 95
 
+type Precision int
+
+const (
+	// Currecy of the form 23,33
+	Digit2 Precision = iota + 2
+	// Currency of the form 23,333 which is allowed by VAT regulations
+	Digit3
+)
+
 type Receipt struct {
-	ID            string
-	Vendor        string
-	TaxID         string
-	Total         int
-	VAT           int
+	ID     string
+	Vendor string
+	TaxID  string
+	Total  int
+	VAT    int
+	// TODO: Switch to unix time at midnight UTC on day receipt was issued
 	Date          string
 	ReceiptNumber string
-	BatchID       string
+
+	BatchID string
+	// Unix time that the receipt was verified
+	Reviewed int64
+	// Precision of the currency, 2 or 3 digits
+	CurrencyPrecision Precision
 }
 
 func (r *Receipt) Type() byte {
@@ -32,11 +49,12 @@ func (r *Receipt) TTL() time.Duration {
 }
 
 func (r *Receipt) MarshalBinary() ([]byte, error) {
-	return msgpack.Marshal(r)
+	log.Printf("%+v", *r)
+	return msgpack.Encode(r)
 }
 
 func (r *Receipt) UnmarshalBinary(data []byte) error {
-	return msgpack.Unmarshal(data, r)
+	return msgpack.Decode(data, r)
 }
 
 func (r *Receipt) GetVendor() string {
@@ -55,12 +73,48 @@ func (r *Receipt) GetDate() string {
 	return r.Date
 }
 
-func (r *Receipt) GetTotal() int {
-	return r.Total
+func (r *Receipt) GetTotal() string {
+	switch r.CurrencyPrecision {
+	case Digit3:
+		return currency3ToString(r.Total)
+	default:
+		return currency2ToString(r.Total)
+	}
 }
 
-func (r *Receipt) GetVAT() int {
-	return r.VAT
+func (r *Receipt) GetVAT() string {
+	switch r.CurrencyPrecision {
+	case Digit3:
+		return currency3ToString(r.VAT)
+	default:
+		return currency2ToString(r.VAT)
+	}
+}
+
+func currency2ToString(d int) string {
+	switch {
+	case d < 10:
+		return fmt.Sprintf("0.0%d", d)
+	case d >= 10 && d < 100:
+		return fmt.Sprintf("0.%d", d)
+	default:
+		ds := strconv.Itoa(d)
+		return fmt.Sprintf("%s.%s", ds[0:len(ds)-2], ds[len(ds)-2:])
+	}
+}
+
+func currency3ToString(d int) string {
+	switch {
+	case d < 10:
+		return fmt.Sprintf("0.00%d", d)
+	case d >= 10 && d < 100:
+		return fmt.Sprintf("0.0%d", d)
+	case d >= 100 && d < 1000:
+		return fmt.Sprintf("0.%d", d)
+	default:
+		ds := strconv.Itoa(d)
+		return fmt.Sprintf("%s.%s", ds[0:len(ds)-3], ds[len(ds)-3:])
+	}
 }
 
 type ReceiptKey struct {
