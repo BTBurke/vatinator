@@ -16,7 +16,7 @@ import (
 )
 
 func TestCreateStamp(t *testing.T) {
-	snap, err := snapshot.New(snapshot.Diffable(false))
+	snap, err := snapshot.New(snapshot.Diffable(false), snapshot.SnapExtension(".png"))
 	require.NoError(t, err)
 
 	var f bytes.Buffer
@@ -30,7 +30,7 @@ func TestCreateStamp(t *testing.T) {
 }
 
 func TestHeader(t *testing.T) {
-	snap, err := snapshot.New(snapshot.Diffable(false))
+	snap, err := snapshot.New(snapshot.Diffable(false), snapshot.SnapExtension(".png"))
 	require.NoError(t, err)
 
 	var f bytes.Buffer
@@ -45,7 +45,7 @@ func TestHeader(t *testing.T) {
 }
 
 func TestComposite(t *testing.T) {
-	snap, err := snapshot.New(snapshot.Diffable(false))
+	snap, err := snapshot.New(snapshot.Diffable(false), snapshot.SnapExtension(".png"))
 	require.NoError(t, err)
 
 	f, err := os.Open("../test_receipts/PXL_20201002_163234312.jpg")
@@ -66,6 +66,9 @@ func TestComposite(t *testing.T) {
 
 // output should be 100x100 png with a 10pixel red border around blue center
 func TestCrop(t *testing.T) {
+	snap, err := snapshot.New(snapshot.Diffable(false), snapshot.SnapExtension(".png"))
+	require.NoError(t, err)
+
 	img := image.NewRGBA(image.Rect(0, 0, 120, 120))
 	draw.Draw(img, img.Bounds(), &image.Uniform{color.RGBA{255, 0, 0, 255}}, image.Point{0, 0}, draw.Src)
 	draw.Draw(img, image.Rect(20, 20, 100, 100), &image.Uniform{color.RGBA{0, 0, 255, 255}}, image.Point{0, 0}, draw.Src)
@@ -78,11 +81,11 @@ func TestCrop(t *testing.T) {
 	b, err := imgCropped.AsPNG()
 	require.NoError(t, err)
 
-	snapshot.Assert(t, b)
+	snap.Assert(t, b)
 }
 
 func TestRotateCW(t *testing.T) {
-	snap, err := snapshot.New(snapshot.Diffable(false))
+	snap, err := snapshot.New(snapshot.Diffable(false), snapshot.SnapExtension(".png"))
 	require.NoError(t, err)
 
 	img := createStamp([]string{"test 1", "test 2", "fucking jelly 3"})
@@ -100,7 +103,7 @@ func TestRotateCW(t *testing.T) {
 }
 
 func TestRotateCCW(t *testing.T) {
-	snap, err := snapshot.New(snapshot.Diffable(false))
+	snap, err := snapshot.New(snapshot.Diffable(false), snapshot.SnapExtension(".png"))
 	require.NoError(t, err)
 
 	img := createStamp([]string{"test 1", "test 2", "fucking jelly 3"})
