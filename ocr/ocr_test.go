@@ -1,4 +1,4 @@
-package vat
+package ocr
 
 import (
 	"encoding/json"
@@ -11,7 +11,10 @@ import (
 
 // TODO: make this more robust beyond just smoke test
 func TestProcess(t *testing.T) {
-	fname := "./test_receipts/PXL_20201002_163306793.jpg"
+	snap, err := snapshot.New(snapshot.SnapExtension(".json"))
+	require.NoError(t, err)
+
+	fname := "../test_receipts/PXL_20201002_163306793.jpg"
 	f, err := os.Open(fname)
 	require.NoError(t, err)
 
@@ -19,5 +22,5 @@ func TestProcess(t *testing.T) {
 	require.NoError(t, err)
 
 	resB, err := json.Marshal(res)
-	snapshot.Assert(t, resB)
+	snap.Assert(t, resB)
 }

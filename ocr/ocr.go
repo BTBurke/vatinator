@@ -1,10 +1,9 @@
-package vat
+package ocr
 
 import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"math"
 	"regexp"
 	"sort"
@@ -71,7 +70,7 @@ func ProcessImage(imageSource io.Reader) (*Result, error) {
 	}
 	ctx := context.Background()
 
-	c, err := vision.NewImageAnnotatorClient(ctx, option.WithCredentialsFile("./vatinator-f91ccb107c2c.json"))
+	c, err := vision.NewImageAnnotatorClient(ctx, option.WithCredentialsFile("../vatinator-f91ccb107c2c.json"))
 	if err != nil {
 		return nil, fmt.Errorf("error creating vision client: %v", err)
 	}
@@ -236,7 +235,6 @@ func extractTaxTotal(in []int) (tax int, total int, err error) {
 	for _, i := range in {
 		total = i
 		expectedTax := total - int(float64(total)/1.20)
-		log.Printf("Total: %d, Expected: %d\n", total, expectedTax)
 		for _, j := range in {
 			if j >= expectedTax-1 && j <= expectedTax+1 {
 				tax = j

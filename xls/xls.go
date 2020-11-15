@@ -1,4 +1,4 @@
-package vat
+package xls
 
 import (
 	"errors"
