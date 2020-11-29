@@ -30,5 +30,4 @@ func TestImageStorage(t *testing.T) {
 	recvImage, err := imageService.Get("test", "test")
 	assert.NoError(t, err)
 	assert.Equal(t, testImage, recvImage)
-
 }

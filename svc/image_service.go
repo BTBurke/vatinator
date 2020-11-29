@@ -30,7 +30,6 @@ func upsertImage(txn *badger.Txn, accountID string, receiptID string, i img.Imag
 }
 
 func (i i) Get(accountID string, receiptID string) (img.Image, error) {
-
 	var image img.Image
 	if err := i.db.View(func(txn *badger.Txn) error {
 		var err error
