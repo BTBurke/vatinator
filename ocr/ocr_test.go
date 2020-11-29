@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/BTBurke/snapshot"
+	"github.com/BTBurke/vatinator/img"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,10 +19,13 @@ func TestProcess(t *testing.T) {
 	fname := "../test_receipts/PXL_20201002_163306793.jpg"
 	f, err := os.Open(fname)
 	require.NoError(t, err)
+	image, err := img.NewImageFromReader(f)
+	require.NoError(t, err)
 
-	res, err := ProcessImage(f)
+	res, err := ProcessImage(image)
 	require.NoError(t, err)
 
 	resB, err := json.Marshal(res)
+	assert.NoError(t, err)
 	snap.Assert(t, resB)
 }

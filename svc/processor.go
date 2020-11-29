@@ -1,14 +1,10 @@
 package svc
 
 import (
-	"bytes"
-	"image"
-	"image/png"
-	"io"
-	"io/ioutil"
 	"log"
 
-	vat "github.com/BTBurke/vatinator"
+	"github.com/BTBurke/vatinator/img"
+	"github.com/BTBurke/vatinator/ocr"
 	"github.com/dgraph-io/badger/v2"
 	"github.com/pkg/errors"
 	"github.com/rs/xid"
@@ -17,7 +13,7 @@ import (
 var cache map[string]Processor
 
 type Processor interface {
-	Add(name string, r io.Reader) error
+	Add(name string, image img.Image) error
 	Wait() error
 }
 
@@ -43,45 +39,26 @@ type singleProcessor struct {
 	db        *badger.DB
 }
 
-func (s *singleProcessor) Add(name string, r io.Reader) error {
-	return process(s.db, s.accountID, s.batchID, name, r)
+func (s *singleProcessor) Add(name string, image img.Image) error {
+	return process(s.db, s.accountID, s.batchID, name, image)
 }
 
-func process(db *badger.DB, accountID string, batchID string, name string, r io.Reader) error {
-	i, err := ioutil.ReadAll(r)
-	if err != nil {
-		return errors.Wrapf(err, "failed to read: %s", name)
-	}
+func process(db *badger.DB, accountID string, batchID string, name string, image img.Image) error {
 
 	//TODO: evaluate whether exif rotation is desired and what format to save
-	rotatedImage, err := vat.RotateByExif(bytes.NewReader(i))
+	rotatedImage, err := img.RotateByExif(image)
 	if err != nil {
 		return errors.Wrapf(err, "failed to rotate: %s", name)
 	}
-	var b bytes.Buffer
-	if err := png.Encode(&b, rotatedImage); err != nil {
-		return errors.Wrapf(err, "failed to encode %s", name)
-	}
 
-	// process with google cloud vision
-	visionReader := bytes.NewReader(b.Bytes())
-
-	result, err := vat.ProcessImage(visionReader)
+	result, err := ocr.ProcessImage(rotatedImage)
 	if err != nil {
 		return errors.Wrapf(err, "failed to vision process %s", name)
 	}
 
-	// decode and crop image based on OCRed positions
-	img, _, err := image.Decode(bytes.NewReader(i))
+	croppedImage, err := img.CropImage(rotatedImage, int(result.Crop.Top), int(result.Crop.Left), int(result.Crop.Bottom), int(result.Crop.Right))
 	if err != nil {
-		return errors.Wrapf(err, "failed to decode %s", name)
-	}
-	croppedImage := vat.CropImage(img, int(result.Crop.Top), int(result.Crop.Left), int(result.Crop.Bottom), int(result.Crop.Right))
-
-	// store image and results
-	var buf bytes.Buffer
-	if err := png.Encode(&buf, croppedImage); err != nil {
-		return errors.Wrapf(err, "failed to encode %s", name)
+		return errors.Wrap(err, "failed to crop image")
 	}
 
 	receipt := &Receipt{
@@ -100,7 +77,7 @@ func process(db *badger.DB, accountID string, batchID string, name string, r io.
 		if err := upsertReceipt(txn, accountID, receipt); err != nil {
 			return err
 		}
-		if err := upsertImage(txn, accountID, receipt.ID, buf.Bytes()); err != nil {
+		if err := upsertImage(txn, accountID, receipt.ID, croppedImage); err != nil {
 			return err
 		}
 		return nil

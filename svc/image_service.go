@@ -2,60 +2,59 @@ package svc
 
 import (
 	"github.com/BTBurke/vatinator/db"
+	"github.com/BTBurke/vatinator/img"
 	"github.com/dgraph-io/badger/v2"
 )
 
 type ImageService interface {
-	Upsert(accountID string, receiptID string, image []byte) error
-	Get(accountID string, receiptID string) ([]byte, error)
+	Upsert(accountID string, receiptID string, i img.Image) error
+	Get(accountID string, receiptID string) (img.Image, error)
 }
 
 type i struct {
 	db *badger.DB
 }
 
-func (i i) Upsert(accountID string, receiptID string, image []byte) error {
+func (i i) Upsert(accountID string, receiptID string, image img.Image) error {
 	return i.db.Update(func(txn *badger.Txn) error {
 		return upsertImage(txn, accountID, receiptID, image)
 	})
 }
 
-func upsertImage(txn *badger.Txn, accountID string, receiptID string, image []byte) error {
+func upsertImage(txn *badger.Txn, accountID string, receiptID string, i img.Image) error {
 	key := &ImageKey{
 		AccountID: accountID,
 		ReceiptID: receiptID,
 	}
-	img := Image(image)
-	return db.Set(txn, key, &img)
+	return db.Set(txn, key, &i)
 }
 
-func (i i) Get(accountID string, receiptID string) ([]byte, error) {
+func (i i) Get(accountID string, receiptID string) (img.Image, error) {
 
-	var out []byte
+	var image img.Image
 	if err := i.db.View(func(txn *badger.Txn) error {
-		img, err := getImage(txn, accountID, receiptID)
+		var err error
+		image, err = getImage(txn, accountID, receiptID)
 		if err != nil {
 			return err
 		}
-		copy(out, img)
 		return nil
 	}); err != nil {
-		return nil, err
+		return image, err
 	}
-
-	return out, nil
+	return image, nil
 }
 
-func getImage(txn *badger.Txn, accountID string, receiptID string) ([]byte, error) {
+func getImage(txn *badger.Txn, accountID string, receiptID string) (img.Image, error) {
 	key := &ImageKey{
 		AccountID: accountID,
 		ReceiptID: receiptID,
 	}
-	img := Image{}
-	if err := db.Get(txn, key, &img); err != nil {
-		return nil, err
+	image := img.Image{}
+	if err := db.Get(txn, key, &image); err != nil {
+		return image, err
 	}
-	return []byte(img), nil
+	return image, nil
 }
 
 func NewImageService(db *badger.DB) ImageService {

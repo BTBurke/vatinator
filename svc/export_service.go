@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	vat "github.com/BTBurke/vatinator"
+	"github.com/BTBurke/vatinator/pdf"
 	"github.com/dgraph-io/badger/v2"
 )
 
@@ -39,7 +39,7 @@ func create(txn *badger.Txn, accountID string, batchID string, options *ExportOp
 	// TODO: sort receipts, create temp dir, populate with export, zip, store
 	packets := len(receipts)/17 + 1
 	for packet := 0; packet < packets; packet++ {
-		pdf := vat.NewPDF(fmt.Sprintf("test_%d.pdf", packet))
+		p := pdf.NewPDF(fmt.Sprintf("test_%d.pdf", packet))
 		for i := 0; i < 17; i++ {
 			current := packet*17 + i
 			if current >= len(receipts) {
@@ -51,11 +51,11 @@ func create(txn *badger.Txn, accountID string, batchID string, options *ExportOp
 			if err != nil {
 				log.Fatalf("failed to get image: %v", err)
 			}
-			if err := pdf.WriteReceipt(img); err != nil {
+			if err := p.WriteReceipt(img); err != nil {
 				log.Fatalf("failed to write receipt to pdf: %v", err)
 			}
 		}
-		if err := pdf.Save(); err != nil {
+		if err := p.Save(); err != nil {
 			log.Fatalf("failed to save pdf: %v", err)
 		}
 	}

@@ -2,31 +2,9 @@ package svc
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/BTBurke/vatinator/db"
 )
-
-var DefaultImageDuration time.Duration = 24 * time.Hour * 95
-
-type Image []byte
-
-func (i *Image) TTL() time.Duration {
-	return DefaultImageDuration
-}
-
-func (i *Image) Type() byte {
-	return db.Image
-}
-
-func (i *Image) MarshalBinary() ([]byte, error) {
-	return []byte(*i), nil
-}
-
-func (i *Image) UnmarshalBinary(data []byte) error {
-	copy(*i, data)
-	return nil
-}
 
 type ImageKey struct {
 	AccountID string
@@ -55,4 +33,3 @@ func (k *ImageKey) UnmarshalBinary(data []byte) error {
 }
 
 var _ db.Key = &ImageKey{}
-var _ db.Entity = &Image{}

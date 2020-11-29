@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	vat "github.com/BTBurke/vatinator"
 	"github.com/BTBurke/vatinator/db"
+	"github.com/BTBurke/vatinator/xls"
 	"github.com/shamaton/msgpack"
 )
 
@@ -148,4 +148,4 @@ func (rk *ReceiptKey) UnmarshalBinary(data []byte) error {
 
 var _ db.Entity = &Receipt{}
 var _ db.Key = &ReceiptKey{}
-var _ vat.VATLine = &Receipt{}
+var _ xls.VATLine = &Receipt{}

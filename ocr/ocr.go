@@ -3,7 +3,6 @@ package ocr
 import (
 	"context"
 	"fmt"
-	"io"
 	"math"
 	"regexp"
 	"sort"
@@ -11,6 +10,7 @@ import (
 	"strings"
 
 	vision "cloud.google.com/go/vision/apiv1"
+	"github.com/BTBurke/vatinator/img"
 	"google.golang.org/api/option"
 	pb "google.golang.org/genproto/googleapis/cloud/vision/v1"
 )
@@ -63,8 +63,13 @@ type Crop struct {
 
 // ProcessImage uses a pre-trained ML model to extract text from the receipt image, then
 // a series of regular expressions and text manipulation to find the VAT data
-func ProcessImage(imageSource io.Reader) (*Result, error) {
-	img, err := vision.NewImageFromReader(imageSource)
+func ProcessImage(image img.Image) (*Result, error) {
+	imgReader, err := image.NewReader()
+	if err != nil {
+		return nil, err
+	}
+
+	i, err := vision.NewImageFromReader(imgReader)
 	if err != nil {
 		return nil, fmt.Errorf("error reading image: %v", err)
 	}
@@ -75,7 +80,7 @@ func ProcessImage(imageSource io.Reader) (*Result, error) {
 		return nil, fmt.Errorf("error creating vision client: %v", err)
 	}
 
-	res, err := c.DetectTexts(ctx, img, &pb.ImageContext{LanguageHints: []string{"ET"}}, 30)
+	res, err := c.DetectTexts(ctx, i, &pb.ImageContext{LanguageHints: []string{"ET"}}, 1000)
 	if len(res) == 0 || err != nil {
 		return nil, fmt.Errorf("error detecting text: %v", err)
 	}

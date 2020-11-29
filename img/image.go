@@ -9,6 +9,9 @@ import (
 	"image/png"
 	"io"
 	"io/ioutil"
+	"time"
+
+	"github.com/BTBurke/vatinator/db"
 )
 
 type Image struct {
@@ -106,4 +109,30 @@ func (i Image) At(x, y int) color.Color {
 	return i.image.At(x, y)
 }
 
+// Implements db.Entity to marshal/unmarshal itself from embedded db
+
+var DefaultImageDuration time.Duration = 24 * time.Hour * 95
+
+func (i *Image) TTL() time.Duration {
+	return DefaultImageDuration
+}
+
+func (i *Image) Type() byte {
+	return db.Image
+}
+
+func (i *Image) MarshalBinary() ([]byte, error) {
+	return i.AsPNG()
+}
+
+func (i *Image) UnmarshalBinary(data []byte) error {
+	img, err := NewImageFromBytes(data)
+	if err != nil {
+		return err
+	}
+	*i = img
+	return nil
+}
+
 var _ image.Image = Image{}
+var _ db.Entity = &Image{}
