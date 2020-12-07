@@ -16,7 +16,7 @@ func CropImage(orig Image, top, left, bottom, right int) (Image, error) {
 	bottom = min(orig.Bounds().Max.Y, bottom+CropPadding)
 
 	out := image.NewRGBA(image.Rect(0, 0, (right - left), (bottom - top)))
-	draw.Draw(out, out.Bounds(), orig, image.Point{top, left}, draw.Src)
+	draw.Draw(out, out.Bounds(), orig, image.Point{left, top}, draw.Src)
 	return NewImageFromImage(out)
 }
 

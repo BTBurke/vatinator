@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/BTBurke/vatinator/db"
-	"github.com/vmihailenco/msgpack/v5"
+	"github.com/shamaton/msgpack"
 )
 
 type Export struct {
@@ -22,11 +22,11 @@ func (e *Export) Type() byte {
 }
 
 func (e *Export) MarshalBinary() ([]byte, error) {
-	return msgpack.Marshal(e)
+	return msgpack.Encode(e)
 }
 
 func (e *Export) UnmarshalBinary(data []byte) error {
-	return msgpack.Unmarshal(data, e)
+	return msgpack.Decode(data, e)
 }
 
 type ExportKey struct {
@@ -54,14 +54,6 @@ func (e *ExportKey) UnmarshalBinary(data []byte) error {
 
 	return nil
 }
-
-type ExportOptions struct {
-	IncludeImages  bool
-	ConvertXLS2PDF bool
-	IgnoreErrors   bool
-}
-
-var DefaultExportOptions = &ExportOptions{}
 
 var _ db.Entity = &Export{}
 var _ db.Key = &ExportKey{}

@@ -218,6 +218,8 @@ github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXf
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
 github.com/stretchr/testify v1.6.1 h1:hDPOHmpOpP40lSULcqw7IrRb/u7w6RpDC9399XyoNd0=
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
+github.com/tealeg/xlsx v1.0.5 h1:+f8oFmvY8Gw1iUXzPk+kz+4GpbDZPK1FhPiQRd+ypgE=
+github.com/tealeg/xlsx v1.0.5/go.mod h1:btRS8dz54TDnvKNosuAqxrM1QgN1udgk9O34bDCnORM=
 github.com/tealeg/xlsx/v3 v3.2.0 h1:gh2+mYGi48GOnc6HwGgIt1P1+xGagihpOHTkctVsUwo=
 github.com/tealeg/xlsx/v3 v3.2.0/go.mod h1:7f/AUBopI/mmALW47XgPOxEgi/pZ6/mgtVSqa6D48aA=
 github.com/tealeg/xlsx/v3 v3.2.1 h1:MHBsaOlWpNIMkrPLye6/vk8GMkf+rdM0LPVId8IZbPc=

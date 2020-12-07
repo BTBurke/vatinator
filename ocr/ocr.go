@@ -4,52 +4,49 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"regexp"
 	"sort"
-	"strconv"
 	"strings"
 
 	vision "cloud.google.com/go/vision/apiv1"
 	"github.com/BTBurke/vatinator/img"
+
 	"google.golang.org/api/option"
 	pb "google.golang.org/genproto/googleapis/cloud/vision/v1"
 )
 
-// global regexes initialized during init
-var currency *regexp.Regexp
-var kviitung *regexp.Regexp
-var arve *regexp.Regexp
-var tax *regexp.Regexp
-var d *regexp.Regexp
-var wellKnown map[string]string
-var vendor *regexp.Regexp
+// RulesVersion is a magic string that is recorded with each receipt to denote which version of the
+// extraction rules was used.  Reprocessing is the default when a receipt was processed under old rules.
+// Format for RulesVersion is YYYYMMDD.  It doesn't matter what it is, so a version can be added for multiple changes
+// on the same day (e.g., YYYYMMDD-v1).
+// TODO: shift to some build time hash that denotes if the rules have changed
+var RulesVersion string = "20201206"
 
 // lineDither is the number of pixels in the Y direction that two words should be considered to be on the same
 // line.  This is used to reconstruct multi-column receipt formats separated by large white space.
 const lineDither = int32(10)
 
-func init() {
-	currency = regexp.MustCompile(`[0-9]+\,[0-9]{2}`)
-	kviitung = regexp.MustCompile(`kviitung[^0-9]+([0-9]*\/?[0-9]*)`)
-	arve = regexp.MustCompile(`arve[^0-9]+([0-9]*)`)
-	tax = regexp.MustCompile(`EE\s?[0-9]{9}`)
-	d = regexp.MustCompile(`(01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31)\.?(01|02|03|04|05|06|07|08|09|10|11|12)\.?(2020|2021|20|21)`)
-	vendor = regexp.MustCompile(`[^/,]+\s(AS|TÜ|UÜ|OÜ|As|Tü|Uü|Oü|OU|Ou|TU|Tu|UU|Uu)`)
-}
+type CurrencyPrecision int
+
+const (
+	Currency2 CurrencyPrecision = iota + 2
+	Currency3
+)
 
 // Result
 type Result struct {
 	raw   []*pb.EntityAnnotation
-	lines []string
+	Lines []string
 	File  string
 	// date format dd/mm/yy or dd/mm/yyyy depending on how it is detected on the receipt
-	Date   string
-	Total  int
-	VAT    int
-	Vendor string
-	TaxID  string
-	ID     string
-	Crop   Crop
+	Date      string
+	Total     int
+	VAT       int
+	Precision CurrencyPrecision
+	Vendor    string
+	TaxID     string
+	ID        string
+	Crop      Crop
+	Errors    []string
 }
 
 // Crop returns the pixel location of the tightest crop that contains all
@@ -63,7 +60,7 @@ type Crop struct {
 
 // ProcessImage uses a pre-trained ML model to extract text from the receipt image, then
 // a series of regular expressions and text manipulation to find the VAT data
-func ProcessImage(image img.Image) (*Result, error) {
+func ProcessImage(image img.Image, credPath string) (*Result, error) {
 	imgReader, err := image.NewReader()
 	if err != nil {
 		return nil, err
@@ -75,7 +72,7 @@ func ProcessImage(image img.Image) (*Result, error) {
 	}
 	ctx := context.Background()
 
-	c, err := vision.NewImageAnnotatorClient(ctx, option.WithCredentialsFile("../vatinator-f91ccb107c2c.json"))
+	c, err := vision.NewImageAnnotatorClient(ctx, option.WithCredentialsFile(credPath))
 	if err != nil {
 		return nil, fmt.Errorf("error creating vision client: %v", err)
 	}
@@ -104,47 +101,35 @@ func ProcessImage(image img.Image) (*Result, error) {
 	}
 	lines = append(lines, extraLines...)
 
-	// finds all currency-like numbers (2 digits)
-	// TODO: implement 3-digit currencies
-	currencies := extractCurrency(lines)
-
-	// find the likely tax and total
-	tax, total, _ := extractTaxTotal(currencies)
+	rules := []Rule{
+		VendorRule(),
+		DateRule(),
+		IDRule(),
+		CurrencyRule(),
+	}
 
 	r := &Result{
-		Crop:   crop,
-		raw:    res,
-		lines:  lines,
-		VAT:    tax,
-		Total:  total,
-		Vendor: extractVendor(lines),
-		TaxID:  extractTaxID(lines),
-		Date:   extractDate(lines),
-		ID:     extractID(lines),
+		Crop:  crop,
+		Lines: lines,
+	}
+
+	for _, rule := range rules {
+		if err := rule.Find(r, lines); err != nil {
+			return nil, err
+		}
 	}
 
 	return r, nil
 
 }
 
-// extracts the vendor name from the receipt
-func extractVendor(lines []string) string {
-	for _, line := range lines {
-		c := vendor.FindAllStringSubmatch(line, -1)
-		if len(c) > 0 && len(c[0][0]) > 0 {
-			return c[0][0]
-		}
-	}
-	return ""
-}
-
 // determines the minimum bounding box for the text on the receipt
 func getCrop(raw []*pb.EntityAnnotation) Crop {
-	c := &Crop{
+	c := Crop{
 		Top:    math.MaxInt32,
 		Bottom: int32(0),
-		Left:   int32(0),
-		Right:  math.MaxInt32,
+		Right:  int32(0),
+		Left:   math.MaxInt32,
 	}
 
 	for _, e := range raw {
@@ -155,99 +140,15 @@ func getCrop(raw []*pb.EntityAnnotation) Crop {
 			if v.Y > c.Bottom {
 				c.Bottom = v.Y
 			}
-			if v.X < c.Right {
-				c.Right = v.X
-			}
-			if v.X > c.Left {
+			if v.X < c.Left {
 				c.Left = v.X
 			}
-		}
-	}
-	return *c
-}
-
-// extracts all numbers of the form dd+,dd and returns them as integers in unit values (x100)
-func extractCurrency(raw []string) []int {
-	out := make([]int, 0)
-	for _, line := range raw {
-		c := currency.FindAllString(line, -1)
-		for _, c1 := range c {
-			cUnit := strings.Replace(c1, ",", "", -1)
-			cAsInt, err := strconv.Atoi(cUnit)
-			if err != nil {
-				continue
-			}
-			out = append(out, cAsInt)
-		}
-	}
-	return out
-}
-
-// extracts the receipt id number, looking for either kviitung or arve
-func extractID(lines []string) string {
-	k := idFinder(kviitung, lines)
-	if k == "" {
-		return idFinder(arve, lines)
-	}
-	return k
-}
-
-// subroutine for executing a substring match for given regex
-func idFinder(r *regexp.Regexp, lines []string) string {
-	for _, line := range lines {
-		k := r.FindAllStringSubmatch(line, -1)
-		if len(k) > 0 && len(k[0]) == 2 {
-			if len(k[0][1]) > 0 {
-				return k[0][1]
+			if v.X > c.Right {
+				c.Right = v.X
 			}
 		}
 	}
-	return ""
-}
-
-// looks for the tax ID starting with EE and 9 digits
-func extractTaxID(raw []string) string {
-	for _, line := range raw {
-		id := tax.FindString(line)
-		if id != "" {
-			return id
-		}
-	}
-	return ""
-}
-
-// finds all dates of the form ddmmyy dd.mm.yy dd.mm.yyyy ddmmyyyy
-func extractDate(raw []string) string {
-	for _, line := range raw {
-		r := d.FindAllStringSubmatch(line, -1)
-		if len(r) > 0 && len(r[0]) == 4 {
-			return fmt.Sprintf("%s/%s/%s", r[0][1], r[0][2], r[0][3])
-		}
-	}
-	return ""
-}
-
-// math magic to determine tax and total by checking for 20% tax for every number on receipt
-// only works because the values are sorted and it starts looking at the number most likely to be total
-// TODO: doesn't handle the 9% or 10% tax brackets
-func extractTaxTotal(in []int) (tax int, total int, err error) {
-	sort.Ints(in)
-	for i := len(in)/2 - 1; i >= 0; i-- {
-		opp := len(in) - 1 - i
-		in[i], in[opp] = in[opp], in[i]
-	}
-
-	for _, i := range in {
-		total = i
-		expectedTax := total - int(float64(total)/1.20)
-		for _, j := range in {
-			if j >= expectedTax-1 && j <= expectedTax+1 {
-				tax = j
-				return
-			}
-		}
-	}
-	return 0, 0, fmt.Errorf("no valid tax math found")
+	return c
 }
 
 // joins successive lines to find small columns

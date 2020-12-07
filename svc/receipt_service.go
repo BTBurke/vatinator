@@ -83,19 +83,18 @@ func getReceiptsForBatch(txn *badger.Txn, key *BatchKey) ([]Receipt, error) {
 	opt := badger.IteratorOptions{
 		PrefetchValues: true,
 		PrefetchSize:   25,
-		Reverse:        true,
 		AllVersions:    false,
 	}
 	it := txn.NewIterator(opt)
 	defer it.Close()
 
 	prefix := iterateReceipt(account)
-	start := iterateReceiptEnd(account)
+	start := iterateReceipt(account)
 	var errs []error
 
 	var receipts []Receipt
 	for it.Seek(start); it.ValidForPrefix(prefix); it.Next() {
-		var r *Receipt
+		r := &Receipt{}
 		if err := db.FromItem(it.Item(), r); err != nil {
 			errs = append(errs, err)
 			continue

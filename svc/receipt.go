@@ -1,14 +1,13 @@
 package svc
 
 import (
+	"encoding/json"
 	"fmt"
-	"log"
 	"strconv"
 	"time"
 
 	"github.com/BTBurke/vatinator/db"
 	"github.com/BTBurke/vatinator/xls"
-	"github.com/shamaton/msgpack"
 )
 
 // keep receipts for 95 days
@@ -38,6 +37,11 @@ type Receipt struct {
 	Reviewed int64
 	// Precision of the currency, 2 or 3 digits
 	CurrencyPrecision Precision
+	Errors            []string
+	// RulesVersion indicates which version of the rules engine was used to process the receipt. It
+	// can be used to reprocess the receipt when upgrades to the rules engine are made.  See
+	// Processor for options to force recomputation.  Default is reprocessing when rules change.
+	RulesVersion string
 }
 
 func (r *Receipt) Type() byte {
@@ -49,12 +53,11 @@ func (r *Receipt) TTL() time.Duration {
 }
 
 func (r *Receipt) MarshalBinary() ([]byte, error) {
-	log.Printf("%+v", *r)
-	return msgpack.Encode(r)
+	return json.Marshal(r)
 }
 
 func (r *Receipt) UnmarshalBinary(data []byte) error {
-	return msgpack.Decode(data, r)
+	return json.Unmarshal(data, r)
 }
 
 func (r *Receipt) GetVendor() string {

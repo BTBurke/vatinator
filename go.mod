@@ -16,6 +16,7 @@ require (
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
 	github.com/shamaton/msgpack v1.1.1
 	github.com/stretchr/testify v1.6.1
+	github.com/tealeg/xlsx v1.0.5
 	github.com/tealeg/xlsx/v3 v3.2.1
 	github.com/vmihailenco/msgpack/v5 v5.0.0-beta.9
 	golang.org/x/image v0.0.0-20200927104501-e162460cd6b5

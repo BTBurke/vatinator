@@ -22,7 +22,7 @@ func TestProcess(t *testing.T) {
 	image, err := img.NewImageFromReader(f)
 	require.NoError(t, err)
 
-	res, err := ProcessImage(image)
+	res, err := ProcessImage(image, "../vatinator-f91ccb107c2c.json")
 	require.NoError(t, err)
 
 	resB, err := json.Marshal(res)

@@ -3,6 +3,7 @@ package xls
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/tealeg/xlsx/v3"
@@ -75,12 +76,12 @@ func WriteVATLine(f *xlsx.File, r VATLine, num int) error {
 	}
 	sh := f.Sheets[0]
 	ops := []cellOp{
-		setNumF(row, 0, num, sh),
+		setNumF(row, 0, num+1, sh),
 		setStringF(row, 1, r.GetVendor(), sh),
 		setStringF(row, 2, r.GetReceiptNumber(), sh),
 		setStringF(row, 3, r.GetDate(), sh),
-		setNumericF(row, 4, r.GetTotal(), sh),
-		setNumericF(row, 5, r.GetVAT(), sh),
+		setFloatF(row, 4, r.GetTotal(), sh),
+		setFloatF(row, 5, r.GetVAT(), sh),
 	}
 
 	var errs []string
@@ -135,6 +136,19 @@ func setNum(row, col int, d int, sh *xlsx.Sheet) error {
 	return nil
 }
 
+func setFloat(row, col int, d string, sh *xlsx.Sheet) error {
+	c, err := sh.Cell(row, col)
+	if err != nil {
+		return err
+	}
+	f, err := strconv.ParseFloat(d, 64)
+	if err != nil {
+		return err
+	}
+	c.SetFloatWithFormat(f, "0.00")
+	return nil
+}
+
 //
 // closures to flatMap over all ops
 //
@@ -153,5 +167,11 @@ func setStringF(row, col int, s string, sh *xlsx.Sheet) func() error {
 func setNumericF(row, col int, d string, sh *xlsx.Sheet) func() error {
 	return func() error {
 		return setNumeric(row, col, d, sh)
+	}
+}
+
+func setFloatF(row, col int, d string, sh *xlsx.Sheet) func() error {
+	return func() error {
+		return setFloat(row, col, d, sh)
 	}
 }
