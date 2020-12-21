@@ -175,6 +175,16 @@ func main() {
 	monthString := months[monthIndex-1]
 
 	// Start parallel processor and wait until finished
+	outdir := filepath.Join(dirs[dirIndex], "out")
+	if err := os.RemoveAll(outdir); err != nil {
+		log.Fatal(err)
+	}
+	if _, err := os.Stat(outdir); os.IsNotExist(err) {
+		if err := os.Mkdir(outdir, 0755); err != nil {
+			log.Fatalf("Failed to create output directory: %s", err)
+		}
+	}
+
 	it := clt.NewIncrementalProgressBar(len(tasks), "Doing magic to extract data from receipts")
 	it.Start()
 
@@ -182,7 +192,13 @@ func main() {
 		ReprocessOnRulesChange: true,
 		NumProcs:               20,
 		Hooks: &svc.Hooks{
-			AfterEach: func(r *svc.Receipt) error { it.Increment(); return nil },
+			AfterEach: func(r *svc.Receipt) error {
+				it.Increment()
+				if err := svc.WriteErrors(filepath.Join(outdir, "errors.txt"))(r); err != nil {
+					return err
+				}
+				return nil
+			},
 		},
 		KeyPath: ".cfg/key.json",
 	})
@@ -214,7 +230,7 @@ func main() {
 		Stamp:        []string{cfg.FullName, cfg.Embassy, cfg.Address},
 		Bank:         cfg.Bank,
 		Template:     template,
-		OutputDir:    filepath.Join(dirs[dirIndex], "out"),
+		OutputDir:    outdir,
 	}); err != nil {
 		exp.Fail()
 		log.Fatal(err)
@@ -223,6 +239,7 @@ func main() {
 
 	i.Reset()
 	i.Say("Partial success! See output in %s and review the forms and errors.txt to fix my failings.", filepath.Join(dirs[dirIndex], "out"))
+	i.Pause()
 }
 
 func openDB() (*badger.DB, error) {

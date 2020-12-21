@@ -22,9 +22,17 @@ type ReceiptHook func(r *Receipt) error
 // WriteErrors writes errors to a file after each receipt is processed
 func WriteErrors(file string) ReceiptHook {
 	return func(r *Receipt) error {
-		f, err := os.OpenFile(file, os.O_APPEND|os.O_CREATE, 0644)
-		if err != nil {
-			return err
+		var f *os.File
+		if _, err := os.Stat(file); os.IsNotExist(err) {
+			f, err = os.Create(file)
+			if err != nil {
+				return err
+			}
+		} else {
+			f, err = os.OpenFile(file, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
+			if err != nil {
+				return err
+			}
 		}
 		defer f.Close()
 
