@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -15,6 +17,14 @@ import (
 	"github.com/BTBurke/vatinator/img"
 	"github.com/BTBurke/vatinator/svc"
 	"github.com/dgraph-io/badger/v2"
+	"golang.org/x/crypto/nacl/secretbox"
+	"golang.org/x/crypto/scrypt"
+)
+
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
 )
 
 type config struct {
@@ -33,6 +43,10 @@ type task struct {
 }
 
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "help" {
+		fmt.Printf("Version: %s\nCommit: %s\nDate: %s\n", version, commit, date)
+		os.Exit(0)
+	}
 
 	if _, err := os.Stat(".cfg/key.json"); os.IsNotExist(err) {
 		if err := decryptKeyFile(); err != nil {
@@ -222,4 +236,128 @@ func openDB() (*badger.DB, error) {
 		return nil, err
 	}
 	return db, nil
+}
+
+func setup(cfg *config) error {
+
+	i := clt.NewInteractiveSession()
+
+	i.Say("No configuration exists. Let's set this up.\n")
+
+	cfg.FirstName = i.Ask("Enter your first name", clt.Required())
+	i.Reset()
+
+	cfg.LastName = i.Ask("\nEnter your last name", clt.Required())
+	i.Reset()
+
+	defName := fmt.Sprintf("%s %s", cfg.FirstName, cfg.LastName)
+	i.Say("Your full name will appear as " + defName + ". If this is not ok, enter how you want it to appear.  To accept this, just press enter.")
+	cfg.FullName = i.AskWithDefault("Enter full name", defName)
+	i.Reset()
+
+	cfg.DiplomaticID = i.AskWithHint("\nEnter your diplomatic ID", "Starts with B in upper right of dip ID", clt.Required())
+	i.Reset()
+
+	cfg.Embassy = i.AskWithDefault("\nEnter embassy", "US Embassy")
+	i.Reset()
+
+	cfg.Address = i.AskWithDefault("\nEnter embassy address", "Kentmanni 20")
+	i.Reset()
+
+	i.Say("Now let's set up your banking details.  First choose your bank then input your bank account number.  These numbers never leave your computer.")
+
+	banks := map[string]string{
+		"1": "SEB Bank",
+		"2": "Swedbank",
+		"3": "LHV Bank",
+		"4": "Luminor Bank",
+		"5": "Some other bank",
+	}
+	bankAddresses := map[string]string{
+		"1": "AS SEB Bank, EEUHEE2X, Tornimäe 2, 15010 Tallinn, Estonia,",
+		"2": "Swedbank AS, HABAEE2X, Liivalaia 8, 15040 Tallinn, Estonia,",
+		"3": "AS LHV Bank, LHVBEE22, Tartu mnt 2, 10145 Tallinn, Estonia,",
+		"4": "Luminor Bank AS, NDEAEE2X, Liivalaia 45, 10145 Tallinn, Estonia,",
+	}
+	bank := i.AskFromTable("Choose your bank", banks, "")
+	switch bank {
+	case "oth":
+		i.Reset()
+		i.Say("You need to enter the full banking details line.  It should look something like:\nSwedbank AS, HABAEE2X, Liivalaia 8, 15040 Tallinn, Estonia, <your account number>")
+		cfg.Bank = i.Ask("Enter bank details")
+	default:
+		i.Reset()
+		acct := i.Ask("Enter your account number", clt.Required())
+		cfg.Bank = fmt.Sprintf("%s %s", bankAddresses[bank], acct)
+	}
+	i.Reset()
+
+	i.Say("Your configuration:\n%s (%s), %s, %s\n%s", cfg.FullName, cfg.DiplomaticID, cfg.Embassy, cfg.Address, cfg.Bank)
+	ans := i.AskYesNo("Is this ok", "yes")
+	if clt.IsNo(ans) {
+		return setup(cfg)
+	}
+
+	data, err := json.Marshal(cfg)
+	if err != nil {
+		return err
+	}
+	if err := ioutil.WriteFile(".cfg/config.json", data, 0644); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func decryptKeyFile() error {
+	dataB64, err := bundled.Asset("assets/api.bin")
+	if err != nil {
+		return err
+	}
+	data, err := base64.StdEncoding.DecodeString(string(dataB64))
+	if err != nil {
+		return err
+	}
+
+	saltB64, err := bundled.Asset("assets/salt.bin")
+	if err != nil {
+		return err
+	}
+	salt, err := base64.StdEncoding.DecodeString(string(saltB64))
+	if err != nil {
+		return err
+	}
+
+	log.Printf("salt length:  %d", len(salt))
+
+	if _, err := os.Stat(".cfg"); os.IsNotExist(err) {
+		if err := os.Mkdir(".cfg", 0755); err != nil {
+			return err
+		}
+	}
+
+	i := clt.NewInteractiveSession()
+
+	passphrase := i.Say("The API key file has not been decrypted.").Ask("Enter passphrase")
+	passphrase = strings.Trim(passphrase, "\n")
+
+	dk, err := scrypt.Key([]byte(passphrase), salt, 1<<15, 8, 1, 32)
+	if err != nil {
+		return err
+	}
+	var secretKey [32]byte
+	copy(secretKey[:], dk)
+
+	var decryptNonce [24]byte
+	copy(decryptNonce[:], data[:24])
+	decrypted, ok := secretbox.Open(nil, data[24:], &decryptNonce, &secretKey)
+	if !ok {
+		return fmt.Errorf("passphrase might be wrong")
+	}
+
+	if err := ioutil.WriteFile(".cfg/key.json", decrypted, 0644); err != nil {
+		return err
+	}
+
+	return nil
 }
