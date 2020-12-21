@@ -4,8 +4,8 @@ go 1.15
 
 require (
 	cloud.google.com/go v0.72.0
-	github.com/BTBurke/clt v1.3.0
-	github.com/BTBurke/snapshot v1.7.0
+	github.com/BTBurke/clt v1.3.1
+	github.com/BTBurke/snapshot v1.7.1
 	github.com/dgraph-io/badger v1.6.2 // indirect
 	github.com/dgraph-io/badger/v2 v2.2007.2
 	github.com/frankban/quicktest v1.11.2 // indirect
@@ -25,6 +25,7 @@ require (
 	golang.org/x/image v0.0.0-20200927104501-e162460cd6b5
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b // indirect
 	golang.org/x/oauth2 v0.0.0-20201109201403-9fd604954f58 // indirect
+	golang.org/x/sys v0.0.0-20201221093633-bc327ba9c2f0 // indirect
 	golang.org/x/text v0.3.4 // indirect
 	google.golang.org/api v0.35.0
 	google.golang.org/appengine v1.6.7 // indirect

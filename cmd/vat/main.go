@@ -1,27 +1,26 @@
 package main
 
 import (
-	"encoding/base64"
-	"fmt"
+	"encoding/json"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
-	"github.com/BTBurke/clt"
-	"github.com/BTBurke/vatinator/bundled"
 	"github.com/BTBurke/vatinator/img"
 	"github.com/BTBurke/vatinator/svc"
 	"github.com/dgraph-io/badger/v2"
-	"golang.org/x/crypto/nacl/secretbox"
-	"golang.org/x/crypto/scrypt"
 )
 
-const help = `
-Usage:
-	vat <directory of photos>
-`
+type config struct {
+	FirstName    string
+	LastName     string
+	FullName     string
+	DiplomaticID string
+	Embassy      string
+	Address      string
+	Bank         string
+}
 
 func main() {
 
@@ -30,6 +29,23 @@ func main() {
 			log.Fatalf("Failed to decrypt key file: %s", err)
 		}
 	}
+
+	var s config
+	if _, err := os.Stat(".cfg/config.json"); os.IsNotExist(err) {
+		if err := setup(&s); err != nil {
+			log.Fatalf("Setup failed: %s", err)
+		}
+	} else {
+		data, err := ioutil.ReadFile(".cfg/config.json")
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err := json.Unmarshal(data, &s); err != nil {
+			log.Fatal(err)
+		}
+	}
+	log.Printf("config: %v", s)
+
 	log.Fatal("stopping")
 
 	wd, err := os.Getwd()
@@ -93,57 +109,4 @@ func main() {
 		log.Fatal(err)
 	}
 
-}
-
-func decryptKeyFile() error {
-	dataB64, err := bundled.Asset("assets/api.bin")
-	if err != nil {
-		return err
-	}
-	data, err := base64.StdEncoding.DecodeString(string(dataB64))
-	if err != nil {
-		return err
-	}
-
-	saltB64, err := bundled.Asset("assets/salt.bin")
-	if err != nil {
-		return err
-	}
-	salt, err := base64.StdEncoding.DecodeString(string(saltB64))
-	if err != nil {
-		return err
-	}
-
-	log.Printf("salt length:  %d", len(salt))
-
-	if _, err := os.Stat(".cfg"); os.IsNotExist(err) {
-		if err := os.Mkdir(".cfg", 0755); err != nil {
-			return err
-		}
-	}
-
-	i := clt.NewInteractiveSession()
-
-	passphrase := i.Say("The API key file has not been decrypted.").Ask("Enter passphrase")
-	passphrase = strings.Trim(passphrase, "\n")
-
-	dk, err := scrypt.Key([]byte(passphrase), salt, 1<<15, 8, 1, 32)
-	if err != nil {
-		return err
-	}
-	var secretKey [32]byte
-	copy(secretKey[:], dk)
-
-	var decryptNonce [24]byte
-	copy(decryptNonce[:], data[:24])
-	decrypted, ok := secretbox.Open(nil, data[24:], &decryptNonce, &secretKey)
-	if !ok {
-		return fmt.Errorf("passphrase might be wrong")
-	}
-
-	if err := ioutil.WriteFile(".cfg/key.json", decrypted, 0644); err != nil {
-		return err
-	}
-
-	return nil
 }
