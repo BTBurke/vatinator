@@ -2,7 +2,7 @@ package svc
 
 import (
 	"fmt"
-	"log"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -24,11 +24,17 @@ type ExportService interface {
 type ExportOptions struct {
 	FirstName      string
 	LastName       string
+	FullName       string
+	Bank           string
+	DiplomaticID   string
 	Month          string
+	MonthInt       int
 	Year           int
 	Stamp          []string
 	OutputDir      string
 	ConvertXLS2PDF bool
+	// template for the VAT form in XLS
+	Template []byte
 }
 
 func DefaultExportOptions() *ExportOptions {
@@ -60,6 +66,13 @@ func create(txn *badger.Txn, accountID string, batchID string, opts *ExportOptio
 	if opts == nil {
 		opts = DefaultExportOptions()
 	}
+
+	if _, err := os.Stat(opts.OutputDir); os.IsNotExist(err) {
+		if err := os.Mkdir(opts.OutputDir, 0755); err != nil {
+			return err
+		}
+	}
+
 	batchKey := &BatchKey{
 		AccountID: accountID,
 		BatchID:   batchID,
@@ -69,7 +82,6 @@ func create(txn *badger.Txn, accountID string, batchID string, opts *ExportOptio
 	if err != nil {
 		return err
 	}
-	log.Printf("Found %d receipts...", len(receipts))
 
 	sort.Slice(receipts, func(i, j int) bool {
 		return stringToDate(receipts[i].Date).UTC().Before(stringToDate(receipts[j].Date))
@@ -82,11 +94,26 @@ func create(txn *badger.Txn, accountID string, batchID string, opts *ExportOptio
 		p := pdf.NewPDF(filepath.Join(opts.OutputDir, fmt.Sprintf("USA-%s-VAT-%s%d-Invoices%d.pdf", opts.LastName, opts.Month, opts.Year, packet+1)))
 
 		xpath := filepath.Join(opts.OutputDir, fmt.Sprintf("USA-%s-VAT-%s%d-VAT%d.xlsx", opts.LastName, opts.Month, opts.Year, packet+1))
-		xlsfile, err := xls.NewFromTemplate(xpath, "./vat-template.xlsx")
+		xlsfile, err := xls.NewFromTemplate(xpath, opts.Template)
 		if err != nil {
 			return errors.Wrap(err, "failed to create new VAT file")
 		}
 
+		// write form header information
+		if err := xls.WriteName(opts.FullName, xlsfile); err != nil {
+			return err
+		}
+		if err := xls.WriteDipNumber(opts.DiplomaticID, xlsfile); err != nil {
+			return err
+		}
+		if err := xls.WriteSubmissionMonth(opts.MonthInt, opts.Year, xlsfile); err != nil {
+			return err
+		}
+		if err := xls.WriteBankInfo(opts.Bank, xlsfile); err != nil {
+			return err
+		}
+
+		// Write each VAT line
 		for i := 0; i < 17; i++ {
 			current := packet*17 + i
 			if current >= len(receipts) {

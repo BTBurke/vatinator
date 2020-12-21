@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/tealeg/xlsx/v3"
 )
@@ -47,9 +48,16 @@ func WriteBankInfo(info string, f *xlsx.File) error {
 // WriteSubmissionMonth
 func WriteSubmissionMonth(month int, year int, f *xlsx.File) error {
 	sh := f.Sheets[0]
-	if err := setString(16, 0, fmt.Sprintf("%d/01/%d", month, year), sh); err != nil {
+	if err := setDate(16, 0, month, year, sh); err != nil {
 		return fmt.Errorf("error writing submission month to spreadsheet: %s", err)
 	}
+	c, err := sh.Cell(16, 0)
+	if err != nil {
+		return err
+	}
+	c.SetStyle(&xlsx.Style{
+		Alignment: xlsx.Alignment{Horizontal: "right"},
+	})
 	return nil
 }
 
@@ -146,6 +154,16 @@ func setFloat(row, col int, d string, sh *xlsx.Sheet) error {
 		return err
 	}
 	c.SetFloatWithFormat(f, "0.00")
+	return nil
+}
+
+func setDate(row, col int, month int, year int, sh *xlsx.Sheet) error {
+	c, err := sh.Cell(row, col)
+	if err != nil {
+		return err
+	}
+	d := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
+	c.SetString(d.Format("Jan-06"))
 	return nil
 }
 

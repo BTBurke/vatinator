@@ -28,11 +28,12 @@ func init() {
 
 // NewSingleProcessor returns a synchronous image processor that will run OCR and save the receipt
 // results and the image to the database
-func NewSingleProcessor(db *badger.DB, accountID string, batchID string) Processor {
+func NewSingleProcessor(db *badger.DB, accountID string, batchID string, keyPath string) Processor {
 	return &singleProcessor{
 		accountID: accountID,
 		batchID:   batchID,
 		db:        db,
+		keyPath:   keyPath,
 	}
 }
 
@@ -40,10 +41,11 @@ type singleProcessor struct {
 	accountID string
 	batchID   string
 	db        *badger.DB
+	keyPath   string
 }
 
 func (s *singleProcessor) Add(name string, image img.Image) error {
-	return process(s.db, s.accountID, s.batchID, name, image)
+	return process(s.db, s.accountID, s.batchID, name, image, s.keyPath, nil)
 }
 func (s *singleProcessor) Wait() error {
 	// returns immediately - synchronous
@@ -58,6 +60,7 @@ type parallelProcessor struct {
 	numProcs  int
 	ch        chan parallelTask
 	reprocess bool
+	hooks     *Hooks
 }
 
 type parallelTask struct {
@@ -71,6 +74,10 @@ type ParallelOptions struct {
 	ReprocessOnRulesChange bool
 	// Number of images to process in parallel (default: 20)
 	NumProcs int
+	// Path to the Vision API key
+	KeyPath string
+	// Hooks to execute before/after processing the batch and receipts
+	Hooks *Hooks
 }
 
 func NewParallelProcessor(db *badger.DB, accountID string, batchID string, opts *ParallelOptions) Processor {
@@ -78,8 +85,14 @@ func NewParallelProcessor(db *badger.DB, accountID string, batchID string, opts 
 		opts = &ParallelOptions{
 			ReprocessOnRulesChange: true,
 			NumProcs:               20,
+			KeyPath:                ".cfg/key.json",
 		}
 	}
+
+	if opts.Hooks != nil && opts.Hooks.BeforeStart != nil {
+		opts.Hooks.BeforeStart()
+	}
+
 	ch := make(chan parallelTask, opts.NumProcs+5)
 
 	wg := &sync.WaitGroup{}
@@ -88,7 +101,7 @@ func NewParallelProcessor(db *badger.DB, accountID string, batchID string, opts 
 		go func(ch chan parallelTask, db *badger.DB, accountID string, batchID string) {
 			defer wg.Done()
 			for task := range ch {
-				if err := process(db, accountID, batchID, task.name, task.image); err != nil {
+				if err := process(db, accountID, batchID, task.name, task.image, opts.KeyPath, opts.Hooks); err != nil {
 					log.Printf("processing error: %s", err)
 				}
 			}
@@ -102,6 +115,7 @@ func NewParallelProcessor(db *badger.DB, accountID string, batchID string, opts 
 		ch:        ch,
 		reprocess: opts.ReprocessOnRulesChange,
 		wg:        wg,
+		hooks:     opts.Hooks,
 	}
 }
 
@@ -113,12 +127,18 @@ func (p *parallelProcessor) Add(name string, image img.Image) error {
 func (p *parallelProcessor) Wait() error {
 	close(p.ch)
 	p.wg.Wait()
+	if p.hooks != nil && p.hooks.AfterEnd != nil {
+		p.hooks.AfterEnd()
+	}
 	return nil
 }
 
-func process(db *badger.DB, accountID string, batchID string, name string, image img.Image) error {
-
-	result, err := ocr.ProcessImage(image, "./vatinator-f91ccb107c2c.json")
+// process image and save image and result to database
+func process(db *badger.DB, accountID string, batchID string, name string, image img.Image, keyPath string, hooks *Hooks) error {
+	if hooks != nil && hooks.BeforeEach != nil {
+		// TODO: figure out how to do before each
+	}
+	result, err := ocr.ProcessImage(image, keyPath)
 	if err != nil {
 		return errors.Wrapf(err, "failed to vision process %s", name)
 	}
@@ -136,6 +156,7 @@ func process(db *badger.DB, accountID string, batchID string, name string, image
 
 	receipt := &Receipt{
 		ID:                xid.New().String(),
+		Filename:          name,
 		Vendor:            result.Vendor,
 		TaxID:             result.TaxID,
 		ReceiptNumber:     result.ID,
@@ -159,6 +180,12 @@ func process(db *badger.DB, accountID string, batchID string, name string, image
 		return nil
 	}); err != nil {
 		return errors.Wrapf(err, "failed to persist receipt and image: %s", name)
+	}
+
+	if hooks != nil && hooks.AfterEach != nil {
+		if err := hooks.AfterEach(receipt); err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -23,11 +23,12 @@ const (
 )
 
 type Receipt struct {
-	ID     string
-	Vendor string
-	TaxID  string
-	Total  int
-	VAT    int
+	ID       string
+	Filename string
+	Vendor   string
+	TaxID    string
+	Total    int
+	VAT      int
 	// TODO: Switch to unix time at midnight UTC on day receipt was issued
 	Date          string
 	ReceiptNumber string
