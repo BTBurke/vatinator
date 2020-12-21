@@ -5,3 +5,4 @@ enc
 .cfg/
 passphrase
 bin/
+dist/
