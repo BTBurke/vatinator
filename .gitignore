@@ -1,2 +1,6 @@
 vat*.json
 node_modules/
+vat
+enc
+.cfg/
+passphrase
