@@ -57,6 +57,7 @@ github.com/BTBurke/clt v1.3.6 h1:hZuUY+sQ6F6l7/A70Hff9YbMvtZDAdGNMAoHq5oAoSc=
 github.com/BTBurke/clt v1.3.6/go.mod h1:jdOwMJeJPamS22CQoEzvut/WihKbAO4qizBzV4AiP3Q=
 github.com/BTBurke/clt v1.4.0 h1:G0tr6M/BGD8U5pSNZ/aaMEdm0dg90WWhCbpin9a1ZDc=
 github.com/BTBurke/clt v1.4.0/go.mod h1:jdOwMJeJPamS22CQoEzvut/WihKbAO4qizBzV4AiP3Q=
+github.com/BTBurke/clt v1.6.0/go.mod h1:jdOwMJeJPamS22CQoEzvut/WihKbAO4qizBzV4AiP3Q=
 github.com/BTBurke/snapshot v1.2.0/go.mod h1:PVGE/CPAxI1dBEt4tw9DnKEeQDtV7mNbo5JTb3XqbE0=
 github.com/BTBurke/snapshot v1.6.2 h1:2PsYD0QrClBodMh+0AdJwQJP++/sZ9QyyLEZFY2pgpg=
 github.com/BTBurke/snapshot v1.6.2/go.mod h1:cspdaSX9/xKGmBd/DxTjqA3ZvBrZ0xT0sAvLFZaYMvE=
