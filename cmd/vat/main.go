@@ -43,7 +43,7 @@ type task struct {
 }
 
 func main() {
-	if len(os.Args) > 1 && os.Args[1] == "help" {
+	if len(os.Args) > 1 && os.Args[1] == "version" {
 		fmt.Printf("Version: %s\nCommit: %s\nDate: %s\n", version, commit, date)
 		os.Exit(0)
 	}
@@ -248,7 +248,9 @@ func openDB() (*badger.DB, error) {
 		return nil, err
 	}
 
-	db, err := badger.Open(badger.DefaultOptions(tmpdir))
+	opts := badger.DefaultOptions(tmpdir)
+	opts.Logger = nilLogger{}
+	db, err := badger.Open(opts)
 	if err != nil {
 		return nil, err
 	}
@@ -378,3 +380,13 @@ func decryptKeyFile() error {
 
 	return nil
 }
+
+// gets rid of badger logging messages in terminal
+type nilLogger struct{}
+
+func (nilLogger) Errorf(s string, v ...interface{})   {}
+func (nilLogger) Warningf(s string, v ...interface{}) {}
+func (nilLogger) Infof(s string, v ...interface{})    {}
+func (nilLogger) Debugf(s string, v ...interface{})   {}
+
+var _ badger.Logger = nilLogger{}

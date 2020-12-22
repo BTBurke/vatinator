@@ -8,6 +8,7 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
   $(error This Make does not support .RECIPEPREFIX. Please use GNU Make 4.0 or later)
 endif
 .RECIPEPREFIX = >
+NEXTVERSION = $$(( $$(git tag -l | sort -r | head -n 1 | cut -d. -f1 | sed 's/v//') + 1 ))
 
 build:
 > mkdir -p bin
@@ -24,5 +25,8 @@ encrypt:
 > go build -o enc build/encrypt.go
 > ./enc vatinator-f91ccb107c2c.json
 > rm ./enc
+
+tag:
+>git tag -a v${NEXTVERSION}.0.0 -m "v${NEXTVERSION}.0.0"
 
 .PHONY: build test assets encrypt
