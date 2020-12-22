@@ -8,7 +8,7 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
   $(error This Make does not support .RECIPEPREFIX. Please use GNU Make 4.0 or later)
 endif
 .RECIPEPREFIX = >
-NEXTVERSION = $$(( $$(git tag -l | sort -r | head -n 1 | cut -d. -f1 | sed 's/v//') + 1 ))
+NEXTVERSION = $$(( $$(git tag --sort=-v:refname | head -n 1 | cut -d. -f1 | sed 's/v//') + 1 ))
 
 build:
 > mkdir -p bin
