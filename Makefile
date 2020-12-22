@@ -27,6 +27,9 @@ encrypt:
 > rm ./enc
 
 tag:
->git tag -a v${NEXTVERSION}.0.0 -m "v${NEXTVERSION}.0.0"
+> git tag -a v${NEXTVERSION}.0.0 -m "v${NEXTVERSION}.0.0"
 
-.PHONY: build test assets encrypt
+test-release:
+> goreleaser build --snapshot --rm-dist
+
+.PHONY: build test assets encrypt tag test-release

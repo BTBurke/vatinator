@@ -347,8 +347,6 @@ func decryptKeyFile() error {
 		return err
 	}
 
-	log.Printf("salt length:  %d", len(salt))
-
 	if _, err := os.Stat(".cfg"); os.IsNotExist(err) {
 		if err := os.Mkdir(".cfg", 0755); err != nil {
 			return err
@@ -359,6 +357,9 @@ func decryptKeyFile() error {
 
 	passphrase := i.Say("The API key file has not been decrypted.").Ask("Enter passphrase")
 	passphrase = strings.Trim(passphrase, "\n\r ")
+
+	p := clt.NewProgressSpinner("Decrypting key")
+	p.Start()
 
 	dk, err := scrypt.Key([]byte(passphrase), salt, 1<<15, 8, 1, 32)
 	if err != nil {
@@ -371,12 +372,15 @@ func decryptKeyFile() error {
 	copy(decryptNonce[:], data[:24])
 	decrypted, ok := secretbox.Open(nil, data[24:], &decryptNonce, &secretKey)
 	if !ok {
+		p.Fail()
 		return fmt.Errorf("passphrase might be wrong")
 	}
 
 	if err := ioutil.WriteFile(".cfg/key.json", decrypted, 0644); err != nil {
+		p.Fail()
 		return err
 	}
+	p.Success()
 
 	return nil
 }
