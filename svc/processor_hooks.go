@@ -29,7 +29,7 @@ func WriteErrors(file string) ReceiptHook {
 				return err
 			}
 		} else {
-			f, err = os.OpenFile(file, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
+			f, err = os.OpenFile(file, os.O_CREATE|os.O_APPEND|os.O_WRONLY, os.ModeAppend)
 			if err != nil {
 				return err
 			}

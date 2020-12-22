@@ -112,9 +112,6 @@ func setString(row, col int, s string, sh *xlsx.Sheet) error {
 	}
 	if len(s) == 0 {
 		s = "???"
-		style := xlsx.NewStyle()
-		style.Fill.FgColor = "FF0000FF"
-		c.SetStyle(style)
 	}
 	c.SetString(s)
 	return nil
@@ -127,11 +124,6 @@ func setNumeric(row, col int, d string, sh *xlsx.Sheet) error {
 		return err
 	}
 	c.SetNumeric(d)
-	if d == "???" {
-		style := xlsx.NewStyle()
-		style.Fill.FgColor = "FF0000FF"
-		c.SetStyle(style)
-	}
 	return nil
 }
 
