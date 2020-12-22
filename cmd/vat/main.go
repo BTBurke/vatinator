@@ -358,7 +358,7 @@ func decryptKeyFile() error {
 	i := clt.NewInteractiveSession()
 
 	passphrase := i.Say("The API key file has not been decrypted.").Ask("Enter passphrase")
-	passphrase = strings.Trim(passphrase, "\n")
+	passphrase = strings.Trim(passphrase, "\n\r ")
 
 	dk, err := scrypt.Key([]byte(passphrase), salt, 1<<15, 8, 1, 32)
 	if err != nil {
