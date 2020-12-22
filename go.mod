@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	cloud.google.com/go v0.72.0
-	github.com/BTBurke/clt v1.3.5
+	github.com/BTBurke/clt v1.3.6
 	github.com/BTBurke/snapshot v1.7.1
 	github.com/dgraph-io/badger v1.6.2 // indirect
 	github.com/dgraph-io/badger/v2 v2.2007.2
