@@ -45,9 +45,10 @@ func (p *PDF) WriteReceipt(image img.Image) error {
 	if !p.p.Ok() {
 		return fmt.Errorf("error while registering image: %s", p.p.Error())
 	}
+	itype.SetDpi(96.0)
 	w, h := itype.Extent()
 
-	p.p.ImageOptions(fmt.Sprintf("k%d", p.numReceipts+1), 72.0, 10.0, w, h, true, opt, 0, "")
+	p.p.ImageOptions(fmt.Sprintf("k%d", p.numReceipts+1), 72.0, 72.0, w, h, true, opt, 0, "")
 	if !p.p.Ok() {
 		return fmt.Errorf("Error while creating receipt pdf file: %s", p.p.Error())
 	}

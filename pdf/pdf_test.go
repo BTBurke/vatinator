@@ -14,7 +14,7 @@ import (
 )
 
 func TestPDF(t *testing.T) {
-	ign := `@@\s\-3541,2\s\+3541,2\s@@`
+	ign := `@@\s\-6012,2\s\+6012,2\s@@`
 	snap, err := snapshot.New(snapshot.IgnoreRegex(ign), snapshot.ContextLines(0))
 	require.NoError(t, err)
 

@@ -15,9 +15,9 @@ import (
 const HeaderHeight int = 20
 const HeaderText string = "Kviitung %d"
 
-// assumes 72 DPI, letter paper
-const ImageMaxHeight int = 648
-const ImageMaxWidth int = 468
+// assumes 96 DPI, letter paper
+const ImageMaxHeight int = 9 * 96
+const ImageMaxWidth int = 6.5 * 96
 
 var StampColor color.RGBA = color.RGBA{125, 3, 8, 125}
 
