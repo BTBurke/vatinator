@@ -188,13 +188,14 @@ func main() {
 	it := clt.NewIncrementalProgressBar(len(tasks), "Doing magic to extract data from receipts")
 	it.Start()
 
+	errorWriter := svc.WriteErrors(filepath.Join(outdir, "errors.txt"))
 	proc := svc.NewParallelProcessor(db, accountID, batchID, &svc.ParallelOptions{
 		ReprocessOnRulesChange: true,
 		NumProcs:               20,
 		Hooks: &svc.Hooks{
 			AfterEach: func(r *svc.Receipt) error {
 				it.Increment()
-				if err := svc.WriteErrors(filepath.Join(outdir, "errors.txt"))(r); err != nil {
+				if err := errorWriter(r); err != nil {
 					return err
 				}
 				return nil

@@ -3,6 +3,7 @@ package svc
 import (
 	"fmt"
 	"os"
+	"sync"
 )
 
 // Hooks allow arbitrary hooks to run before/after processing a batch or before/after each receipt
@@ -21,7 +22,11 @@ type ReceiptHook func(r *Receipt) error
 
 // WriteErrors writes errors to a file after each receipt is processed
 func WriteErrors(file string) ReceiptHook {
+	var mu sync.Mutex
 	return func(r *Receipt) error {
+		mu.Lock()
+		defer mu.Unlock()
+
 		var f *os.File
 		if _, err := os.Stat(file); os.IsNotExist(err) {
 			f, err = os.Create(file)
