@@ -11,8 +11,8 @@ var curr2 *regexp.Regexp
 var curr3 *regexp.Regexp
 
 func init() {
-	curr2 = regexp.MustCompile(`[0-9]+(\,|\.)[0-9]{2}`)
-	curr3 = regexp.MustCompile(`[0-9]+\,[0-9]{3}\s?$?`)
+	curr2 = regexp.MustCompile(`[0-9]+(\,|\.)\s?[0-9]{2}`)
+	curr3 = regexp.MustCompile(`[0-9]+\,\s?[0-9]{3}\s?$?`)
 }
 
 type currency struct{}
@@ -36,18 +36,16 @@ func CurrencyRule() Rule {
 
 // findTaxTotal returns the tax, total or 0,0 if not found
 func findTaxTotal(text []string) (int, int, CurrencyPrecision) {
-	precision := Currency3
 	currencies := extractCurrency3(text)
-	if len(currencies) == 0 {
-		currencies = extractCurrency2(text)
-		precision = Currency2
-	}
+	currencies = append(currencies, extractCurrency2(text)...)
+	precision := Currency2
+
 	tax, total := extractTaxTotal(currencies)
 
 	return tax, total, precision
 }
 
-// extracts all numbers of the form dd+,ddd and returns them as integers in unit values (x100)
+// extracts all numbers of the form dd+,ddd and returns them as integers in unit values (x100) to a 2-digit precision
 func extractCurrency3(raw []string) []int {
 	out := make([]int, 0)
 	for _, line := range raw {
@@ -56,7 +54,9 @@ func extractCurrency3(raw []string) []int {
 		for _, c1 := range c {
 			cUnit := strings.Replace(c1, ",", "", -1)
 			cUnit = strings.Replace(cUnit, ".", "", -1)
-			cAsInt, err := strconv.Atoi(cUnit)
+			cUnit = strings.Replace(cUnit, " ", "", -1)
+			// lop off last digit of 3-digit currencies
+			cAsInt, err := strconv.Atoi(cUnit[0 : len(cUnit)-2])
 			if err != nil {
 				continue
 			}
@@ -75,6 +75,7 @@ func extractCurrency2(raw []string) []int {
 		for _, c1 := range c {
 			cUnit := strings.Replace(c1, ",", "", -1)
 			cUnit = strings.Replace(cUnit, ".", "", -1)
+			cUnit = strings.Replace(cUnit, " ", "", -1)
 			cAsInt, err := strconv.Atoi(cUnit)
 			if err != nil {
 				continue
