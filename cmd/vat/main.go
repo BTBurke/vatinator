@@ -415,19 +415,28 @@ func checkAndUpdate() (bool, error) {
 		return false, update.NonFatalError{fmt.Errorf("failed to determine os")}
 	}
 
+	p1 := clt.NewLoadingMessage("Checking for updates...", clt.Dots, 150*time.Millisecond)
+	p1.Start()
 	u := update.NewUpdater(version, os)
 	if err := u.Check(); err != nil {
+		p1.Fail()
 		return false, err
 	}
+	p1.Success()
+
 	if u.Exists() {
 		i := clt.NewInteractiveSession()
 
 		shouldUpdate := i.Say("New version %s is available", u.NewVersion()).AskYesNo("Do you want to update", "yes")
 		switch {
 		case clt.IsYes(shouldUpdate):
+			p2 := clt.NewProgressSpinner("Downloading update")
+			p2.Start()
 			if err := u.Update(); err != nil {
+				p2.Fail()
 				return false, err
 			}
+			p2.Success()
 			return true, nil
 		default:
 			return false, nil
