@@ -29,7 +29,6 @@ type CurrencyPrecision int
 
 const (
 	Currency2 CurrencyPrecision = iota + 2
-	Currency3
 )
 
 // Result
@@ -38,15 +37,14 @@ type Result struct {
 	Lines []string
 	File  string
 	// date format dd/mm/yy or dd/mm/yyyy depending on how it is detected on the receipt
-	Date      string
-	Total     int
-	VAT       int
-	Precision CurrencyPrecision
-	Vendor    string
-	TaxID     string
-	ID        string
-	Crop      Crop
-	Errors    []string
+	Date   string
+	Total  int
+	VAT    int
+	Vendor string
+	TaxID  string
+	ID     string
+	Crop   Crop
+	Errors []string
 }
 
 // Crop returns the pixel location of the tightest crop that contains all
@@ -100,6 +98,13 @@ func ProcessImage(image img.Image, credPath string) (*Result, error) {
 		extraLines = append(extraLines, strings.ToLower(l))
 	}
 	lines = append(lines, extraLines...)
+
+	// looks for little tables with a header and value
+	extraLines2 := joinLittleTables(res)
+	for _, l := range extraLines2 {
+		extraLines2 = append(extraLines2, strings.ToLower(l))
+	}
+	lines = append(lines, extraLines2...)
 
 	rules := []Rule{
 		VendorRule(),
@@ -222,4 +227,65 @@ func recursivelyUnfuckColumn(curr string, y int32, agg []string, rest []colEntry
 	}
 	// otherwise, add this line to the output, and start on a new line
 	return recursivelyUnfuckColumn(rest[0].text, rest[0].y, append(agg, curr), rest[1:])
+}
+
+// looks for small tables with a header followed by a value like arve then value under
+type tableEntry struct {
+	text  string
+	x     int32
+	y     int32
+	width int32
+}
+
+type tableEntries []tableEntry
+
+func (t tableEntries) Len() int      { return len(t) }
+func (t tableEntries) Swap(i, j int) { t[i], t[j] = t[j], t[i] }
+
+// orders by spatial position, looking to see if two values substantially overlap
+// in the x direction, indicating they should be in a column then ordering by their spatial
+// position north to south
+func (t tableEntries) Less(i, j int) bool {
+	switch {
+	case t[i].x <= t[j].x-t[i].width/2:
+		return true
+	case t[i].x >= t[j].x+t[i].width/2:
+		return false
+	default:
+		return t[i].y <= t[j].y
+	}
+}
+
+func joinLittleTables(in []*pb.EntityAnnotation) []string {
+	if len(in) <= 1 {
+		return nil
+	}
+	var tables tableEntries
+	for _, entity := range in[1:] {
+		e := tableEntry{
+			text:  entity.Description,
+			x:     entity.BoundingPoly.Vertices[0].X,
+			y:     entity.BoundingPoly.Vertices[0].Y,
+			width: entity.BoundingPoly.Vertices[1].X - entity.BoundingPoly.Vertices[0].X,
+		}
+		tables = append(tables, e)
+	}
+	sort.Sort(tables)
+	var out []string
+	return recursivelyFindTables(tables[0].text, tables[0].x, tables[0].width, out, tables[1:])
+}
+
+// look for things that are in the same column that are in similar spatial position to represent little tables
+func recursivelyFindTables(curr string, x int32, w int32, agg []string, rest []tableEntry) []string {
+	if len(rest) == 0 {
+		return append(agg, curr)
+	}
+
+	// if it's in the same column, specified by +/- half the width of the current value, add it to the current line and keep going
+	if rest[0].x <= x+w/2 && rest[0].x <= x-w/2 {
+		return recursivelyFindTables(fmt.Sprintf("%s %s", curr, rest[0].text), rest[0].x, rest[0].width, agg, rest[1:])
+	}
+
+	// otherwise, add this line to output and start on a new line
+	return recursivelyFindTables(rest[0].text, rest[0].x, rest[0].width, append(agg, curr), rest[1:])
 }

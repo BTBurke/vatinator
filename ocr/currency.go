@@ -18,7 +18,7 @@ func init() {
 type currency struct{}
 
 func (currency) Find(r *Result, text []string) error {
-	tax, total, precision := findTaxTotal(text)
+	tax, total, _ := findTaxTotal(text)
 	if tax == 0 && total == 0 {
 		r.Errors = append(r.Errors, "no tax/total found")
 		return nil
@@ -26,7 +26,6 @@ func (currency) Find(r *Result, text []string) error {
 
 	r.Total = total
 	r.VAT = tax
-	r.Precision = precision
 	return nil
 }
 
