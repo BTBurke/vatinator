@@ -17,7 +17,7 @@ build:
 test:
 > go test ./...
 
-assets: encrypt
+assets:
 > go get -u github.com/go-bindata/go-bindata/...
 > go-bindata -pkg bundled -o bundled/assets.go assets/
 
