@@ -1,0 +1,245 @@
+---
+FieldType: Text
+FieldName: V&#228;lisesinduse nimi The name of the foreign representation
+FieldNameAlt: V&#228;lisesinduse nimi/ The name of the foreign representation
+FieldFlags: 12582912
+FieldJustification: Left
+Key: embassy
+---
+FieldType: Text
+FieldName: Taotleja nimi keda v&#228;lisesindus esindab The name of the applicant represented by the foreign representation
+FieldNameAlt: Taotleja nimi, keda v&#228;lisesindus esindab/ The name of the applicant represented by the foreign representation
+FieldFlags: 12582912
+FieldJustification: Left
+Key: name
+---
+FieldType: Text
+FieldName: Panga nimi ja pangakonto nr aktsiisi tagastamiseks Name and account no of the bank for the refund of the excise
+FieldNameAlt: Panga nimi ja pangakonto nr aktsiisi tagastamiseks/ Name and account no. of the bank for the refund of the excise
+FieldFlags: 12582912
+FieldJustification: Left
+Key: bank
+---
+FieldType: Text
+FieldName: Periood mille eest aktsiisi tagastamist taotletakse kuu aasta Refund of excise is requested for month year
+FieldNameAlt: Periood, mille eest aktsiisi tagastamist taotletakse (kuu, aasta)/ Refund of excise is requested for (month, year
+FieldFlags: 12582912
+FieldJustification: Left
+Key: date
+---
+FieldType: Text
+FieldName: Alkoholi v&#245;i energiatoote liik  Type of energy productRow1
+FieldNameAlt: Alkoholi v&#245;i energiatoote liik / Type of energy product_Row_1
+FieldFlags: 12587008
+FieldJustification: Left
+Key: type1
+---
+FieldType: Text
+FieldName: Alkoholi etanoolisisaldus  Ethanol content of alcoholRow1
+FieldNameAlt: Alkoholi etanoolisisaldus / Ethanol content of alcohol_Row_1
+FieldFlags: 12587008
+FieldJustification: Left
+Key: content1
+---
+FieldType: Text
+FieldName: Aktsiisikauba kogus  Amount of excise goodRow1
+FieldNameAlt: Aktsiisikauba kogus / Amount of excise good_Row_1
+FieldFlags: 12587008
+FieldJustification: Left
+Key: amount1
+---
+FieldType: Text
+FieldName: Aktsiis eurodes  Excise in euroRow1
+FieldNameAlt: Aktsiis eurodes / Excise in euro_Row_1
+FieldFlags: 12587008
+FieldJustification: Left
+Key: excise1
+---
+FieldType: Text
+FieldName: Vastava arve number ja kuup&#228;ev  The number and date of the respective selling checkRow1
+FieldNameAlt: Vastava arve number ja kuup&#228;ev / The number and date of the respective selling check_Row_1
+FieldFlags: 12587008
+FieldJustification: Left
+Key: arve1
+---
+FieldType: Text
+FieldName: Alkoholi v&#245;i energiatoote liik  Type of energy productRow2
+FieldNameAlt: Alkoholi v&#245;i energiatoote liik / Type of energy product_Row_2
+FieldFlags: 12587008
+FieldJustification: Left
+Key: type2
+---
+FieldType: Text
+FieldName: Alkoholi etanoolisisaldus  Ethanol content of alcoholRow2
+FieldNameAlt: Alkoholi etanoolisisaldus / Ethanol content of alcohol_Row_2
+FieldFlags: 12587008
+FieldJustification: Left
+Key: content2
+---
+FieldType: Text
+FieldName: Aktsiisikauba kogus  Amount of excise goodRow2
+FieldNameAlt: Aktsiisikauba kogus / Amount of excise good_Row_2
+FieldFlags: 12587008
+FieldJustification: Left
+Key: amount2
+---
+FieldType: Text
+FieldName: Aktsiis eurodes  Excise in euroRow2
+FieldNameAlt: Aktsiis eurodes / Excise in euro_Row_2
+FieldFlags: 12587008
+FieldJustification: Left
+Key: excise2
+---
+FieldType: Text
+FieldName: Vastava arve number ja kuup&#228;ev  The number and date of the respective selling checkRow2
+FieldNameAlt: Vastava arve number ja kuup&#228;ev / The number and date of the respective selling check_Row_2
+FieldFlags: 12587008
+FieldJustification: Left
+Key: arve2
+---
+FieldType: Text
+FieldName: Alkoholi v&#245;i energiatoote liik  Type of energy productRow3
+FieldNameAlt: Alkoholi v&#245;i energiatoote liik / Type of energy product_Row_3
+FieldFlags: 12587008
+FieldJustification: Left
+Key: type3
+---
+FieldType: Text
+FieldName: Alkoholi etanoolisisaldus  Ethanol content of alcoholRow3
+FieldNameAlt: Alkoholi etanoolisisaldus / Ethanol content of alcohol_Row_3
+FieldFlags: 12587008
+FieldJustification: Left
+Key: content3
+---
+FieldType: Text
+FieldName: Aktsiisikauba kogus  Amount of excise goodRow3
+FieldNameAlt: Aktsiisikauba kogus / Amount of excise good_Row_3
+FieldFlags: 12587008
+FieldJustification: Left
+Key: amount3
+---
+FieldType: Text
+FieldName: Aktsiis eurodes  Excise in euroRow3
+FieldNameAlt: Aktsiis eurodes / Excise in euro_Row_3
+FieldFlags: 12587008
+FieldJustification: Left
+Key: excise3
+---
+FieldType: Text
+FieldName: Vastava arve number ja kuup&#228;ev  The number and date of the respective selling checkRow3
+FieldNameAlt: Vastava arve number ja kuup&#228;ev / The number and date of the respective selling check_Row_3
+FieldFlags: 12587008
+FieldJustification: Left
+Key: arve3
+---
+FieldType: Text
+FieldName: Alkoholi v&#245;i energiatoote liik  Type of energy productRow4
+FieldNameAlt: Alkoholi v&#245;i energiatoote liik / Type of energy product_Row_4
+FieldFlags: 12587008
+FieldJustification: Left
+Key: type4
+---
+FieldType: Text
+FieldName: Alkoholi etanoolisisaldus  Ethanol content of alcoholRow4
+FieldNameAlt: Alkoholi etanoolisisaldus / Ethanol content of alcohol_Row_4
+FieldFlags: 12587008
+FieldJustification: Left
+Key: content4
+---
+FieldType: Text
+FieldName: Aktsiisikauba kogus  Amount of excise goodRow4
+FieldNameAlt: Aktsiisikauba kogus / Amount of excise good_Row_4
+FieldFlags: 12587008
+FieldJustification: Left
+Key: amount4
+---
+FieldType: Text
+FieldName: Aktsiis eurodes  Excise in euroRow4
+FieldNameAlt: Aktsiis eurodes / Excise in euro_Row_4
+FieldFlags: 12587008
+FieldJustification: Left
+Key: excise4
+---
+FieldType: Text
+FieldName: Vastava arve number ja kuup&#228;ev  The number and date of the respective selling checkRow4
+FieldNameAlt: Vastava arve number ja kuup&#228;ev / The number and date of the respective selling check_Row_4
+FieldFlags: 12587008
+FieldJustification: Left
+Key: arve4
+---
+FieldType: Text
+FieldName: Alkoholi v&#245;i energiatoote liik  Type of energy productRow5
+FieldNameAlt: Alkoholi v&#245;i energiatoote liik / Type of energy product_Row_5
+FieldFlags: 12587008
+FieldJustification: Left
+Key: type5
+---
+FieldType: Text
+FieldName: Alkoholi etanoolisisaldus  Ethanol content of alcoholRow5
+FieldNameAlt: Alkoholi etanoolisisaldus / Ethanol content of alcohol_Row_5
+FieldFlags: 12587008
+FieldJustification: Left
+Key: content5
+---
+FieldType: Text
+FieldName: Aktsiisikauba kogus  Amount of excise goodRow5
+FieldNameAlt: Aktsiisikauba kogus / Amount of excise good_Row_5
+FieldFlags: 12587008
+FieldJustification: Left
+Key: amount5
+---
+FieldType: Text
+FieldName: Aktsiis eurodes  Excise in euroRow5
+FieldNameAlt: Aktsiis eurodes / Excise in euro_Row_5
+FieldFlags: 12587008
+FieldJustification: Left
+Key: excise5
+---
+FieldType: Text
+FieldName: Vastava arve number ja kuup&#228;ev  The number and date of the respective selling checkRow5
+FieldNameAlt: Vastava arve number ja kuup&#228;ev / The number and date of the respective selling check_Row_5
+FieldFlags: 12587008
+FieldJustification: Left
+Key: arve5
+---
+FieldType: Text
+FieldName: Alkoholi v&#245;i energiatoote liik  Type of energy productRow6
+FieldNameAlt: Alkoholi v&#245;i energiatoote liik / Type of energy product_Row_6
+FieldFlags: 12587008
+FieldJustification: Left
+Key: type6
+---
+FieldType: Text
+FieldName: Alkoholi etanoolisisaldus  Ethanol content of alcoholRow6
+FieldNameAlt: Alkoholi etanoolisisaldus / Ethanol content of alcohol_Row_6
+FieldFlags: 12587008
+FieldJustification: Left
+Key: content6
+---
+FieldType: Text
+FieldName: Aktsiisikauba kogus  Amount of excise goodRow6
+FieldNameAlt: Aktsiisikauba kogus / Amount of excise good_Row_6
+FieldFlags: 12587008
+FieldJustification: Left
+Key: amount6
+---
+FieldType: Text
+FieldName: Aktsiis eurodes  Excise in euroRow6
+FieldNameAlt: Aktsiis eurodes / Excise in euro_Row_6
+FieldFlags: 12587008
+FieldJustification: Left
+Key: excise6
+---
+FieldType: Text
+FieldName: Vastava arve number ja kuup&#228;ev  The number and date of the respective selling checkRow6
+FieldNameAlt: Vastava arve number ja kuup&#228;ev / The number and date of the respective selling check_Row_6
+FieldFlags: 12587008
+FieldJustification: Left
+Key: arve6
+---
+FieldType: Text
+FieldName: Aktsiis eurodes  Total excise in euro
+FieldNameAlt: Aktsiis eurodes / Total excise in euro
+FieldFlags: 12587008
+FieldJustification: Left
+Key: total
