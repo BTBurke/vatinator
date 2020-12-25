@@ -3,11 +3,13 @@ package main
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -16,6 +18,7 @@ import (
 	"github.com/BTBurke/vatinator/bundled"
 	"github.com/BTBurke/vatinator/img"
 	"github.com/BTBurke/vatinator/svc"
+	"github.com/BTBurke/vatinator/update"
 	"github.com/dgraph-io/badger/v2"
 	"golang.org/x/crypto/nacl/secretbox"
 	"golang.org/x/crypto/scrypt"
@@ -45,6 +48,19 @@ type task struct {
 func main() {
 	if len(os.Args) > 1 && os.Args[1] == "version" {
 		fmt.Printf("Version: %s\nCommit: %s\nDate: %s\n", version, commit, date)
+		os.Exit(0)
+	}
+	hasUpdated, err := checkAndUpdate()
+	if err != nil && errors.Is(err, update.FatalError{}) {
+		fmt.Printf("Update failed: %s. There's a good chance something is very wrong.  You should download the latest version from https://github.com/BTBurke/vatinator just to be sure.", err)
+		os.Exit(1)
+	}
+	if err != nil && errors.Is(err, update.NonFatalError{}) {
+		updateI := clt.NewInteractiveSession()
+		updateI.Warn("There was an error when checking for a new update: %s.  This shouldn't have affected anything negatively, so we will continue with this old version.", err)
+	}
+	if hasUpdated {
+		fmt.Println("Updated successfully.  Rerun the program to start the new version.")
 		os.Exit(0)
 	}
 
@@ -385,6 +401,49 @@ func decryptKeyFile() error {
 	p.Success()
 
 	return nil
+}
+
+func checkAndUpdate() (bool, error) {
+	var os update.OS
+	switch runtime.GOOS {
+	case "linux":
+		os = update.Linux
+	case "windows":
+		os = update.Windows
+	case "darwin":
+		os = update.MacOS
+	default:
+		return false, update.NonFatalError{fmt.Errorf("failed to determine os")}
+	}
+
+	p1 := clt.NewLoadingMessage("Checking for updates...", clt.Dots, 150*time.Millisecond)
+	p1.Start()
+	u := update.NewUpdater(version, os)
+	if err := u.Check(); err != nil {
+		p1.Fail()
+		return false, err
+	}
+	p1.Success()
+
+	if u.Exists() {
+		i := clt.NewInteractiveSession()
+
+		shouldUpdate := i.Say("New version %s is available", u.NewVersion()).AskYesNo("Do you want to update", "yes")
+		switch {
+		case clt.IsYes(shouldUpdate):
+			p2 := clt.NewProgressSpinner("Downloading update")
+			p2.Start()
+			if err := u.Update(); err != nil {
+				p2.Fail()
+				return false, err
+			}
+			p2.Success()
+			return true, nil
+		default:
+			return false, nil
+		}
+	}
+	return false, nil
 }
 
 // gets rid of badger logging messages in terminal

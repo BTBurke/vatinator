@@ -8,11 +8,16 @@ require (
 	github.com/BTBurke/snapshot v1.7.1
 	github.com/dgraph-io/badger v1.6.2 // indirect
 	github.com/dgraph-io/badger/v2 v2.2007.2
+	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/frankban/quicktest v1.11.2 // indirect
 	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
+	github.com/google/go-github/v33 v33.0.0
 	github.com/jung-kurt/gofpdf v1.16.2
 	github.com/kr/text v0.2.0 // indirect
+	github.com/mholt/archiver/v3 v3.5.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
+	github.com/nwaples/rardecode v1.1.0 // indirect
+	github.com/pierrec/lz4 v2.6.0+incompatible // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/rs/xid v1.2.1
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
@@ -20,7 +25,9 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/tealeg/xlsx v1.0.5 // indirect
 	github.com/tealeg/xlsx/v3 v3.2.1
+	github.com/ulikunitz/xz v0.5.9 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.0.0-beta.9
+	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	golang.org/x/crypto v0.0.0-20201217014255-9d1352758620
 	golang.org/x/image v0.0.0-20200927104501-e162460cd6b5
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b // indirect

@@ -48,9 +48,7 @@ Choice:
 
 # Installing the program
 
-1. Download the latest version from the [releases page](https://github.com/BTBurke/vatinator/releases/latest).  I fix it every time I find a problem dealing with my own receipts so you should download the latest version each time you plan to submit your forms.
-
-2. Extract the program to a folder on your computer. When you download the latest version and extract it to the same folder it will remember all the initial setup you did so you only have to do that once.
+Download the latest version from the [releases page](https://github.com/BTBurke/vatinator/releases/latest).  I fix it every time I find a problem dealing with my own receipts so you should update to the latest version each time you plan to submit your forms.  Since version 17, there is an auto updater built in, so just select yes when it tells you there is a new version available and it will auto install it.
 
 # Bugs
 
