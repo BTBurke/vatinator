@@ -149,7 +149,7 @@ func writeInvoices(txn *badger.Txn, accountID string, receipts []Receipt, t invo
 		case vat:
 			fpath = filepath.Join(opts.OutputDir, fmt.Sprintf("USA-%s-VAT-%s%d-Invoices%d.pdf", opts.LastName, opts.Month, opts.Year, packet+1))
 		case excise:
-			fpath = filepath.Join(opts.OutputDir, fmt.Sprintf("USA-%s-Excise-%s%d-Fuel_Invoices%d", opts.LastName, opts.Month, opts.Year, packet+1))
+			fpath = filepath.Join(opts.OutputDir, fmt.Sprintf("USA-%s-Excise-%s%d-Fuel_Invoices%d.pdf", opts.LastName, opts.Month, opts.Year, packet+1))
 		}
 		p := pdf.NewPDF(fpath)
 
