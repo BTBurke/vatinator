@@ -2,6 +2,7 @@ package pdf
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -17,6 +18,9 @@ import (
 	"golang.org/x/text/encoding/unicode"
 	"gopkg.in/yaml.v2"
 )
+
+// DefaultURL is the filler service running on gcloud
+const DefaultURL string = "https://filler-nd4nplab7a-lz.a.run.app"
 
 type fieldKey string
 
@@ -68,7 +72,22 @@ type field struct {
 	Key string `yaml:"Key"`
 }
 
-func FillExcise(path string, rcpts []types.Excise, md types.ExciseMetadata, forceRemote bool) error {
+type FillExciseOptions struct {
+	ForceRemote   bool
+	DisableRemote bool
+	RemoteURL     string
+	APIKey        string
+}
+
+func FillExcise(path string, rcpts []types.Excise, md types.ExciseMetadata, opts *FillExciseOptions) error {
+	if opts == nil {
+		opts = &FillExciseOptions{
+			DisableRemote: false,
+			ForceRemote:   true,
+			RemoteURL:     DefaultURL,
+			APIKey:        DefaultAPIKey,
+		}
+	}
 
 	// populate data for form
 	data := map[fieldKey]string{
@@ -93,8 +112,7 @@ func FillExcise(path string, rcpts []types.Excise, md types.ExciseMetadata, forc
 	if err != nil {
 		return err
 	}
-	//defer os.RemoveAll(tmpdir)
-	log.Printf("tempdir: %s", tmpdir)
+	defer os.RemoveAll(tmpdir)
 
 	fdfPath := filepath.Join(tmpdir, "data.fdf")
 	fdf, err := createFDF(data)
@@ -115,12 +133,22 @@ func FillExcise(path string, rcpts []types.Excise, md types.ExciseMetadata, forc
 	}
 
 	// shell out for pdftk to fill form and place at path
-	if err := callPdftk(templatePath, fdfPath, path, forceRemote); err != nil {
+	if err := callPdftk(templatePath, fdfPath, path, opts); err != nil {
 		return err
 	}
 
 	return nil
 
+}
+
+var DefaultAPIKey string = apiKey(".cfg/key.json")
+
+func apiKey(path string) string {
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return ""
+	}
+	return fmt.Sprintf("%x", sha256.Sum256(data))
 }
 
 func loadFields() (map[fieldKey]string, error) {
@@ -163,14 +191,14 @@ func createFDF(data map[fieldKey]string) ([]byte, error) {
 	b.Write([]byte(fdfHeader))
 	for key, value := range data {
 		b.Write([]byte("<<\n/T ("))
-		k, err := enc.Bytes([]byte(fmt.Sprintf("%s", names[key])))
+		k, err := enc.Bytes([]byte(names[key]))
 		if err != nil {
 			return nil, err
 		}
 		b.Write(k)
 		b.Write([]byte(")\n"))
 		b.Write([]byte("/V ("))
-		v, err := enc.Bytes([]byte(fmt.Sprintf("%s", value)))
+		v, err := enc.Bytes([]byte(value))
 		if err != nil {
 			return nil, err
 		}
@@ -181,11 +209,15 @@ func createFDF(data map[fieldKey]string) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func callPdftk(template string, fdf string, out string, forceRemote bool) error {
+func callPdftk(template string, fdf string, out string, opts *FillExciseOptions) error {
 	bin, err := exec.LookPath("pdftk")
-	if err != nil || forceRemote {
-		// no local pdftk so use remote service
-		return callPdftkRemote("http://localhost:8080", fdf, out)
+	if err != nil || opts.ForceRemote {
+		if !opts.DisableRemote && len(opts.APIKey) > 0 && len(opts.RemoteURL) > 0 {
+			// no local pdftk so use remote service
+			return callPdftkRemote(opts.RemoteURL, fdf, out, opts.APIKey)
+		} else {
+			return errors.Wrap(err, "no local pdftk and either remote disabled or not API information to call remote service")
+		}
 	}
 
 	cmd := exec.Command(bin, template, "fill_form", fdf, "output", out)
@@ -197,14 +229,25 @@ func callPdftk(template string, fdf string, out string, forceRemote bool) error 
 	return nil
 }
 
-func callPdftkRemote(url string, fdf string, out string) error {
+func callPdftkRemote(url string, fdf string, out string, apikey string) error {
+	if url == "" {
+		url = "localhost:8080"
+	}
 	f, err := os.Open(fdf)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	resp, err := http.Post(url, "application/octet-stream", f)
+	req, err := http.NewRequest("POST", url, f)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", apikey)
+	req.Header.Set("Content-Type", "application/octet-stream")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -214,6 +257,10 @@ func callPdftkRemote(url string, fdf string, out string) error {
 	if err != nil {
 		return err
 	}
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("got status %d: %s", resp.StatusCode, string(data))
+	}
+
 	if err := ioutil.WriteFile(out, data, 0644); err != nil {
 		return err
 	}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -8,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"time"
 
 	"github.com/BTBurke/vatinator/bundled"
 )
@@ -17,71 +19,83 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
+	key := os.Getenv("FILLER_API_KEY")
+	if key == "" {
+		log.Fatal("No API key provided.  Set FILLER_API_KEY.")
+	}
 
-	http.HandleFunc("/", filler)
+	http.HandleFunc("/", filler(key))
 	log.Printf("Starting server on port %s", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
-func filler(w http.ResponseWriter, r *http.Request) {
-	// TODO: add api key
-	tmpdir, err := ioutil.TempDir("", "fill")
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		return
-	}
+func filler(wantKey string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		key := r.Header.Get("Authorization")
+		if key != wantKey {
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
 
-	fdfPath := filepath.Join(tmpdir, "data.fdf")
-	f, err := os.Create(fdfPath)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		return
-	}
+		start := time.Now()
+		// TODO: add api key
+		tmpdir, err := ioutil.TempDir("", "fill")
+		if err != nil {
+			handleError(w, err)
+			return
+		}
 
-	defer r.Body.Close()
-	if _, err := io.Copy(f, r.Body); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		return
-	}
+		fdfPath := filepath.Join(tmpdir, "data.fdf")
+		f, err := os.Create(fdfPath)
+		if err != nil {
+			handleError(w, err)
+			return
+		}
 
-	t, err := bundled.Asset("assets/excise.pdf")
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		return
-	}
-	templatePath := filepath.Join(tmpdir, "template.pdf")
-	if err := ioutil.WriteFile(templatePath, t, 0644); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		return
-	}
+		defer r.Body.Close()
+		if _, err := io.Copy(f, r.Body); err != nil {
+			handleError(w, err)
+			return
+		}
 
-	bin, err := exec.LookPath("pdftk")
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		return
-	}
+		t, err := bundled.Asset("assets/excise.pdf")
+		if err != nil {
+			handleError(w, err)
+			return
+		}
+		templatePath := filepath.Join(tmpdir, "template.pdf")
+		if err := ioutil.WriteFile(templatePath, t, 0644); err != nil {
+			handleError(w, err)
+			return
+		}
 
-	outPath := filepath.Join(tmpdir, "out.pdf")
-	cmd := exec.Command(bin, templatePath, "fill_form", fdfPath, "output", outPath)
-	stdouterr, err := cmd.CombinedOutput()
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(stdouterr)
-		return
-	}
+		bin, err := exec.LookPath("pdftk")
+		if err != nil {
+			handleError(w, err)
+			return
+		}
 
-	out, err := os.Open(outPath)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		return
+		outPath := filepath.Join(tmpdir, "out.pdf")
+		cmd := exec.Command(bin, templatePath, "fill_form", fdfPath, "output", outPath)
+		stdouterr, err := cmd.CombinedOutput()
+		if err != nil {
+			handleError(w, fmt.Errorf("pdftk error: %s. Output: %s", err.Error(), stdouterr))
+			return
+		}
+
+		out, err := os.Open(outPath)
+		if err != nil {
+			handleError(w, err)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		io.Copy(w, out)
+		log.Printf("form filled in %s", time.Since(start))
 	}
-	w.WriteHeader(http.StatusOK)
-	io.Copy(w, out)
+}
+
+func handleError(w http.ResponseWriter, e error) {
+	log.Printf("server error: %s", e.Error())
+	w.WriteHeader(http.StatusInternalServerError)
+	w.Write([]byte(e.Error()))
 }

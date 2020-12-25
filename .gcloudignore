@@ -1,0 +1,6 @@
+web/
+vatinator-f91ccb107c2c.json
+.git/
+**/__snapshots__
+test_receipts/
+bin/

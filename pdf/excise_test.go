@@ -2,6 +2,7 @@ package pdf
 
 import (
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -31,15 +32,17 @@ func TestFillExciseForm(t *testing.T) {
 
 	tmpdir, err := ioutil.TempDir("", "excise-test")
 	require.NoError(t, err)
-	// defer os.RemoveAll(tmpdir)
+	defer os.RemoveAll(tmpdir)
 
 	outPath := filepath.Join(tmpdir, "out.pdf")
-	if err := FillExcise(outPath, testReceipts, testMD, false); err != nil {
+	if err := FillExcise(outPath, testReceipts, testMD, &FillExciseOptions{
+		DisableRemote: true,
+	}); err != nil {
 		assert.NoError(t, err)
 	}
 	out, err := ioutil.ReadFile(outPath)
 	require.NoError(t, err)
-	snap, err := snapshot.New(snapshot.SnapExtension(".pdf"))
+	snap, err := snapshot.New(snapshot.SnapExtension(".pdf"), snapshot.Diffable(false))
 	require.NoError(t, err)
 	snap.Assert(t, out)
 }
@@ -64,15 +67,22 @@ func TestRemoteFill(t *testing.T) {
 
 	tmpdir, err := ioutil.TempDir("", "excise-test")
 	require.NoError(t, err)
-	// defer os.RemoveAll(tmpdir)
+	defer os.RemoveAll(tmpdir)
 
 	outPath := filepath.Join(tmpdir, "out.pdf")
-	if err := FillExcise(outPath, testReceipts, testMD, true); err != nil {
-		assert.NoError(t, err)
+	key := apiKey("../vatinator-f91ccb107c2c.json")
+	require.Greater(t, len(key), 0)
+
+	if err := FillExcise(outPath, testReceipts, testMD, &FillExciseOptions{
+		ForceRemote: true,
+		RemoteURL:   DefaultURL,
+		APIKey:      apiKey("../vatinator-f91ccb107c2c.json"),
+	}); err != nil {
+		require.NoError(t, err)
 	}
 	out, err := ioutil.ReadFile(outPath)
 	require.NoError(t, err)
-	snap, err := snapshot.New(snapshot.SnapExtension(".pdf"))
+	snap, err := snapshot.New(snapshot.SnapExtension(".pdf"), snapshot.Diffable(false))
 	require.NoError(t, err)
 	snap.Assert(t, out)
 }

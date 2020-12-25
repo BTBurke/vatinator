@@ -1,0 +1,9 @@
+steps:
+- name: "gcr.io/cloud-builders/docker"
+  args:
+  - build
+  - "--tag=gcr.io/vatinator/filler"
+  - "--file=./docker/filler/Dockerfile"
+  - .
+images:
+- "gcr.io/vatinator/filler"
