@@ -11,10 +11,14 @@ require (
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/frankban/quicktest v1.11.2 // indirect
 	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
+	github.com/go-chi/chi v1.5.1
 	github.com/google/go-github/v33 v33.0.0
+	github.com/gorilla/sessions v1.2.1 // indirect
 	github.com/jung-kurt/gofpdf v1.16.2
 	github.com/kr/text v0.2.0 // indirect
+	github.com/mattn/go-sqlite3 v1.14.5 // indirect
 	github.com/mholt/archiver/v3 v3.5.0
+	github.com/michaeljs1990/sqlitestore v0.0.0-20190919182151-25d6d7f2e768
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/nwaples/rardecode v1.1.0 // indirect
 	github.com/pierrec/lz4 v2.6.0+incompatible // indirect
