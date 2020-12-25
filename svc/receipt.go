@@ -43,6 +43,10 @@ type Receipt struct {
 	// can be used to reprocess the receipt when upgrades to the rules engine are made.  See
 	// Processor for options to force recomputation.  Default is reprocessing when rules change.
 	RulesVersion string
+	// These fields are set when the receipt is detected as a gas receipt and excise taxes can also be reimbursed
+	IsExcise     bool
+	ExciseType   string
+	ExciseAmount string
 }
 
 func (r *Receipt) Type() byte {

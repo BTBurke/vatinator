@@ -225,6 +225,7 @@ func main() {
 		LastName:     cfg.LastName,
 		FullName:     cfg.FullName,
 		DiplomaticID: cfg.DiplomaticID,
+		Embassy:      cfg.Embassy,
 		Month:        monthString,
 		MonthInt:     monthIndex,
 		Year:         y,

@@ -10,6 +10,7 @@ import (
 
 	"github.com/BTBurke/vatinator/img"
 	"github.com/BTBurke/vatinator/pdf"
+	"github.com/BTBurke/vatinator/types"
 	"github.com/BTBurke/vatinator/xls"
 	"github.com/dgraph-io/badger/v2"
 	"github.com/pkg/errors"
@@ -30,6 +31,7 @@ type ExportOptions struct {
 	Month          string
 	MonthInt       int
 	Year           int
+	Embassy        string
 	Stamp          []string
 	OutputDir      string
 	ConvertXLS2PDF bool
@@ -87,11 +89,118 @@ func create(txn *badger.Txn, accountID string, batchID string, opts *ExportOptio
 		return stringToDate(receipts[i].Date).UTC().Before(stringToDate(receipts[j].Date))
 	})
 
-	// TODO: sort receipts, create temp dir, populate with export, zip, store
-	packets := len(receipts)/17 + 1
+	if err := writeInvoices(txn, accountID, receipts, vat, opts); err != nil {
+		return err
+	}
+	if err := writeVATForm(receipts, opts); err != nil {
+		return err
+	}
+
+	// find excise receipts and fill excise form
+	var excises []types.Excise
+	var exciseReceipts []Receipt
+	for _, r := range receipts {
+		if r.IsExcise {
+			exciseReceipts = append(exciseReceipts, r)
+			excises = append(excises, types.Excise{
+				Type:    r.ExciseType,
+				Amount:  r.ExciseAmount,
+				Arve:    r.ReceiptNumber,
+				Content: "", // empty string for gas receipts
+				Date:    r.Date,
+			})
+		}
+	}
+	if len(exciseReceipts) > 0 {
+		if err := writeInvoices(txn, accountID, exciseReceipts, excise, opts); err != nil {
+			return err
+		}
+		if err := writeExciseForm(excises, opts); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+type invoiceType string
+
+const (
+	vat    invoiceType = "Invoices"
+	excise invoiceType = "Excise"
+)
+
+func writeInvoices(txn *badger.Txn, accountID string, receipts []Receipt, t invoiceType, opts *ExportOptions) error {
+	var perPacket int
+	switch t {
+	case vat:
+		perPacket = 17
+	case excise:
+		perPacket = 6
+	default:
+		return fmt.Errorf("unknown invoice type %s", t)
+	}
+
+	packets := len(receipts)/perPacket + 1
 	for packet := 0; packet < packets; packet++ {
 
-		p := pdf.NewPDF(filepath.Join(opts.OutputDir, fmt.Sprintf("USA-%s-VAT-%s%d-Invoices%d.pdf", opts.LastName, opts.Month, opts.Year, packet+1)))
+		var fpath string
+		switch t {
+		case vat:
+			fpath = filepath.Join(opts.OutputDir, fmt.Sprintf("USA-%s-VAT-%s%d-Invoices%d.pdf", opts.LastName, opts.Month, opts.Year, packet+1))
+		case excise:
+			fpath = filepath.Join(opts.OutputDir, fmt.Sprintf("USA-%s-Excise-%s%d-Fuel_Invoices%d", opts.LastName, opts.Month, opts.Year, packet+1))
+		}
+		p := pdf.NewPDF(fpath)
+
+		// Write each receipt to as page in PDF
+		for i := 0; i < perPacket; i++ {
+			current := packet*perPacket + i
+			if current >= len(receipts) {
+				continue
+			}
+			id := receipts[current].ID
+			image, err := getImage(txn, accountID, id)
+			if err != nil {
+				return errors.Wrap(err, "failed to get image")
+			}
+
+			composited, err := img.CompositeReceipt(i+1, image, opts.Stamp, 0)
+			if err != nil {
+				return errors.Wrap(err, "failed to composite image")
+			}
+
+			if err := p.WriteReceipt(composited); err != nil {
+				return errors.Wrap(err, "failed to write receipt to pdf")
+			}
+		}
+		if err := p.Save(); err != nil {
+			return errors.Wrap(err, "failed to save pdf")
+		}
+	}
+
+	return nil
+}
+
+func writeExciseForm(receipts []types.Excise, opts *ExportOptions) error {
+	packets := len(receipts)/6 + 1
+	for packet := 0; packet < packets; packet++ {
+		excisePath := filepath.Join(opts.OutputDir, fmt.Sprintf("USA-%s-Excise-%s%d-Fuel_Form%d.pdf", opts.LastName, opts.Month, opts.Year, packet+1))
+		if err := pdf.FillExcise(excisePath, receipts, types.ExciseMetadata{
+			Bank:    opts.Bank,
+			Name:    opts.FullName,
+			Embassy: opts.Embassy,
+			Date:    fmt.Sprintf("%s %d", opts.Month, opts.Year),
+		}, nil); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func writeVATForm(receipts []Receipt, opts *ExportOptions) error {
+	packets := len(receipts)/17 + 1
+	for packet := 0; packet < packets; packet++ {
 
 		xpath := filepath.Join(opts.OutputDir, fmt.Sprintf("USA-%s-VAT-%s%d-VAT%d.xlsx", opts.LastName, opts.Month, opts.Year, packet+1))
 		xlsfile, err := xls.NewFromTemplate(xpath, opts.Template)
@@ -120,28 +229,11 @@ func create(txn *badger.Txn, accountID string, batchID string, opts *ExportOptio
 				continue
 			}
 			receipt := &receipts[current]
-			id := receipts[current].ID
-			image, err := getImage(txn, accountID, id)
-			if err != nil {
-				return errors.Wrap(err, "failed to get image")
-			}
-
-			composited, err := img.CompositeReceipt(i+1, image, opts.Stamp, 0)
-			if err != nil {
-				return errors.Wrap(err, "failed to composite image")
-			}
-
-			if err := p.WriteReceipt(composited); err != nil {
-				return errors.Wrap(err, "failed to write receipt to pdf")
-			}
 
 			// write excel line
 			if err := xls.WriteVATLine(xlsfile, receipt, i); err != nil {
 				return errors.Wrap(err, "failed to write line to VAT file")
 			}
-		}
-		if err := p.Save(); err != nil {
-			return errors.Wrap(err, "failed to save pdf")
 		}
 		if err := xlsfile.Save(xpath); err != nil {
 			return errors.Wrapf(err, "failed to save VAT file to %s", xpath)
@@ -149,6 +241,7 @@ func create(txn *badger.Txn, accountID string, batchID string, opts *ExportOptio
 	}
 
 	return nil
+
 }
 
 func stringToDate(d string) time.Time {

@@ -14,13 +14,17 @@ func init() {
 	gastype = regexp.MustCompile(`\s?(95|98)(\s|$)`)
 }
 
+func GasRule() Rule {
+	return gas{}
+}
+
 type gas struct{}
 
 func (gas) Find(r *Result, text []string) error {
 
 	isGas, amount, gasType := detectGasReceipt(text)
 	if isGas {
-		r.Excise = Excise{Type: fmt.Sprintf("Gasoline %s", gasType), Amount: amount}
+		r.Excise = &Excise{Type: fmt.Sprintf("Gasoline %s", gasType), Amount: amount}
 	}
 
 	return nil

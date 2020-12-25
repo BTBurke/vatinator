@@ -168,6 +168,11 @@ func process(db *badger.DB, accountID string, batchID string, name string, image
 		RulesVersion:      ocr.RulesVersion,
 		CurrencyPrecision: Digit2,
 	}
+	if result.Excise != nil {
+		receipt.IsExcise = true
+		receipt.ExciseType = result.Excise.Type
+		receipt.ExciseAmount = result.Excise.Amount
+	}
 
 	if err := db.Update(func(txn *badger.Txn) error {
 

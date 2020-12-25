@@ -50,7 +50,7 @@ type Result struct {
 	Vendor string
 	TaxID  string
 	ID     string
-	Excise Excise
+	Excise *Excise
 	Crop   Crop
 	Errors []string
 }
@@ -124,6 +124,7 @@ func ProcessImage(image img.Image, credPath string) (*Result, error) {
 		DateRule(),
 		IDRule(),
 		CurrencyRule(),
+		GasRule(),
 	}
 
 	r := &Result{

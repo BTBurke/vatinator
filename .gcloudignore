@@ -4,3 +4,4 @@ vatinator-f91ccb107c2c.json
 **/__snapshots__
 test_receipts/
 bin/
+**/testdata
