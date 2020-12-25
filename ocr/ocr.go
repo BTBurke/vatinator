@@ -31,6 +31,13 @@ const (
 	Currency2 CurrencyPrecision = iota + 2
 )
 
+type ReceiptType int
+
+const (
+	Regular = iota
+	Gas
+)
+
 // Result
 type Result struct {
 	raw   []*pb.EntityAnnotation
@@ -43,6 +50,7 @@ type Result struct {
 	Vendor string
 	TaxID  string
 	ID     string
+	Excise Excise
 	Crop   Crop
 	Errors []string
 }
@@ -54,6 +62,11 @@ type Crop struct {
 	Bottom int32
 	Right  int32
 	Left   int32
+}
+
+type Excise struct {
+	Type   string
+	Amount string
 }
 
 // ProcessImage uses a pre-trained ML model to extract text from the receipt image, then

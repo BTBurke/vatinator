@@ -1,0 +1,353 @@
+CIRCLE K
+circle K sikupilli teenindus jaam
+Tartu mnt 86, Tallinn
+circle K Eesti AS
+A. H. Tammsaare tee 47, 11316 Tallinn
+Reg.kood 10180925, KMKR nr. EE100305317
+Kirjeldus
+95 miles
+Pump 6 Hind 1,229 EUR/L
+Kogus
+34,35L
+Summa
+42,22 1
+KOKKU
+KÄIBEMAKSUTA
+42,22
+35,18
+KK MAKSE
+42,22 EUR
+Käibemaks
+20% KM
+Käibemaks kokku
+Määr
+Kood
+Summa
+20,00% 1
+7,04
+7,04
+SÄILITA KVIITUNG VÄLJAVÕTTE KONTROLLIKS
+Kuupäev
+16/10/2020 15:08 T06
+Kell Terminal Arve
+0553
+Klienditugi: 675 7777 (24h)
+www.circlek.ee
+2020-10-16
+15:08
+SUMMA
+EUR 42,22
+visa Credit
+XXXX XXXX.XXXX 2149
+TERMINAL:
+SWE
+IA1
+PSN:02
+61034c606-165577
+KAUPMEES: 865-1259
+ATC:00288
+AID:
+ARC:00
+AUTOR. NR.:
+AED: 180228
+A0000000031010
+STAATUS:0000
+016944
+REF: 165577
+TVR:00 00 04 80 00
+REFNR:
+AUTORISEERITUD
+TSI: F8 00
+610340165577
+
+circle k
+circle k sikupilli teenindus jaam
+tartu mnt 86, tallinn
+circle k eesti as
+a. h. tammsaare tee 47, 11316 tallinn
+reg.kood 10180925, kmkr nr. ee100305317
+kirjeldus
+95 miles
+pump 6 hind 1,229 eur/l
+kogus
+34,35l
+summa
+42,22 1
+kokku
+käibemaksuta
+42,22
+35,18
+kk makse
+42,22 eur
+käibemaks
+20% km
+käibemaks kokku
+määr
+kood
+summa
+20,00% 1
+7,04
+7,04
+säilita kviitung väljavõtte kontrolliks
+kuupäev
+16/10/2020 15:08 t06
+kell terminal arve
+0553
+klienditugi: 675 7777 (24h)
+www.circlek.ee
+2020-10-16
+15:08
+summa
+eur 42,22
+visa credit
+xxxx xxxx.xxxx 2149
+terminal:
+swe
+ia1
+psn:02
+61034c606-165577
+kaupmees: 865-1259
+atc:00288
+aid:
+arc:00
+autor. nr.:
+aed: 180228
+a0000000031010
+staatus:0000
+016944
+ref: 165577
+tvr:00 00 04 80 00
+refnr:
+autoriseeritud
+tsi: f8 00
+610340165577
+
+CIRCLE K
+circle K sikupilli teenindus jaam
+Tartu mnt 86, Tallinn
+circle K Eesti AS
+A. H. Tammsaare tee 47, 11316 Tallinn
+Reg.kood 10180925, KMKR nr. EE100305317
+Kirjeldus
+95 miles
+Pump 6 Hind 1,229 EUR/L
+Kogus
+34,35L
+Summa
+42,22 1
+KOKKU
+KÄIBEMAKSUTA
+42,22
+35,18
+KK MAKSE
+42,22 EUR
+Käibemaks
+20% KM
+Käibemaks kokku
+Määr
+Kood
+Summa
+20,00% 1
+7,04
+7,04
+SÄILITA KVIITUNG VÄLJAVÕTTE KONTROLLIKS
+Kuupäev
+16/10/2020 15:08 T06
+Kell Terminal Arve
+0553
+Klienditugi: 675 7777 (24h)
+www.circlek.ee
+2020-10-16
+15:08
+SUMMA
+EUR 42,22
+visa Credit
+XXXX XXXX.XXXX 2149
+TERMINAL:
+SWE
+IA1
+PSN:02
+61034c606-165577
+KAUPMEES: 865-1259
+ATC:00288
+AID:
+ARC:00
+AUTOR. NR.:
+AED: 180228
+A0000000031010
+STAATUS:0000
+016944
+REF: 165577
+TVR:00 00 04 80 00
+REFNR:
+AUTORISEERITUD
+TSI: F8 00
+610340165577
+
+circle k
+circle k sikupilli teenindus jaam
+tartu mnt 86, tallinn
+circle k eesti as
+a. h. tammsaare tee 47, 11316 tallinn
+reg.kood 10180925, kmkr nr. ee100305317
+kirjeldus
+95 miles
+pump 6 hind 1,229 eur/l
+kogus
+34,35l
+summa
+42,22 1
+kokku
+käibemaksuta
+42,22
+35,18
+kk makse
+42,22 eur
+käibemaks
+20% km
+käibemaks kokku
+määr
+kood
+summa
+20,00% 1
+7,04
+7,04
+säilita kviitung väljavõtte kontrolliks
+kuupäev
+16/10/2020 15:08 t06
+kell terminal arve
+0553
+klienditugi: 675 7777 (24h)
+www.circlek.ee
+2020-10-16
+15:08
+summa
+eur 42,22
+visa credit
+xxxx xxxx.xxxx 2149
+terminal:
+swe
+ia1
+psn:02
+61034c606-165577
+kaupmees: 865-1259
+atc:00288
+aid:
+arc:00
+autor. nr.:
+aed: 180228
+a0000000031010
+staatus:0000
+016944
+ref: 165577
+tvr:00 00 04 80 00
+refnr:
+autoriseeritud
+tsi: f8 00
+610340165577
+K
+CIRCLE
+circle teenindus jaam
+sikupilli
+K
+Tallinn
+86, Tartu mnt
+circle Eesti
+K AS
+A. H. Tammsaare tee 47, 11316 Tallinn
+KMKR Reg.kood 10180925, EE100305317
+nr.
+Kirjeldus Kogus Summa
+95 miles 34,35L 42,22 1
+6 Hind 1,229 EUR/L
+Pump
+KOKKU 42,22
+KÄIBEMAKSUTA 35,18
+KK MAKSE 42,22 EUR
+Käibemaks
+Määr Kood
+Summa
+20%
+KM 20,00% 1 7,04
+Käibemaks 7,04 kokku
+SÄILITA VÄLJAVÕTTE
+KVIITUNG KONTROLLIKS
+Kell
+Terminal
+Kuupäev Arve
+T06
+16/10/2020 15:08 0553
+Klienditugi: 675 7777 (24h)
+www.circlek.ee
+2020-10-16 15:08
+EUR 42,22
+SUMMA
+visa Credit PSN:02
+XXXX XXXX.XXXX 2149
+TERMINAL: 61034c606-165577
+SWE
+IA1 865-1259 KAUPMEES:
+ATC:00288 180228
+AED:
+AID: A0000000031010
+ARC:00 STAATUS:0000
+AUTOR. 016944
+NR.:
+REF: 165577
+AUTORISEERITUD
+TVR:00 00 F8 00
+04 80 00 TSI:
+REFNR: 610340165577
+k
+circle
+circle teenindus jaam
+sikupilli
+k
+tallinn
+86, tartu mnt
+circle eesti
+k as
+a. h. tammsaare tee 47, 11316 tallinn
+kmkr reg.kood 10180925, ee100305317
+nr.
+kirjeldus kogus summa
+95 miles 34,35l 42,22 1
+6 hind 1,229 eur/l
+pump
+kokku 42,22
+käibemaksuta 35,18
+kk makse 42,22 eur
+käibemaks
+määr kood
+summa
+20%
+km 20,00% 1 7,04
+käibemaks 7,04 kokku
+säilita väljavõtte
+kviitung kontrolliks
+kell
+terminal
+kuupäev arve
+t06
+16/10/2020 15:08 0553
+klienditugi: 675 7777 (24h)
+www.circlek.ee
+2020-10-16 15:08
+eur 42,22
+summa
+visa credit psn:02
+xxxx xxxx.xxxx 2149
+terminal: 61034c606-165577
+swe
+ia1 865-1259 kaupmees:
+atc:00288 180228
+aed:
+aid: a0000000031010
+arc:00 staatus:0000
+autor. 016944
+nr.:
+ref: 165577
+autoriseeritud
+tvr:00 00 f8 00
+04 80 00 tsi:
+refnr: 610340165577
