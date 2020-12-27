@@ -44,6 +44,8 @@ func main() {
 	}))
 	r.Use(middleware.Logger)
 	r.Post("/file", handlers.FileAddHandler(dir))
+	r.Get("/account", handlers.GetAccountHandler())
+	r.Post("/account", handlers.UpdateAccountHandler())
 	log.Printf("Serving running on port %s", port)
 	log.Fatal(http.ListenAndServe(":"+port, r))
 }

@@ -12,6 +12,7 @@ require (
 	github.com/frankban/quicktest v1.11.2 // indirect
 	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
 	github.com/go-chi/chi v1.5.1
+	github.com/go-chi/cors v1.1.1
 	github.com/google/go-github/v33 v33.0.0
 	github.com/gorilla/sessions v1.2.1 // indirect
 	github.com/jung-kurt/gofpdf v1.16.2
