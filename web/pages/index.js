@@ -7,36 +7,43 @@ import axios from 'axios';
 import { AskForm , FormDetails } from '../components/FormData';
 import Error from '../components/Error';
 import * as R from 'ramda';
+import client from '../service/client';
+import { useRouter } from 'next/router'
 
 export default function IndexPage() {
   const [account, setAccount] = useState({leave_this_here: ''});
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  useEffect(async () => {
-    await axios.get('http://localhost:8080/account')
-    .then((response) => {
-      console.log(response);
-      setAccount(response.data);
-      setLoading(false);
-    })
-    .catch((err) => {
-      setLoading(false);
-      if (err.response) {
-        if (err.response.status === 401 || err.response.status === 403) {
-          console.log('would redirect to login');
+  const router = useRouter();
+
+  useEffect(() => {
+    const doAccount = async () => {
+      await client().get('/account')
+      .then((response) => {
+        console.log(response);
+        setAccount(response.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setLoading(false);
+        if (err.response) {
+          if (err.response.status === 401 || err.response.status === 403) {
+            router.push('/login');
+          } else {
+            setError(err.response.data);
+          }
         } else {
-          setError(err.response.data);
+          setError('Something went wrong.');
         }
-      } else {
-        setError('Something went wrong.');
-      }
-    });
-    return;
+      });
+      return;
+    };
+    doAccount();
   }, []);
   const updateAccount = async (data) => {
     setEditing(false);
-    await axios.post('http://localhost:8080/account', data)
+    await client().post('/account', data)
     .then((response) => {
       if (response.status === 200) {
         setAccount(data);
@@ -92,9 +99,11 @@ function FileDrop(props) {
   const [doing, setDoing] = useState(null);
   const [rcpts, setRcpts] = useState(null);
   const [pct, setPct] = useState(0);
-  let batchID = ""
+  const [batchID, setBatchID] = useState("");
+  const router = useRouter();
+  
   useEffect(() => {
-    batchID = Math.random().toString(16).substr(2, 14)
+    setBatchID(Math.random().toString(16).substr(2, 14));
   }, []);
 
 
@@ -109,7 +118,7 @@ function FileDrop(props) {
         let formdata = new FormData();
         formdata.append('file', file);
         formdata.append('name', file.name);
-        await axios.post('http://127.0.0.1:8080/file', formdata, 
+        await client().post('/file', formdata, 
           {
             params: {'batch_id': batchID}, 
             headers: {'Content-Type': 'multipart/form-data'},
@@ -144,6 +153,12 @@ function FileDrop(props) {
     }) 
   }, []);
 
+  const handleProcess = (e) => {
+    e.preventDefault();
+    console.log('submitting for processing ', batchID);
+    router.push('/success');
+  }
+
   const {getRootProps, getInputProps, open, acceptedFiles} = useDropzone({
     // Disable click and keydown behavior
     noClick: true,
@@ -165,8 +180,8 @@ function FileDrop(props) {
         </button> }
       </div>
         {rcpts && rcpts !== 0 ? 
-        <div className="md:w-full lg:w-3/4 mx-auto py-0">
-          <button className="bg-accent-2 w-full text-white px-full py-2 rounded-md font-bold border border-accent-2">
+        <div className="md:w-full lg:w-3/4 mx-auto py-0 pb-6">
+          <button onClick={handleProcess} className="bg-accent-2 w-full text-white px-full py-2 rounded-md font-bold border border-accent-2">
             <span className="px-2"><FontAwesomeIcon icon={faCogs} /></span>  
             <span className="px-2">{rcpts === -1 ? `Process receipts` : `Process ${rcpts} receipts`}</span>
           </button>

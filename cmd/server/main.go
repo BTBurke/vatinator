@@ -46,6 +46,7 @@ func main() {
 	r.Post("/file", handlers.FileAddHandler(dir))
 	r.Get("/account", handlers.GetAccountHandler())
 	r.Post("/account", handlers.UpdateAccountHandler())
+	r.Post("/login", handlers.LoginHandler())
 	log.Printf("Serving running on port %s", port)
 	log.Fatal(http.ListenAndServe(":"+port, r))
 }

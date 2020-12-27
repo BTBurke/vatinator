@@ -1,19 +1,38 @@
 import React, { useState } from 'react';
+import client from '../service/client';
+import { useRouter } from 'next/router'; 
 
 export default function Login() {
     const [email, setEmail] = useState(null);
     const [pw, setPw] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    const router = useRouter();
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         setLoading(true);
         console.log(email.value);
         console.log(pw.value);
-        setInterval(() => {
-            setError('Sorry, that didn\'t work');
+        if (pw.value.length === 0 || email.value.length === 0) {
+            setError('Email and password are required.');
             setLoading(false);
-        }, 7000);
+            return
+        }
+        await client().post('/login')
+        .then((response) => {
+            if (response.status === 200) {
+                setLoading(false);
+                router.push('/');
+            }
+        })
+        .catch((err) => {
+            setLoading(false);
+            if (err.response) {
+                setError(err.response.data);
+            } else {
+                setError('Sorry, that didn\'t work');
+            }
+        });
     }
 
     return (
