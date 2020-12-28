@@ -122,16 +122,16 @@ export function FormDetails(props): JSX.Element {
         ) 
     }
     return (
-    <>
-      <div className="flex flex-row justify-between pt-4">
-          <div className="text-secondary font-bold">
+    <div className="divide-y-2 divide-secondary">
+      <div className="flex flex-row justify-between mt-2">
+          <div className="text-secondary font-bold py-1">
               Form Info
           </div>
-          {showEdit && <div className="text-secondary text-md px-3" onClick={() => setEditing(true)}>
+          {showEdit && <div className="text-secondary text-md px-3 py-1" onClick={() => setEditing(true)}>
               <FontAwesomeIcon icon={faEdit}></FontAwesomeIcon>
           </div>}
       </div>
-      <div className="flex md:flex-row flex-col justify-between mx-auto lg:px-0 xs:px-0 pb-2 md:w-full">
+      <div className="pt-2 flex md:flex-row flex-col justify-between mx-auto lg:px-0 xs:px-0 pb-2 md:w-full">
               <div className="text-white text-left">
                 <p className="text-sm font-bold lg:text-lg">{account.full_name} ({account.diplomatic_id})</p>
                 <p className="text-sm lg:text-lg">
@@ -143,6 +143,6 @@ export function FormDetails(props): JSX.Element {
                 <p className="text-sm lg:text-lg">{account.bank.split(',').slice(2, account.bank.length-1).join(',')}</p>
               </div>
       </div>
-    </> 
+    </div> 
     );
 }
