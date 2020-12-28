@@ -215,12 +215,15 @@ function Process(props) {
   const {show, rcpts, batchID, onError} = props;
   const router = useRouter();
   const [submissionDate, setSubmissionDate] = useState(defaultMonth);
+  const [loading, setLoading] = useState(false);
 
   const handleProcess = async (e) => {
     e.preventDefault();
     console.log('submitting for processing ', batchID);
+    setLoading(true);
     await client().post('/process', {batch_id: batchID, date: submissionDate})
     .then((response) => {
+      setLoading(false);
       if (response.status === 200) {
         router.push('/success');
       } else {
@@ -228,6 +231,7 @@ function Process(props) {
       }
     })
     .catch((err) => {
+      // don't turn off loading here to force page reload
       if (err.response) {
         onError(err.response.data);
       } else {
@@ -248,13 +252,17 @@ function Process(props) {
         <p className="text-lg text-gray-300">Select submission month</p>
         <select value={submissionDate} onChange={(e) => setSubmissionDate(e.target.value)} className="mt-1 py-1 appearance-none rounded bg-secondary text-white text-lg px-6 leading-tight">
           {submissionMonths.map((option) => (
-                <option value={option}>{option}</option>
+                <option key={option} value={option}>{option}</option>
           ))}
         </select>
-        <button onClick={handleProcess} className="mt-6 bg-accent-2 w-full text-white px-full py-2 rounded-md font-bold border border-accent-2">
-          <span className="px-2"><FontAwesomeIcon icon={faCogs} /></span>  
-          <span className="px-2">{rcpts === -1 ? `Process receipts` : `Process ${rcpts} receipts`}</span>
-        </button>
+        <button disabled={loading} onClick={handleProcess} className="mt-6 bg-accent-2 w-full text-white px-full py-2 rounded-md font-bold border border-accent-2">
+          {loading ? <span>Submitting...</span> :
+          <>
+            <span className="px-2"><FontAwesomeIcon icon={faCogs} /></span>  
+            <span className="px-2">{rcpts === -1 ? `Process receipts` : `Process ${rcpts} receipts`}</span>
+          </>
+          }
+          </button>
       </div>
     </div>
   )

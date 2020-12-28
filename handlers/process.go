@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/pkg/errors"
 )
@@ -24,6 +25,7 @@ func ProcessHandler() http.HandlerFunc {
 			return
 		}
 		fmt.Printf("got process request: %v", pr)
+		time.Sleep(5 * time.Second)
 
 		w.WriteHeader(http.StatusOK)
 	}

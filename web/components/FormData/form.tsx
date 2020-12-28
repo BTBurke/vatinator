@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import { useForm } from 'react-hook-form';
 import { faEdit } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -78,8 +78,19 @@ export function FormEmbassyData(props): JSX.Element {
     const {onSubmit, account} = props;
     const { register, handleSubmit, watch, errors } = useForm();
     const localSubmit = data => {
-        onSubmit(Object.assign(data, {bank: data.bank_name + ', ' + data.account}))
+      console.log(data);
+        const bank_name_computed = data.bank_name !== 'other' ? data.bank_name : data.bank_name_other;
+        onSubmit(Object.assign(data, {bank: bank_name_computed + ', ' + data.account}))
     }
+    const [showOther, setShowOther] = useState(false);
+
+    useEffect(() => {
+        if (watch('bank_name') === 'other') {
+        setShowOther(true);
+      } else {
+        setShowOther(false);
+      }
+    }, [watch('bank_name')]); 
       
     return (
       <form onSubmit={handleSubmit(localSubmit)}>
@@ -90,17 +101,27 @@ export function FormEmbassyData(props): JSX.Element {
               <p className="text-gray-500 text-bold text-lg">Bank</p>
               <select defaultValue={account.bank_name || ""} name="bank_name" ref={register({required: true})} className="mt-1 py-1 appearance-none rounded bg-secondary text-white text-lg w-full leading-tight">
                   <option value="">-- Select your bank --</option>
-                  <option value="SEB Bank, HBAEEJK">SEB Bank</option>
-                  <option value="Swedbank, HGJKF">Swedbank</option>
+                  <option value="AS SEB Bank, EEUHEE2X, Tornimäe 2, 15010 Tallinn, Estonia">SEB Bank</option>
+                  <option value="Swedbank AS, HABAEE2X, Liivalaia 8, 15040 Tallinn, Estonia">Swedbank</option>
+                  <option value="AS LHV Bank, LHVBEE22, Tartu mnt 2, 10145 Tallinn, Estonia">LHV Bank</option>
+                  <option value="Luminor Bank AS, NDEAEE2X, Liivalaia 45, 10145 Tallinn, Estonia">Luminor Bank</option>
+                  <option value="other">Some other bank</option>
               </select>
               {errors.first_name && <span className="text-red-800 text-bold">This field is required</span>}
           </div>
+
           <div className="w-full md:w-1/2 md:pl-2 py-2">
               <p className="text-gray-500 text-bold text-lg">Account Number</p>
               <input defaultValue={account.account || ""} name="account" ref={register({ required: true })} className="bg-secondary mt-1 py-1 appearance-none rounded text-white text-lg w-full leading-tight" />
               {errors.first_name && <span className="text-red-800 text-bold">This field is required</span>}
           </div>
         </div>
+        {showOther ? <div className="w-full py-2">
+              <p className="text-gray-500 text-bold text-lg">Bank SWIFT Code and Address</p>
+              <p className="text-secondary text-md">(e.g., Swedbank AS, HABAEE2X, Liivalaia 8, 15040 Tallinn, Estonia)</p>
+              <input defaultValue={account.bank_name || ""} name="bank_name_other" ref={register({ required: false })} className="bg-secondary mt-1 py-1 appearance-none rounded text-white text-lg w-full leading-tight" />
+              {errors.first_name && <span className="text-red-800 text-bold">This field is required</span>}
+          </div> : null}
   
         <div className="py-6">
           <input type="submit" value="Save" className="px-8 bg-accent-2 text-white py-2 rounded-md font-bold border border-accent-2"/>
