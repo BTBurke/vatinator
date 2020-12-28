@@ -47,6 +47,7 @@ func main() {
 	r.Get("/account", handlers.GetAccountHandler())
 	r.Post("/account", handlers.UpdateAccountHandler())
 	r.Post("/login", handlers.LoginHandler())
+	r.Post("/process", handlers.ProcessHandler())
 	log.Printf("Serving running on port %s", port)
 	log.Fatal(http.ListenAndServe(":"+port, r))
 }

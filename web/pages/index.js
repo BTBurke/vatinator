@@ -9,6 +9,8 @@ import Error from '../components/Error';
 import * as R from 'ramda';
 import client from '../service/client';
 import { useRouter } from 'next/router'
+import dayjs from 'dayjs';
+
 
 export default function IndexPage() {
   const [account, setAccount] = useState({leave_this_here: ''});
@@ -65,7 +67,7 @@ export default function IndexPage() {
   return (
     <>
     {loading ? 
-      <p className="text-4xl text-gray-500 text-center w-full py-16">Loading...</p> 
+       <Loading />
     :
     error ? 
       <Error error={error}/> 
@@ -94,20 +96,44 @@ function Header(props) {
   );
 }
 
+function Loading() {
+  return (
+    <div className="container mx-auto">
+    <div className="w-full lg:w-3/4 mx-auto">
+      <Nav />
+      <div className="py-0 bg-primary px-4">
+        <p className="text-4xl text-gray-500 text-center w-full py-16">Loading...</p>
+      </div>
+    </div>
+    </div>
+  );
+
+}
+
 function FileDrop(props) {
   const { onError } = props;
   const [doing, setDoing] = useState(null);
   const [rcpts, setRcpts] = useState(null);
   const [pct, setPct] = useState(0);
-  const [batchID, setBatchID] = useState("");
+  const [batchID, setBatchID] = useState(null);
   const router = useRouter();
   
   useEffect(() => {
     setBatchID(Math.random().toString(16).substr(2, 14));
   }, []);
 
+  const getBatchID = () => { 
+    if (!batchID) {
+      const batch = Math.random().toString(16).substr(2, 14);
+      setBatchID(batch);
+      return batch;
+    } else {
+      return batchID;
+    }
+  }
 
-  const onDrop = useCallback((acceptedFiles) => {
+
+  const onDrop = (acceptedFiles) => {
     acceptedFiles.forEach((file) => {
       setDoing([`Processing ${file.name}...`]);
       const reader = new FileReader()
@@ -120,7 +146,7 @@ function FileDrop(props) {
         formdata.append('name', file.name);
         await client().post('/file', formdata, 
           {
-            params: {'batch_id': batchID}, 
+            params: {'batch_id': getBatchID()}, 
             headers: {'Content-Type': 'multipart/form-data'},
             onUploadProgress: event => {
               setPct(Math.round((100 * event.loaded) / event.total));
@@ -151,13 +177,7 @@ function FileDrop(props) {
       }
       reader.readAsBinaryString(file);
     }) 
-  }, []);
-
-  const handleProcess = (e) => {
-    e.preventDefault();
-    console.log('submitting for processing ', batchID);
-    router.push('/success');
-  }
+  };
 
   const {getRootProps, getInputProps, open, acceptedFiles} = useDropzone({
     // Disable click and keydown behavior
@@ -179,14 +199,64 @@ function FileDrop(props) {
           <span className="px-2">{rcpts ? `Add more receipts` : `Add receipts`}</span>
         </button> }
       </div>
-        {rcpts && rcpts !== 0 ? 
-        <div className="md:w-full lg:w-3/4 mx-auto py-0 pb-6">
-          <button onClick={handleProcess} className="bg-accent-2 w-full text-white px-full py-2 rounded-md font-bold border border-accent-2">
-            <span className="px-2"><FontAwesomeIcon icon={faCogs} /></span>  
-            <span className="px-2">{rcpts === -1 ? `Process receipts` : `Process ${rcpts} receipts`}</span>
-          </button>
-        </div> : null}
+      <Process show={rcpts && rcpts !== 0} rcpts={rcpts} batchID={batchID} onError={onError} />
     </>
   );
+
+}
+
+function Process(props) {
+  const submissionMonths = [
+    dayjs().subtract(1, 'month').format('MMMM YYYY'),
+    dayjs().format('MMMM YYYY')
+  ]
+  const defaultMonth = dayjs().date() <= 15 ? submissionMonths[0]: submissionMonths[1];
+
+  const {show, rcpts, batchID, onError} = props;
+  const router = useRouter();
+  const [submissionDate, setSubmissionDate] = useState(defaultMonth);
+
+  const handleProcess = async (e) => {
+    e.preventDefault();
+    console.log('submitting for processing ', batchID);
+    await client().post('/process', {batch_id: batchID, date: submissionDate})
+    .then((response) => {
+      if (response.status === 200) {
+        router.push('/success');
+      } else {
+        onError(response.data)
+      }
+    })
+    .catch((err) => {
+      if (err.response) {
+        onError(err.response.data);
+      } else {
+        onError('Something went wrong.')
+      }
+    });
+  }
+
+  if (!show) {
+    return null;
+  }
+  return (
+    <div className="w-full mx-auto py-0 pb-6 divide-y-2 divide-secondary">
+      <div className="text-secondary font-bold py-1">
+        Submit images for processing
+      </div>
+      <div className="py-4">
+        <p className="text-lg text-gray-300">Select submission month</p>
+        <select value={submissionDate} onChange={(e) => setSubmissionDate(e.target.value)} className="mt-1 py-1 appearance-none rounded bg-secondary text-white text-lg px-6 leading-tight">
+          {submissionMonths.map((option) => (
+                <option value={option}>{option}</option>
+          ))}
+        </select>
+        <button onClick={handleProcess} className="mt-6 bg-accent-2 w-full text-white px-full py-2 rounded-md font-bold border border-accent-2">
+          <span className="px-2"><FontAwesomeIcon icon={faCogs} /></span>  
+          <span className="px-2">{rcpts === -1 ? `Process receipts` : `Process ${rcpts} receipts`}</span>
+        </button>
+      </div>
+    </div>
+  )
 
 }
