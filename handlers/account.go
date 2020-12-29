@@ -60,3 +60,39 @@ func UpdateAccountHandler() http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 	}
 }
+
+type accountRequest struct {
+	Email string
+	Password string
+}
+
+func CreateAccountHandler(account vat.AccountService, session vat.SessionService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		dec := json.NewDecoder(r.Body)
+		defer r.Body.Close()
+
+		var m accountRequest
+		if err := dec.Decode(&m); err != nil {
+			handleError(w, http.StatusBadRequest, errors.New("could not decode request"))
+			return
+		}
+
+		if len(m.Email) == 0 || len(m.Password) == 0 {
+			handleError(w, http.StatusBadRequest, errors.New("email and password must be provided"))
+			return
+		}
+
+		id, err := account.Create(email, password string)
+		if err != nil {
+			handleError(w, http.StatusInternalServerError, errors.New("error creating account"))
+			return
+		}
+		
+		if err := session.New(w, r, id); err != nil {
+			handleError(w, http.StatusInternalServerError, errors.New("error creating session"))
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+	}
+}

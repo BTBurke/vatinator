@@ -1,4 +1,4 @@
-package vat
+package vatinator
 
 import "github.com/BTBurke/vatinator/svc"
 
@@ -13,5 +13,5 @@ type Options struct {
 // Process will read receipts located at path and process them into VAT and excise forms.  Returned
 // values are full paths to every file generated.
 func Process(path string) (string, error) {
-
+	return "", nil
 }

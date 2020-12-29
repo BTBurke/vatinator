@@ -1,4 +1,4 @@
-package vat
+package vatinator
 
 import "github.com/BTBurke/vatinator/svc"
 

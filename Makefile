@@ -10,14 +10,18 @@ endif
 .RECIPEPREFIX = >
 NEXTVERSION = $$(( $$(git tag --sort=-v:refname | head -n 1 | cut -d. -f1 | sed 's/v//') + 1 ))
 
-build:
+build: bundled/assets.go
 > mkdir -p bin
 > go build -o bin/vat $$(find cmd/vat -name '*.go')
 
-test:
+test: bundled/assets.go
 > go test ./...
 
 assets:
+> go get -u github.com/go-bindata/go-bindata/...
+> go-bindata -pkg bundled -o bundled/assets.go assets/
+
+bundled/assets.go: $(shell find ./assets -type f)
 > go get -u github.com/go-bindata/go-bindata/...
 > go-bindata -pkg bundled -o bundled/assets.go assets/
 
