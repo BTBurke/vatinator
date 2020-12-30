@@ -14,6 +14,7 @@ import (
 	"github.com/BTBurke/vatinator/img"
 	"github.com/BTBurke/vatinator/svc"
 	"github.com/dgraph-io/badger/v2"
+	"github.com/mholt/archiver/v3"
 	"github.com/pkg/errors"
 	"github.com/rs/xid"
 )
@@ -40,17 +41,19 @@ type processService struct {
 	uploadDir string
 	credFile  string
 	account   AccountService
+	token     TokenService
 }
 
 // ProcessService will process receipts and generate forms asynchronously.  It keeps track of running
 // work processes and attempts to finish them before server shutdown.
-func NewProcessService(uploadDir string, exportDir string, credFile string, accountSvc AccountService) ProcessService {
+func NewProcessService(uploadDir string, exportDir string, credFile string, accountSvc AccountService, tokenSvc TokenService) ProcessService {
 	return &processService{
 		workers:   make(map[string]time.Time),
 		uploadDir: uploadDir,
 		exportDir: exportDir,
 		credFile:  credFile,
 		account:   accountSvc,
+		token:     tokenSvc,
 	}
 }
 
@@ -122,6 +125,37 @@ func (p *processService) Do(id AccountID, batch string, month string, year int) 
 			opts.log.Printf("process failed: %v", err)
 			return
 		}
+
+		var files []string
+		if err := filepath.Walk(opts.OutputPath, func(path string, finfo os.FileInfo, err error) error {
+			if !finfo.IsDir() {
+				files = append(files, path)
+			}
+			return nil
+		}); err != nil {
+			opts.log.Printf("filepath scan failed: %s", err)
+			return
+		}
+		opts.log.Printf("Found %d files to zip", len(files))
+		// Files likes Burke-December2020-<batchID>.zip
+		zipName := fmt.Sprintf("%s-%s%d-%s.zip", fd.LastName, month, year, batch)
+		outputZip := filepath.Join(p.exportDir, id.String(), zipName)
+		if err := archiver.NewZip().Archive(files, outputZip); err != nil {
+			opts.log.Printf("zip file failed: %v", err)
+			return
+		}
+		opts.log.Printf("Files zipped to: %s", outputZip)
+		tokenPath := filepath.Join("/export", id.String(), zipName)
+		encToken, err := p.token.NewPath(tokenPath)
+		if err != nil {
+			opts.log.Printf("token creation failed: %s", err)
+			return
+		}
+		link := fmt.Sprintf("http://127.0.0.1:8080/export/%s/%s?token=%s", id.String(), zipName, encToken)
+		opts.log.Printf("Created link: %s", link)
+
+		//TODO: send email or something
+
 	}(release, path, fd, month, year, opts)
 
 	return nil

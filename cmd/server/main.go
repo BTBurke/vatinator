@@ -113,8 +113,15 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// token service
+	tokenSvc := vatinator.NewTokenService(keys[0])
+
 	// process service
-	processSvc := vatinator.NewProcessService(viper.GetString("UploadDir"), viper.GetString("ExportDir"), viper.GetString("CredentialFile"), accountSvc)
+	processSvc := vatinator.NewProcessService(viper.GetString("UploadDir"),
+		viper.GetString("ExportDir"),
+		viper.GetString("CredentialFile"),
+		accountSvc,
+		tokenSvc)
 
 	r := chi.NewRouter()
 	r.Use(cors.Handler(cors.Options{
@@ -137,6 +144,8 @@ func main() {
 		r.Post("/account", handlers.UpdateAccountHandler(accountSvc))
 		r.Post("/process", handlers.ProcessHandler(processSvc))
 	})
+	fs := http.FileServer(http.Dir(viper.GetString("ExportDir")))
+	r.With(handlers.TokenMiddleware(tokenSvc)).Handle("/export/*", http.StripPrefix("/export", fs))
 	// no auth routes
 	r.Post("/create", handlers.CreateAccountHandler(accountSvc, sessionSvc))
 	r.Post("/login", handlers.LoginHandler(accountSvc, sessionSvc))
