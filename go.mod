@@ -7,7 +7,7 @@ require (
 	github.com/BTBurke/clt v1.11.0
 	github.com/BTBurke/snapshot v1.7.1
 	github.com/BTBurke/sqlitestore v0.4.0
-	github.com/dgraph-io/badger v1.6.2 // indirect
+	github.com/dgraph-io/badger v1.6.2
 	github.com/dgraph-io/badger/v2 v2.2007.2
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/elithrar/simple-scrypt v1.3.0
