@@ -138,7 +138,7 @@ export function FormDetails(props): JSX.Element {
     if (!accountValid) {
         return (
             <>
-            Loading...
+            <p className="text-white">Loading...</p>
             </>
         ) 
     }

@@ -6,9 +6,11 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/BTBurke/vatinator"
 	"github.com/BTBurke/vatinator/handlers"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
@@ -91,24 +93,50 @@ func main() {
 	log.Printf("Upload directory: %s", viper.Get("UploadDir"))
 	log.Printf("Export directory: %s", viper.Get("ExportDir"))
 
+	// set up account service
+	db, err := vatinator.NewDB(filepath.Join(viper.GetString("DataDir"), "vat.db"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	accountSvc := vatinator.NewAccountService(db)
+	if err := vatinator.Migrate(db, "1.sql"); err != nil {
+		log.Fatal(err)
+	}
+
+	// session service
+	keys, err := vatinator.GetSessionKeys(db)
+	if err != nil {
+		log.Fatal(err)
+	}
+	sessionSvc, err := vatinator.NewSessionService(filepath.Join(viper.GetString("DataDir"), "session.db"), keys...)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	r := chi.NewRouter()
 	r.Use(cors.Handler(cors.Options{
 		// AllowedOrigins: []string{"https://foo.com"}, // Use this to allow specific origin hosts
-		AllowedOrigins: []string{"*"},
+		AllowedOrigins: []string{"http://localhost:3000"},
 		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Cookie"},
 		ExposedHeaders:   []string{"Link"},
-		AllowCredentials: false,
+		AllowCredentials: true,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
 	port := viper.GetString("Port")
 	r.Use(middleware.Logger)
-	r.Post("/file", handlers.FileAddHandler(viper.GetString("UploadDir")))
-	r.Get("/account", handlers.GetAccountHandler())
-	r.Post("/account", handlers.UpdateAccountHandler())
-	r.Post("/login", handlers.LoginHandler())
-	r.Post("/process", handlers.ProcessHandler())
+
+	r.Route("/api", func(r chi.Router) {
+		r.Use(handlers.SessionMiddleware(sessionSvc))
+		r.Post("/file", handlers.FileAddHandler(viper.GetString("UploadDir")))
+		r.Get("/account", handlers.GetAccountHandler(accountSvc))
+		r.Post("/account", handlers.UpdateAccountHandler(accountSvc))
+		r.Post("/process", handlers.ProcessHandler())
+	})
+	// no auth routes
+	r.Post("/create", handlers.CreateAccountHandler(accountSvc, sessionSvc))
+	r.Post("/login", handlers.LoginHandler(accountSvc, sessionSvc))
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)

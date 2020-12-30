@@ -4,7 +4,7 @@ import { FormBankData, FormBioData, FormEmbassyData, FormDetails } from './form'
 
 
 export function AskForm(props): JSX.Element {
-    const {setAccount, initial} = props;
+    const {setAccount, doUpdate, setEditing, initial} = props;
     const [account, setAccountLocal] = useState(initial || {
         first_name: "",
         last_name: "",
@@ -25,6 +25,8 @@ export function AskForm(props): JSX.Element {
 
     const submit = () => {
         setAccount(account);
+        setEditing(false);
+        doUpdate(account);
         console.log('final', account);
     }
     const reset = () => {

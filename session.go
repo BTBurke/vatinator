@@ -15,9 +15,7 @@ var SessionNotValid error = errors.New("session expired or doesnt exist")
 var defaultOptions = sessions.Options{
 	Path: "/",
 	// 2 weeks
-	MaxAge:   60 * 60 * 24 * 14,
-	HttpOnly: true,
-	Secure:   true,
+	MaxAge: 60 * 60 * 24 * 14,
 }
 
 type SessionService interface {

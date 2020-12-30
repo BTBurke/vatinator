@@ -13,18 +13,24 @@ import dayjs from 'dayjs';
 
 
 export default function IndexPage() {
-  const [account, setAccount] = useState({leave_this_here: ''});
+  const [account, setAccount] = useState({first_name: ''});
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [accountValid, setAccountValid] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     const doAccount = async () => {
-      await client().get('/account')
+      await client().get('/api/account')
       .then((response) => {
         console.log(response);
-        setAccount(response.data);
+        if (response.status === 200) {
+          // returns 204 when there is no form data set,
+          // only update if 200 with actual data
+          setAccountValid(R.not(R.any(R.isEmpty)(R.values(response.data))));
+          setAccount(response.data);
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -43,9 +49,9 @@ export default function IndexPage() {
     };
     doAccount();
   }, []);
-  const updateAccount = async (data) => {
-    setEditing(false);
-    await client().post('/account', data)
+  const updateAccount = (data) => {
+    setAccountValid(R.not(R.any(R.isEmpty)(R.values(data))));
+    const update = async (data) => await client().post('/api/account', data)
     .then((response) => {
       if (response.status === 200) {
         setAccount(data);
@@ -60,9 +66,12 @@ export default function IndexPage() {
         setError('Something went wrong updating account data.')
       }
     });
+    update(data);
   };
+
+  useEffect(() => setAccountValid(R.not(R.any(R.isEmpty)(R.values(account)))), [account]);
   
-  const accountValid = R.not(R.any(R.isEmpty)(R.values(account)));
+  //const accountValid = R.not(R.any(R.isEmpty)(R.values(account)));
 
   return (
     <>
@@ -77,7 +86,7 @@ export default function IndexPage() {
           <Nav />
           <div className="py-0 bg-primary px-4">
             {accountValid && !editing ? <Header>Create your forms</Header> : <Header>Enter your VAT form info</Header> }
-            {accountValid && !editing ? <FormDetails account={account} setEditing={setEditing} showEdit /> : <AskForm initial={account} setAccount={updateAccount} />}        
+            {accountValid && !editing ? <FormDetails account={account} setEditing={setEditing} showEdit /> : <AskForm initial={account} setEditing={setEditing} doUpdate={updateAccount} setAccount={setAccount} />}        
             {accountValid && !editing ? <FileDrop onError={setError} /> : null }   
           </div>
         </div>
@@ -98,14 +107,9 @@ function Header(props) {
 
 function Loading() {
   return (
-    <div className="container mx-auto">
-    <div className="w-full lg:w-3/4 mx-auto">
-      <Nav />
-      <div className="py-0 bg-primary px-4">
+
         <p className="text-4xl text-gray-500 text-center w-full py-16">Loading...</p>
-      </div>
-    </div>
-    </div>
+   
   );
 
 }
@@ -144,7 +148,7 @@ function FileDrop(props) {
         let formdata = new FormData();
         formdata.append('file', file);
         formdata.append('name', file.name);
-        await client().post('/file', formdata, 
+        await client().post('/api/file', formdata, 
           {
             params: {'batch_id': getBatchID()}, 
             headers: {'Content-Type': 'multipart/form-data'},
@@ -221,9 +225,8 @@ function Process(props) {
     e.preventDefault();
     console.log('submitting for processing ', batchID);
     setLoading(true);
-    await client().post('/process', {batch_id: batchID, date: submissionDate})
+    await client().post('/api/process', {batch_id: batchID, date: submissionDate})
     .then((response) => {
-      setLoading(false);
       if (response.status === 200) {
         router.push('/success');
       } else {

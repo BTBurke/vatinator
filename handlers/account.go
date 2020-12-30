@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 
+	"github.com/BTBurke/vatinator"
 	"github.com/pkg/errors"
 )
 
@@ -26,27 +28,37 @@ func init() {
 	}
 }
 
-// TODO: add db in constructor
-func GetAccountHandler() http.HandlerFunc {
+func GetAccountHandler(account vatinator.AccountService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// TODO: get account from context
-
-		// TODO: look up account in DB
-
-		// TODO: return account data
-
-		b, err := json.Marshal(data)
+		id, err := GetAccountID(r)
 		if err != nil {
-			handleError(w, http.StatusInternalServerError, errors.Wrap(err, "error serializing account data"))
+			handleError(w, http.StatusForbidden, errors.Wrap(err, "no account information present"))
 			return
 		}
+
+		fd, err := account.GetFormData(id)
+		if err != nil {
+			handleError(w, http.StatusInternalServerError, errors.Wrap(err, "database error"))
+		}
+		if fd == nil {
+			// form data has not been set yet, return 204, no body to trigger form fill
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(b)
+		w.Write(fd)
 	}
 }
 
-func UpdateAccountHandler() http.HandlerFunc {
+func UpdateAccountHandler(account vatinator.AccountService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := GetAccountID(r)
+		if err != nil {
+			handleError(w, http.StatusForbidden, errors.Wrap(err, "no account information present"))
+			return
+		}
+
 		b := new(bytes.Buffer)
 		defer r.Body.Close()
 		if _, err := io.Copy(b, r.Body); err != nil {
@@ -54,19 +66,21 @@ func UpdateAccountHandler() http.HandlerFunc {
 			return
 		}
 
-		if err := json.Unmarshal(b.Bytes(), &data); err != nil {
-			handleError(w, http.StatusInternalServerError, errors.Wrap(err, "error deserializing account update"))
+		if err := account.UpdateFormData(id, b.Bytes()); err != nil {
+			handleError(w, http.StatusInternalServerError, errors.Wrap(err, "error saving form data"))
+			return
 		}
+
 		w.WriteHeader(http.StatusOK)
 	}
 }
 
 type accountRequest struct {
-	Email string
+	Email    string
 	Password string
 }
 
-func CreateAccountHandler(account vat.AccountService, session vat.SessionService) http.HandlerFunc {
+func CreateAccountHandler(account vatinator.AccountService, session vatinator.SessionService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		dec := json.NewDecoder(r.Body)
 		defer r.Body.Close()
@@ -82,15 +96,20 @@ func CreateAccountHandler(account vat.AccountService, session vat.SessionService
 			return
 		}
 
-		id, err := account.Create(email, password string)
+		id, err := account.Create(m.Email, m.Password)
 		if err != nil {
+			log.Printf("error creating account: %v", err)
 			handleError(w, http.StatusInternalServerError, errors.New("error creating account"))
 			return
 		}
-		
+
 		if err := session.New(w, r, id); err != nil {
+			log.Printf("error creating session: %v", err)
 			handleError(w, http.StatusInternalServerError, errors.New("error creating session"))
 			return
+		}
+		for k, v := range w.Header() {
+			log.Printf("%s: %s", k, v)
 		}
 
 		w.WriteHeader(http.StatusOK)

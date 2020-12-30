@@ -1,6 +1,7 @@
 import '../styles/index.css'
 
 import Head from 'next/head'
+import { PageTransition } from 'next-page-transitions';
 
 export default function MyApp({ Component, pageProps }) {
   return (
@@ -14,7 +15,7 @@ export default function MyApp({ Component, pageProps }) {
         />
         <meta name="description" content="Description" />
         <meta name="keywords" content="Keywords" />
-        <title>Next.js PWA Example</title>
+        <title>Vatinator</title>
 
         <link rel="manifest" href="/manifest.json" />
         <link
@@ -32,7 +33,9 @@ export default function MyApp({ Component, pageProps }) {
         <link rel="apple-touch-icon" href="/apple-icon.png"></link>
         <meta name="theme-color" content="#317EFB" />
       </Head>
-      <Component {...pageProps} />
+      <PageTransition timeout={300} classNames="page-transition">
+        <Component {...pageProps} />
+      </PageTransition>
     </>
   )
 }
