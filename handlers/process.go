@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -30,7 +29,6 @@ func ProcessHandler(process vatinator.ProcessService) http.HandlerFunc {
 			handleError(w, http.StatusBadRequest, errors.Wrap(err, "failed to read process request"))
 			return
 		}
-		fmt.Printf("got process request: %v", pr)
 		t, err := time.Parse("January 2006", pr.Date)
 		if err != nil {
 			handleError(w, http.StatusBadRequest, errors.Wrapf(err, "unable to parse date: %s", pr.Date))

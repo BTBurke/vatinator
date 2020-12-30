@@ -6,3 +6,4 @@ enc
 passphrase
 bin/
 dist/
+config.toml

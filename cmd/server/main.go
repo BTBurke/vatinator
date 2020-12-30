@@ -92,6 +92,10 @@ func main() {
 	log.Printf("Data directory: %s", viper.Get("DataDir"))
 	log.Printf("Upload directory: %s", viper.Get("UploadDir"))
 	log.Printf("Export directory: %s", viper.Get("ExportDir"))
+	if len(viper.GetString("postmark_server_token")) == 0 || len(viper.GetString("postmark_api_token")) == 0 {
+		log.Fatal("No postmark tokens defined")
+	}
+	log.Printf("Using postmark for transactional emails")
 
 	// set up account service
 	db, err := vatinator.NewDB(filepath.Join(viper.GetString("DataDir"), "vat.db"))
@@ -116,12 +120,16 @@ func main() {
 	// token service
 	tokenSvc := vatinator.NewTokenService(keys[0])
 
+	// email service
+	emailSvc := vatinator.NewEmailService(viper.GetString("postmark_server_token"), viper.GetString("postmark_api_token"))
+
 	// process service
 	processSvc := vatinator.NewProcessService(viper.GetString("UploadDir"),
 		viper.GetString("ExportDir"),
 		viper.GetString("CredentialFile"),
 		accountSvc,
-		tokenSvc)
+		tokenSvc,
+		emailSvc)
 
 	r := chi.NewRouter()
 	r.Use(cors.Handler(cors.Options{

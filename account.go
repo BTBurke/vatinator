@@ -18,6 +18,7 @@ type AccountService interface {
 	CheckPassword(email, password string) (AccountID, error)
 	UpdateFormData(id AccountID, fd []byte) error
 	GetFormData(id AccountID) ([]byte, error)
+	GetFormAndEmailData(id AccountID) (string, []byte, error)
 }
 
 type accountService struct {
@@ -79,6 +80,18 @@ func (a accountService) GetFormData(id AccountID) ([]byte, error) {
 		return nil, err
 	}
 	return b, nil
+}
+
+func (a accountService) GetFormAndEmailData(id AccountID) (string, []byte, error) {
+	q := "SELECT email, form_data FROM accounts WHERE id = $1;"
+	resp := struct {
+		Email    string
+		FormData []byte `db:"form_data"`
+	}{}
+	if err := a.db.Get(&resp, q, id); err != nil {
+		return "", nil, err
+	}
+	return resp.Email, resp.FormData, nil
 }
 
 // AccountID is the ID in the database

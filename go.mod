@@ -18,6 +18,7 @@ require (
 	github.com/gorilla/sessions v1.2.1
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/jung-kurt/gofpdf v1.16.2
+	github.com/keighl/postmark v0.0.0-20190821160221-28358b1a94e3
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-sqlite3 v1.14.6
 	github.com/mholt/archiver/v3 v3.5.0

@@ -42,11 +42,12 @@ type processService struct {
 	credFile  string
 	account   AccountService
 	token     TokenService
+	email     EmailService
 }
 
 // ProcessService will process receipts and generate forms asynchronously.  It keeps track of running
 // work processes and attempts to finish them before server shutdown.
-func NewProcessService(uploadDir string, exportDir string, credFile string, accountSvc AccountService, tokenSvc TokenService) ProcessService {
+func NewProcessService(uploadDir string, exportDir string, credFile string, accountSvc AccountService, tokenSvc TokenService, emailSvc EmailService) ProcessService {
 	return &processService{
 		workers:   make(map[string]time.Time),
 		uploadDir: uploadDir,
@@ -54,6 +55,7 @@ func NewProcessService(uploadDir string, exportDir string, credFile string, acco
 		credFile:  credFile,
 		account:   accountSvc,
 		token:     tokenSvc,
+		email:     emailSvc,
 	}
 }
 
@@ -63,11 +65,13 @@ func (p *processService) register() func() {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
+	log.Printf("registered worker %s, %d workers running", workerID, len(p.workers))
 	p.workers[workerID] = time.Now()
 	return func() {
 		p.mu.Lock()
 		defer p.mu.Unlock()
 		delete(p.workers, workerID)
+		log.Printf("deregistered worker %s, %d workers running", workerID, len(p.workers))
 	}
 }
 
@@ -101,7 +105,7 @@ func (p *processService) Do(id AccountID, batch string, month string, year int) 
 		return errors.Wrap(err, "could not find batch to process")
 	}
 
-	fdB, err := p.account.GetFormData(id)
+	address, fdB, err := p.account.GetFormAndEmailData(id)
 	if err != nil {
 		return errors.Wrapf(err, "could not get form data for account %s", id)
 	}
@@ -151,11 +155,19 @@ func (p *processService) Do(id AccountID, batch string, month string, year int) 
 			opts.log.Printf("token creation failed: %s", err)
 			return
 		}
-		link := fmt.Sprintf("http://127.0.0.1:8080/export/%s/%s?token=%s", id.String(), zipName, encToken)
+		link := fmt.Sprintf("https://api.vatinator.com/export/%s/%s?token=%s", id.String(), zipName, encToken)
 		opts.log.Printf("Created link: %s", link)
 
-		//TODO: send email or something
-
+		if err := p.email.SendDownloadEmail(address, EmailData{
+			FormData: fd,
+			Month:    month,
+			Year:     year,
+			Link:     link,
+		}); err != nil {
+			opts.log.Printf("Sending email failed: %v", err)
+			return
+		}
+		opts.log.Printf("Sent download email")
 	}(release, path, fd, month, year, opts)
 
 	return nil
