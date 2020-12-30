@@ -40,21 +40,27 @@ func (ft fileType) String() string {
 func FileAddHandler(basepath string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("URL: %s", r.URL)
-		// TODO: get accountID and batchID from context
-		accountID, batchID := "1", "1"
+		batchID := r.URL.Query().Get("batch_id")
+		if len(batchID) == 0 {
+			handleError(w, http.StatusBadRequest, fmt.Errorf("no batch id provided"))
+			return
+		}
 
-		datapath := filepath.Join(basepath, accountID, batchID)
+		datapath := filepath.Join(basepath, batchID)
 		if err := os.MkdirAll(datapath, 0700); err != nil {
 			handleError(w, http.StatusInternalServerError, errors.Wrap(err, "failed to create upload directory"))
+			return
 		}
 
 		// switch on content-type to figure out most appropriate file name
 		if err := r.ParseMultipartForm(400 * 1 << 20); err != nil {
 			handleError(w, http.StatusBadRequest, errors.Wrap(err, "could not parse form data"))
+			return
 		}
 		file, finfo, err := r.FormFile("file")
 		if err != nil {
 			handleError(w, http.StatusBadRequest, errors.Wrap(err, "no file found in data"))
+			return
 		}
 
 		ftype := typeFromContentType(finfo.Header.Get("Content-Type"))
@@ -169,5 +175,7 @@ func copyFile(to, from string) error {
 func handleError(w http.ResponseWriter, status int, err error) {
 	log.Printf("error: %s", err)
 	w.WriteHeader(status)
-	w.Write([]byte(err.Error()))
+	if _, err := w.Write([]byte(err.Error())); err != nil {
+		log.Printf("meta error, error writing error: %v", err)
+	}
 }

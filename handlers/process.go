@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/BTBurke/vatinator"
 	"github.com/pkg/errors"
 )
 
@@ -14,8 +15,13 @@ type processRequest struct {
 	Date    string `json:"date"`
 }
 
-func ProcessHandler() http.HandlerFunc {
+func ProcessHandler(process vatinator.ProcessService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := GetAccountID(r)
+		if err != nil {
+			handleError(w, http.StatusBadRequest, errors.Wrap(err, "unknown account"))
+			return
+		}
 		defer r.Body.Close()
 
 		pr := new(processRequest)
@@ -25,7 +31,16 @@ func ProcessHandler() http.HandlerFunc {
 			return
 		}
 		fmt.Printf("got process request: %v", pr)
-		time.Sleep(5 * time.Second)
+		t, err := time.Parse("January 2006", pr.Date)
+		if err != nil {
+			handleError(w, http.StatusBadRequest, errors.Wrapf(err, "unable to parse date: %s", pr.Date))
+			return
+		}
+
+		if err := process.Do(id, pr.BatchID, t.Format("January"), t.Year()); err != nil {
+			handleError(w, http.StatusInternalServerError, errors.Wrap(err, "failed to queue batch for processing"))
+			return
+		}
 
 		w.WriteHeader(http.StatusOK)
 	}

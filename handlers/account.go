@@ -11,23 +11,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-// fake in-memory database
-var data map[string]string
-
-func init() {
-	data = map[string]string{
-		"first_name":    "Bryan",
-		"last_name":     "Burke",
-		"full_name":     "Bryan Burke",
-		"diplomatic_id": "B99991111",
-		"embassy":       "US Embassy",
-		"address":       "Kentmanni 20",
-		"bank":          "SWEDBANK, HABEZX, Liviiala 8, 15040 Tallinn, EE220000099999",
-		"bank_name":     "SWEDBANK, HABEZX, Liviiala 8, 15040 Tallinn",
-		"account":       "EE220000099999",
-	}
-}
-
 func GetAccountHandler(account vatinator.AccountService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := GetAccountID(r)
@@ -47,7 +30,9 @@ func GetAccountHandler(account vatinator.AccountService) http.HandlerFunc {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(fd)
+		if _, err := w.Write(fd); err != nil {
+			log.Printf("write error getting account: %v", err)
+		}
 	}
 }
 
@@ -102,6 +87,7 @@ func CreateAccountHandler(account vatinator.AccountService, session vatinator.Se
 			handleError(w, http.StatusInternalServerError, errors.New("error creating account"))
 			return
 		}
+		log.Printf("created account: %v", id)
 
 		if err := session.New(w, r, id); err != nil {
 			log.Printf("error creating session: %v", err)

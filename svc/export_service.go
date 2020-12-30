@@ -23,18 +23,19 @@ type ExportService interface {
 }
 
 type ExportOptions struct {
-	FirstName      string
-	LastName       string
-	FullName       string
-	Bank           string
-	DiplomaticID   string
-	Month          string
-	MonthInt       int
-	Year           int
-	Embassy        string
-	Stamp          []string
-	OutputDir      string
-	ConvertXLS2PDF bool
+	FirstName         string
+	LastName          string
+	FullName          string
+	Bank              string
+	DiplomaticID      string
+	Month             string
+	MonthInt          int
+	Year              int
+	Embassy           string
+	Stamp             []string
+	OutputDir         string
+	ConvertXLS2PDF    bool
+	FillExciseOptions *pdf.FillExciseOptions
 	// template for the VAT form in XLS
 	Template []byte
 }

@@ -1,10 +1,12 @@
 package vatinator
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/BTBurke/clt"
@@ -13,6 +15,7 @@ import (
 	"github.com/BTBurke/vatinator/svc"
 	"github.com/dgraph-io/badger/v2"
 	"github.com/pkg/errors"
+	"github.com/rs/xid"
 )
 
 type Options struct {
@@ -26,17 +29,24 @@ type Options struct {
 // Process directly.
 type ProcessService interface {
 	Do(id AccountID, batch string, month string, year int) error
+	Wait(timeout time.Duration) error
 }
 
 type processService struct {
+	mu      sync.Mutex
+	workers map[string]time.Time
+
 	exportDir string
 	uploadDir string
 	credFile  string
 	account   AccountService
 }
 
+// ProcessService will process receipts and generate forms asynchronously.  It keeps track of running
+// work processes and attempts to finish them before server shutdown.
 func NewProcessService(uploadDir string, exportDir string, credFile string, accountSvc AccountService) ProcessService {
-	return processService{
+	return &processService{
+		workers:   make(map[string]time.Time),
 		uploadDir: uploadDir,
 		exportDir: exportDir,
 		credFile:  credFile,
@@ -44,8 +54,46 @@ func NewProcessService(uploadDir string, exportDir string, credFile string, acco
 	}
 }
 
-func (p processService) Do(id AccountID, batch string, month string, year int) error {
-	path := filepath.Join(p.uploadDir, id.String(), batch)
+// register a worker to prevent server shutdown when processing is still going on
+func (p *processService) register() func() {
+	workerID := xid.New().String()
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	p.workers[workerID] = time.Now()
+	return func() {
+		p.mu.Lock()
+		defer p.mu.Unlock()
+		delete(p.workers, workerID)
+	}
+}
+
+// Wait until process service has shut down and all worker processes have finished.  Waits maximum timeout
+// then exits even if processes are still working.
+func (p *processService) Wait(timeout time.Duration) error {
+	ch := make(chan struct{})
+	go func(ch chan struct{}) {
+		for {
+			if len(p.workers) == 0 {
+				close(ch)
+				return
+			}
+			time.Sleep(500 * time.Millisecond)
+		}
+	}(ch)
+
+	select {
+	case <-ch:
+		return nil
+	case <-time.After(timeout):
+		return errors.New("wait timeout")
+	}
+}
+
+// Do a process on a provided path which contains receipts to generate forms.  Work happens asynchronously
+// in a background go routine.
+func (p *processService) Do(id AccountID, batch string, month string, year int) error {
+	path := filepath.Join(p.uploadDir, batch)
 	if finfo, err := os.Stat(path); err != nil || !finfo.IsDir() {
 		return errors.Wrap(err, "could not find batch to process")
 	}
@@ -63,10 +111,20 @@ func (p processService) Do(id AccountID, batch string, month string, year int) e
 		CredentialPath: p.credFile,
 		OutputPath:     filepath.Join(path, "out"),
 		Interactive:    false,
-		log:            log.New(os.Stdout, batch, log.LstdFlags),
+		log:            log.New(os.Stdout, fmt.Sprintf("%s ", batch), log.LstdFlags),
 	}
+	// register worker
+	release := p.register()
 
-	return Process(path, fd, month, year, opts)
+	go func(release func(), path string, fd FormData, month string, year int, opts *Options) {
+		defer release()
+		if err := Process(path, fd, month, year, opts); err != nil {
+			opts.log.Printf("process failed: %v", err)
+			return
+		}
+	}(release, path, fd, month, year, opts)
+
+	return nil
 }
 
 // Process will read receipts located at path and process them into VAT and excise forms
@@ -141,6 +199,9 @@ func Process(path string, fd FormData, month string, year int, opts *Options) er
 		rcptFinder.Success()
 	}
 	opts.log.Printf("found %d receipts in %s", len(tasks), path)
+	if opts.Interactive {
+		fmt.Printf("Found %d receipts\n", len(tasks))
+	}
 
 	months := map[string]int{"January": 1, "February": 2, "March": 3, "April": 4, "May": 5, "June": 6, "July": 7, "August": 8, "September": 9, "October": 10, "November": 11, "December": 12}
 	monthInt := months[month]
@@ -185,7 +246,7 @@ func Process(path string, fd FormData, month string, year int, opts *Options) er
 		if opts.Interactive {
 			it.Fail()
 		}
-		errors.Wrap(err, "processing images failed")
+		return errors.Wrap(err, "processing images failed")
 	}
 	if opts.Interactive {
 		it.Success()
@@ -224,6 +285,9 @@ func Process(path string, fd FormData, month string, year int, opts *Options) er
 		exp.Success()
 	}
 	opts.log.Printf("finished processing in %s", time.Since(processStart))
+	if opts.Interactive {
+		fmt.Printf("Finished successfully in %s\n", time.Since(processStart))
+	}
 
 	return nil
 }
@@ -234,7 +298,7 @@ func DefaultOptions(path string) *Options {
 		CredentialPath: ".cfg/key.json",
 		OutputPath:     filepath.Join(path, "out"),
 		Interactive:    true,
-		log:            log.New(os.Stdout, "", log.LstdFlags),
+		log:            log.New(ioutil.Discard, "", log.LstdFlags),
 	}
 }
 

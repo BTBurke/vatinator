@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -83,7 +82,7 @@ func FillExcise(path string, rcpts []types.Excise, md types.ExciseMetadata, opts
 	if opts == nil {
 		opts = &FillExciseOptions{
 			DisableRemote: false,
-			ForceRemote:   true,
+			ForceRemote:   false,
 			RemoteURL:     DefaultURL,
 			APIKey:        DefaultAPIKey,
 		}
@@ -96,7 +95,6 @@ func FillExcise(path string, rcpts []types.Excise, md types.ExciseMetadata, opts
 		bank:    md.Bank,
 		date:    md.Date,
 	}
-
 	var tot int
 	for i, r := range rcpts {
 		m := r.AsMap(i + 1)
@@ -120,7 +118,7 @@ func FillExcise(path string, rcpts []types.Excise, md types.ExciseMetadata, opts
 		return err
 	}
 	if err := ioutil.WriteFile(fdfPath, fdf, 0644); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	templatePath := filepath.Join(tmpdir, "template.pdf")
@@ -131,7 +129,6 @@ func FillExcise(path string, rcpts []types.Excise, md types.ExciseMetadata, opts
 	if err := ioutil.WriteFile(templatePath, t, 0644); err != nil {
 		return err
 	}
-
 	// shell out for pdftk to fill form and place at path
 	if err := callPdftk(templatePath, fdfPath, path, opts); err != nil {
 		return err
@@ -219,7 +216,6 @@ func callPdftk(template string, fdf string, out string, opts *FillExciseOptions)
 			return errors.Wrap(err, "no local pdftk and either remote disabled or not API information to call remote service")
 		}
 	}
-
 	cmd := exec.Command(bin, template, "fill_form", fdf, "output", out)
 	stdouterr, err := cmd.CombinedOutput()
 	if err != nil {

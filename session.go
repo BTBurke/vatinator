@@ -3,6 +3,8 @@ package vatinator
 import (
 	"database/sql"
 	"errors"
+	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -26,6 +28,10 @@ type SessionService interface {
 type Key []byte
 
 func NewSessionService(path string, keys ...[]byte) (SessionService, error) {
+	if len(keys) == 0 {
+		return nil, fmt.Errorf("must supply key for session service")
+	}
+
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
 		return nil, err
@@ -44,11 +50,13 @@ type sessionService struct {
 func (s *sessionService) New(w http.ResponseWriter, r *http.Request, id AccountID) error {
 	sess, err := s.store.New(r, "vat")
 	if err != nil {
+		log.Printf("got error higher")
 		return err
 	}
 	sess.Options = &defaultOptions
 	sess.Values["account_id"] = int64(id)
 	if err := sess.Save(r, w); err != nil {
+		log.Printf("got error here")
 		return err
 	}
 	return nil

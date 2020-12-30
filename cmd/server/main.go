@@ -113,6 +113,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// process service
+	processSvc := vatinator.NewProcessService(viper.GetString("UploadDir"), viper.GetString("ExportDir"), viper.GetString("CredentialFile"), accountSvc)
+
 	r := chi.NewRouter()
 	r.Use(cors.Handler(cors.Options{
 		// AllowedOrigins: []string{"https://foo.com"}, // Use this to allow specific origin hosts
@@ -132,7 +135,7 @@ func main() {
 		r.Post("/file", handlers.FileAddHandler(viper.GetString("UploadDir")))
 		r.Get("/account", handlers.GetAccountHandler(accountSvc))
 		r.Post("/account", handlers.UpdateAccountHandler(accountSvc))
-		r.Post("/process", handlers.ProcessHandler())
+		r.Post("/process", handlers.ProcessHandler(processSvc))
 	})
 	// no auth routes
 	r.Post("/create", handlers.CreateAccountHandler(accountSvc, sessionSvc))
