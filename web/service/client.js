@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const Client = () => {
   const options = {};  
-  options.baseURL = 'http://localhost:8080';
+  options.baseURL = 'https://api.vatinator.com';
   options.withCredentials = true;
   const instance = axios.create(options);  
   return instance;
