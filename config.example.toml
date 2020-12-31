@@ -1,0 +1,12 @@
+# server config
+port = "8080"
+data_dir = "/tmp/vat/data"
+upload_dir = "/tmp/vat/upload"
+export_dir = "/tmp/vat/export"
+
+# vision api
+credential_file = ""
+
+# postmark email service
+postmark_server_token = ""
+postmark_api_token = ""
