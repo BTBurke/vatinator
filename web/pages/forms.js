@@ -120,7 +120,6 @@ function FileDrop(props) {
   const [rcpts, setRcpts] = useState(null);
   const [pct, setPct] = useState(0);
   const [batchID, setBatchID] = useState(null);
-  const [onFile, setOnFile] = useState(0);
   const router = useRouter();
   
   useEffect(() => {
@@ -139,8 +138,6 @@ function FileDrop(props) {
 
 
   const onDrop = (acceptedFiles) => {
-    const numFiles = acceptedFiles.length;
-    setOnFile(0);
     acceptedFiles.forEach((file) => {
       setDoing([`Uploading ${file.name}...`]);
       const reader = new FileReader()
@@ -162,7 +159,6 @@ function FileDrop(props) {
         .then(() => {
           console.log('uploaded ', file.name); 
           setDoing(null);
-          setOnFile(onFile+1);
           if (file.name.endsWith('.zip')) {
             // set sentinel value for zip with unknown number of files, maybe
             // could return number of files here which would be good
@@ -200,7 +196,7 @@ function FileDrop(props) {
       <div {...getRootProps()} className="md:w-full mx-auto my-10 md:py-16 md:px-16 md:min-h-1/2 md:border-dashed md:border-secondary md:border-2 md:rounded-sm">
         <input {...getInputProps()}></input>
         {!doing && <p className="hidden md:block text-secondary text-center italic pb-2 font-bold">You can drop images or a zip file here or click to select receipt(s)</p>}
-        {doing ? <p className="block text-2xl text-gray-500 text-center italic pb-2 font-bold">{`${doing}${pct}%`}</p> : 
+        {doing ? <p className="block text-2xl text-gray-500 text-center italic pb-2 font-bold">{`Uploading...${pct}%`}</p> : 
         
         <button onClick={open} className={rcpts ? "bg-primary w-full text-white px-full py-2 md:mb-2 rounded-md font-bold border border-white" : "bg-accent-2 w-full text-white px-full py-2 md:mb-2 rounded-md font-bold border border-accent-2"}>
           <span className="px-2"><FontAwesomeIcon icon={faReceipt} /></span>  
