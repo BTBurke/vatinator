@@ -149,6 +149,7 @@ func main() {
 		resp := []byte(fmt.Sprintf("Version: %s\nCommit: %s\nDate: %s\nUptime: %s\n", version, commit, date, time.Since(serverStart)))
 		w.Write(resp)
 	})
+	r.With(handlers.SessionMiddleware(sessionSvc)).Get("/session", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) })
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)

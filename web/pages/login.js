@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import client from '../service/client';
 import { useRouter } from 'next/router'; 
 
@@ -8,6 +8,16 @@ export default function Login() {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+
+    useEffect(() => {
+        client().get('/session')
+        .then((response) => {
+            if (response.status === 200) {
+                router.push('/forms');
+            }
+        })
+        .catch((err) => { console.log('no existing session'); });
+    }, []);
 
     const handleSubmit = () => {
         setLoading(true);
