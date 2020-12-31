@@ -142,7 +142,7 @@ function FileDrop(props) {
     const numFiles = acceptedFiles.length;
     setOnFile(0);
     acceptedFiles.forEach((file) => {
-      setDoing([`Processing ${file.name}...`]);
+      setDoing([`Uploading ${file.name}...`]);
       const reader = new FileReader()
 
       reader.onabort = () => onError('File reading was aborted')
@@ -156,11 +156,7 @@ function FileDrop(props) {
             params: {'batch_id': getBatchID()}, 
             headers: {'Content-Type': 'multipart/form-data'},
             onUploadProgress: event => {
-              if (numFiles === 1) {
                 setPct(Math.round(100*event.loaded / event.total));
-              } else {
-                setPct(Math.round(100*onFile/numFiles));
-              }
             },
         })
         .then(() => {
@@ -204,7 +200,7 @@ function FileDrop(props) {
       <div {...getRootProps()} className="md:w-full mx-auto my-10 md:py-16 md:px-16 md:min-h-1/2 md:border-dashed md:border-secondary md:border-2 md:rounded-sm">
         <input {...getInputProps()}></input>
         {!doing && <p className="hidden md:block text-secondary text-center italic pb-2 font-bold">You can drop images or a zip file here or click to select receipt(s)</p>}
-        {doing ? <p className="block text-2xl text-gray-500 text-center italic pb-2 font-bold">{`Uploading...${pct}%`}</p> : 
+        {doing ? <p className="block text-2xl text-gray-500 text-center italic pb-2 font-bold">{`${doing}${pct}%`}</p> : 
         
         <button onClick={open} className={rcpts ? "bg-primary w-full text-white px-full py-2 md:mb-2 rounded-md font-bold border border-white" : "bg-accent-2 w-full text-white px-full py-2 md:mb-2 rounded-md font-bold border border-accent-2"}>
           <span className="px-2"><FontAwesomeIcon icon={faReceipt} /></span>  
