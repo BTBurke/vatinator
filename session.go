@@ -16,9 +16,10 @@ import (
 
 var SessionNotValid error = errors.New("session expired or doesnt exist")
 var defaultOptions = sessions.Options{
-	Path: "/",
-	// 2 weeks
-	MaxAge: 60 * 60 * 24 * 14,
+	Domain: ".vatinator.com",
+	Path:   "/",
+	// 45 days
+	MaxAge: 60 * 60 * 24 * 45,
 }
 
 type SessionService interface {

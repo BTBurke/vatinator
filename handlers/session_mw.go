@@ -22,6 +22,7 @@ func SessionMiddleware(session vatinator.SessionService) Middleware {
 			id, err := session.Get(w, r)
 			if err != nil {
 				handleError(w, http.StatusForbidden, errors.New("forbidden"))
+				return
 			}
 			ctx := context.WithValue(r.Context(), accountCtxKey, id)
 			r = r.WithContext(ctx)
