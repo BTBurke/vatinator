@@ -1,8 +1,8 @@
 {
-  "name": "Next.JS Progressive Web App",
-  "short_name": "Next PWA",
-  "theme_color": "#ffffff",
-  "background_color": "#004740",
+  "name": "Vatinator",
+  "short_name": "Vatinator",
+  "theme_color": "#211F30",
+  "background_color": "#211F30",
   "display": "fullscreen",
   "orientation": "portrait",
   "scope": "/",
