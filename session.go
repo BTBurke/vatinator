@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 
-	"github.com/BTBurke/sqlitestore"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 )
@@ -31,20 +32,17 @@ func NewSessionService(path string, keys ...[]byte) (SessionService, error) {
 	if len(keys) == 0 {
 		return nil, fmt.Errorf("must supply key for session service")
 	}
+	sessionPath := filepath.Join(path, "sessions")
+	if err := os.MkdirAll(sessionPath, 0755); err != nil {
+		return nil, err
+	}
 
-	db, err := sql.Open("sqlite3", path)
-	if err != nil {
-		return nil, err
-	}
-	store, err := sqlitestore.NewStore(db, keys...)
-	if err != nil {
-		return nil, err
-	}
+	store := sessions.NewFilesystemStore(sessionPath, keys...)
 	return &sessionService{store}, nil
 }
 
 type sessionService struct {
-	store *sqlitestore.Store
+	store *sessions.FilesystemStore
 }
 
 func (s *sessionService) New(w http.ResponseWriter, r *http.Request, id AccountID) error {

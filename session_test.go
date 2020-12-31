@@ -16,7 +16,7 @@ import (
 func TestSessionService(t *testing.T) {
 	tmpdir, err := ioutil.TempDir("", "test-session")
 	require.NoError(t, err)
-	ss, err := NewSessionService(filepath.Join(tmpdir, "session.db"), securecookie.GenerateRandomKey(32))
+	ss, err := NewSessionService(tmpdir, securecookie.GenerateRandomKey(32))
 	require.NoError(t, err)
 
 	r := httptest.NewRequest("GET", "/", nil)
