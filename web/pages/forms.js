@@ -120,6 +120,7 @@ function FileDrop(props) {
   const [rcpts, setRcpts] = useState(null);
   const [pct, setPct] = useState(0);
   const [batchID, setBatchID] = useState(null);
+  const [onFile, setOnFile] = useState(0);
   const router = useRouter();
   
   useEffect(() => {
@@ -138,6 +139,8 @@ function FileDrop(props) {
 
 
   const onDrop = (acceptedFiles) => {
+    const numFiles = acceptedFiles.length;
+    setOnFile(0);
     acceptedFiles.forEach((file) => {
       setDoing([`Processing ${file.name}...`]);
       const reader = new FileReader()
@@ -153,12 +156,13 @@ function FileDrop(props) {
             params: {'batch_id': getBatchID()}, 
             headers: {'Content-Type': 'multipart/form-data'},
             onUploadProgress: event => {
-              setPct(Math.round((100 * event.loaded) / event.total));
+                setPct(Math.round((100/numFiles * event.loaded / event.total) + (onFile/numFiles)));
             },
         })
         .then(() => {
           console.log('uploaded ', file.name); 
           setDoing(null);
+          setOnFile(onFile+1);
           if (file.name.endsWith('.zip')) {
             // set sentinel value for zip with unknown number of files, maybe
             // could return number of files here which would be good

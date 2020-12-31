@@ -8,15 +8,23 @@ export default function Login() {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+    const [checking, setChecking] = useState(true);
 
     useEffect(() => {
         client().get('/session')
         .then((response) => {
+            setChecking(false);
             if (response.status === 200) {
                 router.push('/forms');
             }
         })
-        .catch((err) => { console.log('no existing session'); });
+        .catch((err) => { 
+            setChecking(false);
+            console.log('no existing session'); 
+        });
+    }, []);
+    useEffect(() => {
+        setTimeout(() => setChecking(false), 450);
     }, []);
 
     const handleSubmit = () => {
@@ -44,7 +52,9 @@ export default function Login() {
         });
         doLogin(email.value, password.value);
     }
-
+    if (checking) {
+        return null;
+    }
     return (
         <div className="container m-auto">
             <div className="flex flex-col justify-center content-center items-center h-screen w-full">
