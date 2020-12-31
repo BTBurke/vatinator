@@ -34,4 +34,4 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ghcr.io/BTBurke/vat-server:latest
+            ghcr.io/btburke/vatinator/server:latest
