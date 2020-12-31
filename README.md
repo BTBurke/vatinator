@@ -1,7 +1,7 @@
 Vatinator
 ===
 
-Vatinator extracts data from pictures of your receipts and fills out your Estonian VAT tax reimbursement forms.
+Vatinator extracts data from pictures of your receipts and fills out your Estonian VAT tax reimbursement forms.  It even fills in excise reimbursements (gas only, no alcohol or diesel yet).
 
 # How to use it
 
