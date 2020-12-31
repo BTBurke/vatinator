@@ -34,7 +34,7 @@ export function NavHome() {
         <li>
           <img style={{height: "70px"}} src="/vatinatorAsPath.svg" />
         </li>
-        <li>
+        <li className="hidden md:block">
           <a className="mr-4 bg-primary h-12 text-white px-full py-2 px-6 rounded-md font-bold border border-white" href="/login">Login</a>
           <a className="mr-4 bg-primary h-12 text-white px-full py-2 px-6 rounded-md font-bold border border-white" href="/create">Create account</a>
         </li>
