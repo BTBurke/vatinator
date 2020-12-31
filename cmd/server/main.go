@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -26,51 +27,39 @@ var (
 	date    string
 )
 
-type ServerConfig struct {
-	DBPath     string
-	DBCreateOK bool
-}
-
 func init() {
 	// flag for creating the directories if they don't exist, otherwise it will error on start
 	pflag.Bool("create", false, "whether it is ok to create directories and db on startup")
 	pflag.Bool("dev", false, "run in development mode, using temp directories and deleting on shutdown")
+	pflag.StringP("config", "c", "config", "specifies a config file to use")
 }
 
 func main() {
-	// TODO: add viper config
-	viper.SetDefault("Port", "8080")
-	if version == "dev" {
-		viper.SetDefault("DataDir", "/tmp/vat/data")
-		viper.SetDefault("UploadDir", "/tmp/vat/upload")
-		viper.SetDefault("ExportDir", "/tmp/vat/export")
-		viper.SetDefault("CredentialFile", "./vatinator-f91ccb107c2c.json")
-	} else {
-		viper.SetDefault("DataDir", "/var/vat/data")
-		viper.SetDefault("UploadDir", "/var/vat/upload")
-		viper.SetDefault("ExportDir", "/var/vat/export")
-		viper.SetDefault("CredentialFile", "/etc/vat/vatinator-f91ccb107c2c.json")
-	}
+	serverStart := time.Now()
+	viper.SetDefault("port", "8080")
+	viper.SetDefault("data_dir", "/var/vat/data")
+	viper.SetDefault("upload_dir", "/var/vat/upload")
+	viper.SetDefault("export_dir", "/var/vat/export")
+	viper.SetDefault("credential_file", "/etc/vat/vatinator-f91ccb107c2c.json")
 	viper.SetEnvPrefix("vat")
 
+	// parse flags then get config
+	pflag.Parse()
+	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
+		log.Fatal(err)
+	}
+
 	// preferences for config paths
-	viper.SetConfigName("config")
+	viper.SetConfigName(viper.GetString("config"))
 	viper.AddConfigPath(".")
 	viper.AddConfigPath("$HOME/.config/vat")
 	viper.AddConfigPath("/etc/vat")
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Printf("No config file found.  Running with defaults.")
-		} else {
 			log.Fatal(errors.Wrap(err, "configuration error"))
 		}
 	}
 
-	// parse flags then check config
-	pflag.Parse()
-	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
-		log.Fatal(err)
-	}
 	// in dev mode, auto create temp directories and then delete them all on shutdown
 	if viper.GetBool("dev") {
 		log.Printf("Running in development mode")
@@ -89,16 +78,13 @@ func main() {
 		}
 	}
 
-	log.Printf("Data directory: %s", viper.Get("DataDir"))
-	log.Printf("Upload directory: %s", viper.Get("UploadDir"))
-	log.Printf("Export directory: %s", viper.Get("ExportDir"))
-	if len(viper.GetString("postmark_server_token")) == 0 || len(viper.GetString("postmark_api_token")) == 0 {
-		log.Fatal("No postmark tokens defined")
-	}
+	log.Printf("Data directory: %s", viper.Get("data_dir"))
+	log.Printf("Upload directory: %s", viper.Get("upload_dir"))
+	log.Printf("Export directory: %s", viper.Get("export_dir"))
 	log.Printf("Using postmark for transactional emails")
 
 	// set up account service
-	db, err := vatinator.NewDB(filepath.Join(viper.GetString("DataDir"), "vat.db"))
+	db, err := vatinator.NewDB(filepath.Join(viper.GetString("data_dir"), "vat.db"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -112,7 +98,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	sessionSvc, err := vatinator.NewSessionService(filepath.Join(viper.GetString("DataDir"), "session.db"), keys...)
+	sessionSvc, err := vatinator.NewSessionService(filepath.Join(viper.GetString("data_dir"), "session.db"), keys...)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -124,9 +110,9 @@ func main() {
 	emailSvc := vatinator.NewEmailService(viper.GetString("postmark_server_token"), viper.GetString("postmark_api_token"))
 
 	// process service
-	processSvc := vatinator.NewProcessService(viper.GetString("UploadDir"),
-		viper.GetString("ExportDir"),
-		viper.GetString("CredentialFile"),
+	processSvc := vatinator.NewProcessService(viper.GetString("upload_dir"),
+		viper.GetString("export_dir"),
+		viper.GetString("credential_file"),
 		accountSvc,
 		tokenSvc,
 		emailSvc)
@@ -142,21 +128,25 @@ func main() {
 		AllowCredentials: true,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
-	port := viper.GetString("Port")
+	port := viper.GetString("port")
 	r.Use(middleware.Logger)
 
 	r.Route("/api", func(r chi.Router) {
 		r.Use(handlers.SessionMiddleware(sessionSvc))
-		r.Post("/file", handlers.FileAddHandler(viper.GetString("UploadDir")))
+		r.Post("/file", handlers.FileAddHandler(viper.GetString("upload_dir")))
 		r.Get("/account", handlers.GetAccountHandler(accountSvc))
 		r.Post("/account", handlers.UpdateAccountHandler(accountSvc))
 		r.Post("/process", handlers.ProcessHandler(processSvc))
 	})
-	fs := http.FileServer(http.Dir(viper.GetString("ExportDir")))
+	fs := http.FileServer(http.Dir(viper.GetString("export_dir")))
 	r.With(handlers.TokenMiddleware(tokenSvc)).Handle("/export/*", http.StripPrefix("/export", fs))
 	// no auth routes
 	r.Post("/create", handlers.CreateAccountHandler(accountSvc, sessionSvc))
 	r.Post("/login", handlers.LoginHandler(accountSvc, sessionSvc))
+	r.Get("/status", func(w http.ResponseWriter, r *http.Request) {
+		resp := []byte(fmt.Sprintf("Version: %s\nCommit: %s\nDate: %s\nUptime: %s\n", version, commit, date, time.Since(serverStart)))
+		w.Write(resp)
+	})
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
@@ -222,6 +212,11 @@ func checkConfig(cfg map[string]interface{}, createOK bool) error {
 			path := value.(string)
 			if _, err := os.Stat(path); os.IsNotExist(err) {
 				return errors.Wrapf(err, "expected %s to exist", path)
+			}
+		case strings.HasSuffix(key, "token"):
+			token := value.(string)
+			if len(token) == 0 {
+				return fmt.Errorf("%s must be set", key)
 			}
 		default:
 		}

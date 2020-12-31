@@ -36,4 +36,7 @@ tag:
 test-release:
 > goreleaser build --snapshot --rm-dist
 
+server:
+> go build -o bin/server cmd/server/main.go
+
 .PHONY: build test assets encrypt tag test-release

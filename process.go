@@ -1,7 +1,9 @@
 package vatinator
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -65,8 +67,8 @@ func (p *processService) register() func() {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	log.Printf("registered worker %s, %d workers running", workerID, len(p.workers))
 	p.workers[workerID] = time.Now()
+	log.Printf("registered worker %s, %d workers running", workerID, len(p.workers))
 	return func() {
 		p.mu.Lock()
 		defer p.mu.Unlock()
@@ -125,8 +127,14 @@ func (p *processService) Do(id AccountID, batch string, month string, year int) 
 
 	go func(release func(), path string, fd FormData, month string, year int, opts *Options) {
 		defer release()
+		var b bytes.Buffer
+		logWriter := io.MultiWriter(&b, os.Stdout)
+		opts.log.SetOutput(logWriter)
+		handleError := func() { _ = p.email.SendErrorEmail(address, EmailData{RunLog: b.String()}) }
+
 		if err := Process(path, fd, month, year, opts); err != nil {
 			opts.log.Printf("process failed: %v", err)
+			handleError()
 			return
 		}
 
@@ -138,6 +146,7 @@ func (p *processService) Do(id AccountID, batch string, month string, year int) 
 			return nil
 		}); err != nil {
 			opts.log.Printf("filepath scan failed: %s", err)
+			handleError()
 			return
 		}
 		opts.log.Printf("Found %d files to zip", len(files))
@@ -146,6 +155,7 @@ func (p *processService) Do(id AccountID, batch string, month string, year int) 
 		outputZip := filepath.Join(p.exportDir, id.String(), zipName)
 		if err := archiver.NewZip().Archive(files, outputZip); err != nil {
 			opts.log.Printf("zip file failed: %v", err)
+			handleError()
 			return
 		}
 		opts.log.Printf("Files zipped to: %s", outputZip)
@@ -153,6 +163,7 @@ func (p *processService) Do(id AccountID, batch string, month string, year int) 
 		encToken, err := p.token.NewPath(tokenPath)
 		if err != nil {
 			opts.log.Printf("token creation failed: %s", err)
+			handleError()
 			return
 		}
 		link := fmt.Sprintf("https://api.vatinator.com/export/%s/%s?token=%s", id.String(), zipName, encToken)
@@ -165,6 +176,7 @@ func (p *processService) Do(id AccountID, batch string, month string, year int) 
 			Link:     link,
 		}); err != nil {
 			opts.log.Printf("Sending email failed: %v", err)
+			handleError()
 			return
 		}
 		opts.log.Printf("Sent download email")
@@ -187,7 +199,7 @@ func Process(path string, fd FormData, month string, year int, opts *Options) er
 	// best effort at clearing this directory, this can fail on windows so dont
 	// check error.  Doesnt fuck up anything usually.
 	_ = os.RemoveAll(opts.OutputPath)
-	if err := os.MkdirAll(opts.OutputPath, 0700); err != nil {
+	if err := os.MkdirAll(opts.OutputPath, 0755); err != nil {
 		return errors.Wrap(err, "failed to create output directory")
 	}
 
