@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/BTBurke/vatinator"
 	"github.com/BTBurke/vatinator/handlers"
+	magic "github.com/caddyserver/certmagic"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
@@ -159,8 +161,16 @@ func main() {
 		cancel()
 	}()
 
-	if err := serve(ctx, r, port); err != nil {
-		log.Fatal(err)
+	if port != "443" {
+		// serve http on port
+		if err := serve(ctx, r, port); err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		// serve TLS on 443 with auto certs
+		if err := serveTLS(ctx, r); err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
@@ -177,6 +187,43 @@ func serve(ctx context.Context, h http.Handler, port string) (err error) {
 		}
 	}()
 	log.Printf("Server running on port %s", port)
+	<-ctx.Done()
+	log.Printf("Server shutting down")
+	ctxShutDown, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err = srv.Shutdown(ctxShutDown); err != nil {
+		log.Fatalf("server shutdown failed: %s", err)
+	}
+
+	if err == http.ErrServerClosed {
+		return nil
+	}
+	return
+}
+
+func serveTLS(ctx context.Context, h http.Handler) (err error) {
+	srv := &http.Server{
+		Addr:    ":443",
+		Handler: h,
+	}
+
+	cfg, err := magic.TLS([]string{"api.vatinator.com"})
+	if err != nil {
+		return err
+	}
+
+	ln, err := tls.Listen("tcp", ":443", cfg)
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		if err = srv.Serve(ln); err != nil && err != http.ErrServerClosed {
+			log.Fatal(err)
+		}
+	}()
+	log.Printf("Server running TLS on port 443")
 	<-ctx.Done()
 	log.Printf("Server shutting down")
 	ctxShutDown, cancel := context.WithTimeout(context.Background(), 30*time.Second)
