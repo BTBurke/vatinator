@@ -156,7 +156,7 @@ function FileDrop(props) {
             params: {'batch_id': getBatchID()}, 
             headers: {'Content-Type': 'multipart/form-data'},
             onUploadProgress: event => {
-                setPct(Math.round((100/numFiles * event.loaded / event.total) + (onFile/numFiles)));
+                setPct(Math.round((event.loaded / event.total)*(1/numFiles) + (onFile/numFiles)));
             },
         })
         .then(() => {
