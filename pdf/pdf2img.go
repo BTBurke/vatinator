@@ -49,7 +49,7 @@ func PdfToImage(r io.ReadCloser) (io.ReadCloser, error) {
 	// convert multiple images to single image
 	inputPngs := filepath.Join(tmpdir, "out*.png")
 	outPng := filepath.Join(tmpdir, "result.png")
-	convertCmd := []string{inputPngs, "-append", outPng}
+	convertCmd := []string{inputPngs, "-trim", "-append", outPng}
 	cmd2 := exec.Command(convertBin, convertCmd...)
 	output2, err := cmd2.CombinedOutput()
 	if err != nil {
