@@ -17,7 +17,10 @@ COPY . ./
 
 # Build the binary.
 ENV CGO_ENABLED=1
-RUN go build -mod=readonly -v -o server cmd/server/main.go
+ENV COMMIT="$GITHUB_SHA"
+ENV VERSION="$GITHUB_RUN_NUMBER"
+ENV DATE="$DATE"
+RUN go build -mod=readonly -v -o server -ldflags "-X main.version=$VERSION -X main.commit=$COMMIT -X main.date=$DATE"cmd/server/main.go
 
 # Use the official Debian slim image for a lean production container.
 # https://hub.docker.com/_/debian
