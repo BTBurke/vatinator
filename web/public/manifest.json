@@ -6,7 +6,7 @@
   "display": "fullscreen",
   "orientation": "portrait",
   "scope": "/",
-  "start_url": "/",
+  "start_url": "/forms",
   "icons": [
     {
       "src": "icons/icon-72x72.png",

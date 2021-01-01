@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/BTBurke/vatinator/pdf"
 	"github.com/mholt/archiver/v3"
 	"github.com/pkg/errors"
 )
@@ -22,6 +23,7 @@ const (
 	jpg
 	png
 	zip
+	pdfFile
 )
 
 func (ft fileType) String() string {
@@ -32,6 +34,8 @@ func (ft fileType) String() string {
 		return "png"
 	case zip:
 		return "zip"
+	case pdfFile:
+		return "pdf"
 	default:
 		return ""
 	}
@@ -39,7 +43,6 @@ func (ft fileType) String() string {
 
 func FileAddHandler(basepath string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("URL: %s", r.URL)
 		batchID := r.URL.Query().Get("batch_id")
 		if len(batchID) == 0 {
 			handleError(w, http.StatusBadRequest, fmt.Errorf("no batch id provided"))
@@ -82,6 +85,8 @@ func typeFromContentType(ct string) fileType {
 		return png
 	case "application/zip":
 		return zip
+	case "application/pdf":
+		return pdfFile
 	default:
 		return unknown
 	}
@@ -93,6 +98,10 @@ func storeFileContent(r io.ReadCloser, datapath string, ftype fileType) error {
 	// zip files call storeFileContent recursively with the files in the zip
 	if ftype == zip {
 		return storeZipContent(r, datapath)
+	}
+	// pdf files call storeFileContent recursively after pdf is converted to an image
+	if ftype == pdfFile {
+		return storePDF2ImgContent(r, datapath)
 	}
 
 	tmpfile, err := ioutil.TempFile("", "fup-*."+ftype.String())
@@ -127,6 +136,7 @@ func storeFileContent(r io.ReadCloser, datapath string, ftype fileType) error {
 	}
 }
 
+// storeZipContent opens the zip, walks it, then saves all the images
 func storeZipContent(r io.ReadCloser, datapath string) error {
 	tmpfile, err := ioutil.TempFile("", "fup-*.zip")
 	if err != nil {
@@ -155,6 +165,16 @@ func storeZipContent(r io.ReadCloser, datapath string) error {
 			return fmt.Errorf("unknown filetype: %s", f.FileInfo.Name())
 		}
 	})
+}
+
+// storePDF2ImgContent converts an input pdf to an image before storing it
+func storePDF2ImgContent(r io.ReadCloser, datapath string) error {
+	rc, err := pdf.PdfToImage(r)
+	if err != nil {
+		return errors.Wrap(err, "failed to convert uploaded pdf to image")
+	}
+
+	return storeFileContent(rc, datapath, png)
 }
 
 func copyFile(to, from string) error {

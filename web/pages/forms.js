@@ -187,7 +187,7 @@ function FileDrop(props) {
     // Disable click and keydown behavior
     noClick: true,
     noKeyboard: true,
-    accept: ['image/*', 'application/zip'],
+    accept: ['image/*', 'application/zip', 'application/pdf'],
     onDrop,
   });
 
