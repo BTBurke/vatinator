@@ -39,7 +39,7 @@ func PdfToImage(r io.ReadCloser) (io.ReadCloser, error) {
 
 	// create series of images from pages of PDF
 	outputPngs := filepath.Join(tmpdir, "out")
-	pdfCmd := []string{"-png", "-hide-annotations", "-rx", "300", "-ry", "300", pdfPath, outputPngs}
+	pdfCmd := []string{"-png", "-rx", "300", "-ry", "300", pdfPath, outputPngs}
 	cmd1 := exec.Command(pdftoppmBin, pdfCmd...)
 	output1, err := cmd1.CombinedOutput()
 	if err != nil {
