@@ -102,6 +102,7 @@ func (p *processService) Wait(timeout time.Duration) error {
 // Do a process on a provided path which contains receipts to generate forms.  Work happens asynchronously
 // in a background go routine.
 func (p *processService) Do(id AccountID, batch string, month string, year int) error {
+
 	path := filepath.Join(p.uploadDir, batch)
 	if finfo, err := os.Stat(path); err != nil || !finfo.IsDir() {
 		return errors.Wrap(err, "could not find batch to process")
@@ -127,6 +128,13 @@ func (p *processService) Do(id AccountID, batch string, month string, year int) 
 
 	go func(release func(), path string, fd FormData, month string, year int, opts *Options) {
 		defer release()
+		// this time sleep is important because it allows time for time-intensive image
+		// processing to happen in the background on upload.  When uploading PDFs, it can take
+		// time to process them into images.
+		//
+		// If you start this too early, the images will not be populated in the directory.
+		time.Sleep(2 * time.Minute)
+
 		var b bytes.Buffer
 		logWriter := io.MultiWriter(&b, os.Stdout)
 		opts.log.SetOutput(logWriter)
