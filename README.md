@@ -5,7 +5,7 @@ Vatinator extracts data from pictures of your receipts and fills out your Estoni
 
 # How to use it
 
-NEW! Use the web app version: [https://vatinator.com](https://vatinator.com)
+**NEW! Use the web app version: [https://vatinator.com](https://vatinator.com)**
 
 * Take a picture of each of your receipts
 * Upload them (and your PDF receipts)
