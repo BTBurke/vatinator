@@ -16,6 +16,10 @@ RUN go mod download
 COPY . ./
 
 # Build the binary.
+ARG GITHUB_RUN_NUMBER
+ARG GITHUB_SHA
+ENV GITHUB_SHA=${GITHUB_SHA}
+ENV GITHUB_RUN_NUMBER=${GITHUB_RUN_NUMBER}
 ENV CGO_ENABLED=1
 RUN go build -mod=readonly -o server -ldflags "-X main.version=$GITHUB_RUN_NUMBER -X main.commit=$GITHUB_SHA" cmd/server/main.go
 
