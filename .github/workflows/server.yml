@@ -37,5 +37,5 @@ jobs:
             ghcr.io/btburke/vatinator/server:latest
             ghcr.io/btburke/vatinator/server:${{github.run_number}}
           build-args: |
-            GITHUB_SHA
-            GITHUB_RUN_NUMBER
+            GITHUB_SHA=${{github.sha}}
+            GITHUB_RUN_NUMBER=${{github.run_number}}
