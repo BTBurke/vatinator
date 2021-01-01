@@ -21,7 +21,7 @@ ARG GITHUB_SHA
 ENV GITHUB_SHA=${GITHUB_SHA}
 ENV GITHUB_RUN_NUMBER=${GITHUB_RUN_NUMBER}
 ENV CGO_ENABLED=1
-RUN go build -mod=readonly -o server -ldflags "-X main.version=$GITHUB_RUN_NUMBER -X main.commit=$GITHUB_SHA" cmd/server/main.go
+RUN go build -mod=readonly -o server -ldflags "-X main.version=$GITHUB_RUN_NUMBER -X main.commit=$GITHUB_SHA -X main.date=$(date --iso-8601=seconds)" cmd/server/main.go
 
 # Use the official Debian slim image for a lean production container.
 # https://hub.docker.com/_/debian
