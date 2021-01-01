@@ -12,7 +12,7 @@ NEW! Use the web app version: [https://vatinator.com](https://vatinator.com)
 * It will send you your forms via email
 * Check to make sure it did a good job. Check carefully!  This is beta-quality software.
 
-# Using the command line version (not recommended since the webapp version does things this one cant do on Windows and Mac)
+## Using the command line version (not recommended since the webapp version does things this one cant do on Windows and Mac)
 
 1. Take a picture of each of your receipts.  Do not stamp them or write on them.  It's important that you capture the most important information at the top about the vendor and at the bottom about the taxes.  You can fold up the middle if there is nothing important there.  See the picture below.
 
