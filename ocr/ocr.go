@@ -176,7 +176,7 @@ func joinFollowing(in []string) []string {
 	copy(out, in)
 
 	for i := range in[0 : len(in)-1] {
-		out = append(out, strings.Join(in[i:i+1], " "))
+		out = append(out, strings.Join(in[i:i+2], " "))
 	}
 	return out
 }

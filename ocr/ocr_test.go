@@ -29,3 +29,9 @@ func TestProcess(t *testing.T) {
 	assert.NoError(t, err)
 	snap.Assert(t, resB)
 }
+
+func TestJoin(t *testing.T) {
+	in := []string{"this", "is", "a", "test"}
+	out := append(in, "this is", "is a", "a test")
+	assert.Equal(t, out, joinFollowing(in))
+}

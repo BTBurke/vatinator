@@ -12,7 +12,7 @@ func init() {
 	// company symbol at end
 	v = regexp.MustCompile(`[^/,]+\s(AS|TÜ|UÜ|OÜ|As|Tü|Uü|Oü|OU|Ou|TU|Tu|UU|Uu|0Ü|0u|0U|0ü)`)
 	// company symbol at front
-	v2 = regexp.MustCompile(`(AS|TÜ|UÜ|OÜ|As|Tü|Uü|Oü|OU|Ou|TU|Tu|UU|Uu|0Ü|0u|0U|0ü)\s[^/,]+$`)
+	v2 = regexp.MustCompile(`(AS|TÜ|UÜ|OÜ|OÙ|As|Tü|Uü|Oü|OU|Ou|TU|Tu|UU|Uu|0Ü|0u|0U|0ü)\s[^/,]+$`)
 }
 
 type vendor struct{}
@@ -56,5 +56,13 @@ func extract(r *regexp.Regexp, lines []string) string {
 }
 
 func finalFixes(s string) string {
-	return strings.ReplaceAll(s, "0", "O")
+	// fixes OCR mistakes like O->0 and Ü->Ù
+	replacements := map[string]string{
+		"Ù": "U",
+		"0": "O",
+	}
+	for from, to := range replacements {
+		s = strings.ReplaceAll(s, from, to)
+	}
+	return s
 }

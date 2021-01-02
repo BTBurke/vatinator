@@ -20,10 +20,15 @@ func TestDates(t *testing.T) {
 		{"not delimited full year", "09122020", "09/12/2020"},
 		{"not delimited short year", "091220", "09/12/2020"},
 		{"not delimited full year 21", "09122021", "09/12/2021"},
+		{"spaces inside year", "09.12. 2020", "09/12/2020"},
+		{"hyphen delimited", "09-12-2020", "09/12/2020"},
+		{"pathological from ocr fail", "29.12, 2020", "29/12/2020"},
 		// TODO: only handles dates through 2021
 	}
 	for _, tc := range tt {
-		got := extractDate([]string{tc.in})
-		assert.Equal(t, tc.out, got)
+		t.Run(tc.name, func(t *testing.T) {
+			got := extractDate([]string{tc.in})
+			assert.Equal(t, tc.out, got)
+		})
 	}
 }

@@ -8,6 +8,8 @@ var kviitung *regexp.Regexp
 var arve *regexp.Regexp
 var hash *regexp.Regexp
 var hash2 *regexp.Regexp
+var nr *regexp.Regexp
+var kvarve *regexp.Regexp
 
 func init() {
 	kviitung = regexp.MustCompile(`kviitung[^0-9]+([0-9]*\/?[0-9]*)?`)
@@ -15,6 +17,8 @@ func init() {
 	hash = regexp.MustCompile(`#([0-9]*)`)
 	// for # that looks like h instead
 	hash2 = regexp.MustCompile(`h([0-9]*)`)
+	nr = regexp.MustCompile(`nr[^0-9]+([0-9]*)`)
+	kvarve = regexp.MustCompile(`kv-arve[^0-9]+([0-9]*)`)
 }
 
 type id struct{}
@@ -41,10 +45,17 @@ func extractID(lines []string) string {
 		arve,
 		hash,
 		hash2,
+		nr,
+		kvarve,
 	}
-	for _, r := range regexes {
-		if k := idFinder(r, lines); k != "" {
-			return k
+	// this tries first with standard OCR output, then tries joining lines
+	// again to see if you get any difference
+	tries := [][]string{lines, joinFollowing(lines)}
+	for _, try := range tries {
+		for _, r := range regexes {
+			if k := idFinder(r, try); k != "" {
+				return k
+			}
 		}
 	}
 	return ""
