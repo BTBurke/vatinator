@@ -51,10 +51,13 @@ func detectGasReceipt(text []string) (isGas bool, amount string, gasType string)
 		}
 	}
 
+	// TODO: fix this.  This fails sometimes when there is any volume on the receipt.  Believe it will work
+	// better only when a gas rate is shown in EUR/L
+
 	// make sure that if data is there, isGas is true
-	if amount != "" && gasType != "" {
-		isGas = true
-	}
+	//if amount != "" && gasType != "" {
+	//	isGas = true
+	//}
 
 	return
 }
