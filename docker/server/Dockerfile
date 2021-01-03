@@ -28,7 +28,7 @@ RUN go build -mod=readonly -o server -ldflags "-X main.version=$GITHUB_RUN_NUMBE
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
 FROM debian:buster
 RUN set -x && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    ca-certificates pdftk poppler-utils imagemagick && \
+    ca-certificates pdftk poppler-utils imagemagick exiftran && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy the binary to the production image from the builder stage.

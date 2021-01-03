@@ -243,6 +243,11 @@ func Process(path string, fd FormData, month string, year int, opts *Options) er
 			return nil
 		}
 
+		// best effort at exif rotate
+		if err := img.ExifRotate(path); err != nil {
+			opts.log.Printf("failed to exif rotate: %s; skipping", err)
+		}
+
 		f, err := os.Open(path)
 		if err != nil {
 			return err
