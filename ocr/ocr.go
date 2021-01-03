@@ -9,6 +9,7 @@ import (
 
 	vision "cloud.google.com/go/vision/apiv1"
 	"github.com/BTBurke/vatinator/img"
+	"github.com/disintegration/imaging"
 
 	"google.golang.org/api/option"
 	pb "google.golang.org/genproto/googleapis/cloud/vision/v1"
@@ -40,9 +41,10 @@ const (
 
 // Result
 type Result struct {
-	raw   []*pb.EntityAnnotation
-	Lines []string
-	File  string
+	raw         []*pb.EntityAnnotation
+	Lines       []string
+	Orientation Orientation
+	File        string
 	// date format dd/mm/yy or dd/mm/yyyy depending on how it is detected on the receipt
 	Date   string
 	Total  int
@@ -72,25 +74,22 @@ type Excise struct {
 // ProcessImage uses a pre-trained ML model to extract text from the receipt image, then
 // a series of regular expressions and text manipulation to find the VAT data
 func ProcessImage(image img.Image, credPath string) (*Result, error) {
-	imgReader, err := image.NewReader()
+
+	res, err := doAnnotation(image, credPath)
 	if err != nil {
 		return nil, err
 	}
-
-	i, err := vision.NewImageFromReader(imgReader)
-	if err != nil {
-		return nil, fmt.Errorf("error reading image: %v", err)
-	}
-	ctx := context.Background()
-
-	c, err := vision.NewImageAnnotatorClient(ctx, option.WithCredentialsFile(credPath))
-	if err != nil {
-		return nil, fmt.Errorf("error creating vision client: %v", err)
-	}
-
-	res, err := c.DetectTexts(ctx, i, &pb.ImageContext{LanguageHints: []string{"ET"}}, 1000)
-	if len(res) == 0 || err != nil {
-		return nil, fmt.Errorf("error detecting text: %v", err)
+	orient := DetectOrientation(res)
+	if orient != Orientation0 {
+		// redo detection after rotations so crop is right and I dont have to figure it out
+		rotatedImage, err := AutoRotateImage(image, orient)
+		if err != nil {
+			return nil, err
+		}
+		res, err = doAnnotation(rotatedImage, credPath)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// find the minimum bounding box for the receipt
@@ -128,8 +127,9 @@ func ProcessImage(image img.Image, credPath string) (*Result, error) {
 	}
 
 	r := &Result{
-		Crop:  crop,
-		Lines: lines,
+		Crop:        crop,
+		Lines:       lines,
+		Orientation: orient,
 	}
 
 	for _, rule := range rules {
@@ -140,6 +140,55 @@ func ProcessImage(image img.Image, credPath string) (*Result, error) {
 
 	return r, nil
 
+}
+
+func AutoRotateImage(image img.Image, orient Orientation) (img.Image, error) {
+	switch orient {
+	case Orientation90:
+		i, err := img.NewImageFromImage(imaging.Rotate90(image.GetImage()))
+		if err != nil {
+			return img.Image{}, err
+		}
+		return i, nil
+	case Orientation180:
+		i, err := img.NewImageFromImage(imaging.Rotate180(image.GetImage()))
+		if err != nil {
+			return img.Image{}, err
+		}
+		return i, nil
+	case Orientation270:
+		i, err := img.NewImageFromImage(imaging.Rotate270(image.GetImage()))
+		if err != nil {
+			return img.Image{}, err
+		}
+		return i, nil
+	default:
+		return img.Image{}, fmt.Errorf("unknown rotation")
+	}
+}
+
+func doAnnotation(image img.Image, credPath string) ([]*pb.EntityAnnotation, error) {
+	imgReader, err := image.NewReader()
+	if err != nil {
+		return nil, err
+	}
+
+	i, err := vision.NewImageFromReader(imgReader)
+	if err != nil {
+		return nil, fmt.Errorf("error reading image: %v", err)
+	}
+	ctx := context.Background()
+
+	c, err := vision.NewImageAnnotatorClient(ctx, option.WithCredentialsFile(credPath))
+	if err != nil {
+		return nil, fmt.Errorf("error creating vision client: %v", err)
+	}
+
+	res, err := c.DetectTexts(ctx, i, &pb.ImageContext{LanguageHints: []string{"ET"}}, 1000)
+	if len(res) == 0 || err != nil {
+		return nil, fmt.Errorf("error detecting text: %v", err)
+	}
+	return res, nil
 }
 
 // determines the minimum bounding box for the text on the receipt

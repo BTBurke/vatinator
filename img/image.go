@@ -54,6 +54,10 @@ func NewImageFromReader(r io.Reader) (Image, error) {
 	return NewImageFromBytes(b)
 }
 
+func (i Image) GetImage() image.Image {
+	return i.image
+}
+
 func encodePNG(i image.Image) ([]byte, error) {
 	var b bytes.Buffer
 	if err := png.Encode(&b, i); err != nil {

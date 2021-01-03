@@ -10,6 +10,7 @@ require (
 	github.com/aead/chacha20poly1305 v0.0.0-20201124145622-1a5aba2a8b29 // indirect
 	github.com/caddyserver/certmagic v0.12.0
 	github.com/dgraph-io/badger/v2 v2.2007.2
+	github.com/disintegration/imaging v1.6.2
 	github.com/elithrar/simple-scrypt v1.3.0
 	github.com/frankban/quicktest v1.11.2 // indirect
 	github.com/go-chi/chi v1.5.1

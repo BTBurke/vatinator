@@ -148,6 +148,13 @@ func process(db *badger.DB, accountID string, batchID string, name string, image
 		_, _ = f.Write([]byte(strings.Join(result.Lines, "\n")))
 		f.Close()
 	}
+	// auto rotate based on OCR output
+	if result.Orientation != ocr.Orientation0 {
+		image, err = ocr.AutoRotateImage(image, result.Orientation)
+		if err != nil {
+			return err
+		}
+	}
 
 	croppedImage, err := img.CropImage(image, int(result.Crop.Top), int(result.Crop.Left), int(result.Crop.Bottom), int(result.Crop.Right))
 	if err != nil {
