@@ -1,6 +1,6 @@
 # Getting Started
 
-You have questions.  I have answers.  After you read this, check out the [User Guide](/user-guide).
+You have questions.  I have answers.  After you read this, check out the [User Guide](user-guide.md).
 
 ## What is this thing? 
 
@@ -10,7 +10,7 @@ Vatinator fills out your Estonian VAT reimbursement forms.  It:
 * Fills out your VAT refund and excise forms
 * Puts your receipts into a PDF in the format expected by the tax authority
 
-To get the best results, please read the User Guide.
+To get the best results, please read the [User Guide](user-guide.md).
 
 ## How does it work?
 
@@ -21,7 +21,7 @@ To get the best results, please read the User Guide.
 5. Open the excel files and **verify all the data it found was correct**.  Enter any data it couldn't find.
 6. Sit back and enjoy a beverage of your choice with the time you saved.
 
-It will work better if you follow a few simple rules, so please read the User Guide.
+It will work better if you follow a few simple rules, so please read the [User Guide](user-guide.md).
 
 ## How much do I have to pay for this miracle of modern technology?
 
