@@ -17,6 +17,7 @@ export default function FormsPage() {
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState(true);
   const [accountValid, setAccountValid] = useState(false);
   const router = useRouter();
 
@@ -84,6 +85,16 @@ export default function FormsPage() {
       <div className="container mx-auto">   
         <div className="w-full lg:w-3/4 mx-auto">
           <Nav />
+          { message ? 
+          <div className="py-0 bg-primary px-4 width-full">
+            <div>
+              <button className="p-2 text-white font-bold" onClick={() => setMessage(false)}>X</button>
+            </div>
+            <div className="px-2 py-1 w-full text-center text-white text-xl">
+              For best results, be sure to read the <a className="underline" href="https://btburke.github.io/vatinator">documentation</a> first!
+            </div>
+          </div>
+          : null }
           <div className="py-0 bg-primary px-4">
             {accountValid && !editing ? <Header>Create your forms</Header> : <Header>Enter your VAT form info</Header> }
             {accountValid && !editing ? <FormDetails account={account} setEditing={setEditing} showEdit /> : <AskForm initial={account} setEditing={setEditing} doUpdate={updateAccount} setAccount={setAccount} />}        
