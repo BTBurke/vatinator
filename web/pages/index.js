@@ -17,6 +17,10 @@ export default function IndexPage() {
                 <a className="mr-4 bg-primary text-white px-full py-2 px-6 rounded-md font-bold border border-white" href="/login">Login</a>
                 <a className="mr-4 bg-primary text-white px-full py-2 px-6 rounded-md font-bold border border-white" href="/create">Create account</a>
             </div>
+
+            <div className="pt-10 md:pt-8 md:text-2xl md:text-left text-white text-lg text-center px-1 md:px-0 lg:w-3/4 mx-auto w-full">
+              Have questions? Check out the <a className="underline" href="https://btburke.github.io/vatinator/">documentation</a> to get started.
+            </div>
         </div>
     
     );
