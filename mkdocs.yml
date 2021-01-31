@@ -1,0 +1,20 @@
+site_name: Vatinator Docs
+repo_url: https://github.com/BTBurke/vatinator
+repo_name: BTBurke/vatinator
+site_author: Bryan Burke
+copyright: Copyright 2021, Bryan Burke
+extra_css:
+  - css/colors.css
+theme:
+  name: material
+  favicon: img/favicon.ico
+  logo: img/logo.svg
+markdown_extensions:
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - attr_list
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+
