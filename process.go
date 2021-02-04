@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -232,8 +233,7 @@ func Process(path string, fd FormData, month string, year int, opts *Options) er
 	}
 
 	type task struct {
-		name  string
-		image img.Image
+		path string
 	}
 
 	opts.log.Printf("looking for receipts in %s", path)
@@ -243,21 +243,17 @@ func Process(path string, fd FormData, month string, year int, opts *Options) er
 			return nil
 		}
 
+		lowerP := strings.ToLower(path)
+		if !(strings.HasSuffix(lowerP, "jpg") || strings.HasSuffix(lowerP, "png")) {
+			return nil
+		}
+
 		// best effort at exif rotate
 		if err := img.ExifRotate(path); err != nil {
 			opts.log.Printf("failed to exif rotate: %s; skipping", err)
 		}
 
-		f, err := os.Open(path)
-		if err != nil {
-			return err
-		}
-
-		image, err := img.NewImageFromReader(f)
-		if err != nil {
-			return nil
-		}
-		tasks = append(tasks, task{path, image})
+		tasks = append(tasks, task{path})
 
 		return nil
 	}); err != nil {
@@ -309,8 +305,16 @@ func Process(path string, fd FormData, month string, year int, opts *Options) er
 
 	start := time.Now()
 	for _, task := range tasks {
-		if err := proc.Add(task.name, task.image); err != nil {
-			return errors.Wrapf(err, "failed when processing %s", task.name)
+		f, err := os.Open(task.path)
+		if err != nil {
+			continue
+		}
+		image, err := img.NewImageFromReader(f)
+		if err != nil {
+			continue
+		}
+		if err := proc.Add(task.path, image); err != nil {
+			return errors.Wrapf(err, "failed when processing %s", task.path)
 		}
 	}
 	if err := proc.Wait(); err != nil {

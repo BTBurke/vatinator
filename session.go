@@ -128,3 +128,17 @@ func insertKey(db *DB, key []byte) error {
 	}
 	return nil
 }
+
+type devSession struct{}
+
+func NewDevSessionService() SessionService {
+	return devSession{}
+}
+
+func (devSession) New(w http.ResponseWriter, r *http.Request, id AccountID) error {
+	return nil
+}
+
+func (devSession) Get(w http.ResponseWriter, r *http.Request) (AccountID, error) {
+	return AccountID(1), nil
+}

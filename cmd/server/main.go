@@ -105,6 +105,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if viper.GetBool("dev") {
+		log.Printf("Dev mode: no session handler")
+		sessionSvc = vatinator.NewDevSessionService()
+	}
 
 	// token service
 	tokenSvc := vatinator.NewTokenService(keys[0])

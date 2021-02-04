@@ -86,12 +86,12 @@ export default function FormsPage() {
         <div className="w-full lg:w-3/4 mx-auto">
           <Nav />
           { message ? 
-          <div className="py-0 bg-primary px-4 width-full">
-            <div>
+          <div className="py-0 bg-primary px-4 width-full rounded-md border-solid border-2 border-accent-2">
+            <div className="ml-auto">
               <button className="p-2 text-white font-bold" onClick={() => setMessage(false)}>X</button>
             </div>
-            <div className="px-2 py-1 w-full text-center text-white text-xl">
-              For best results, be sure to read the <a className="underline" href="https://btburke.github.io/vatinator">documentation</a> first!
+            <div className="px-2 py-1 w-full text-center text-white text-xl pb-4">
+              For best results, be sure to read the <a className="underline" target="_blank" href="https://btburke.github.io/vatinator">documentation</a> first!
             </div>
           </div>
           : null }
