@@ -10,7 +10,7 @@ var v2 *regexp.Regexp
 
 func init() {
 	// company symbol at end
-	v = regexp.MustCompile(`[^/,]+\s(AS|TÜ|UÜ|OÜ|As|Tü|Uü|Oü|OU|Ou|TU|Tu|UU|Uu|0Ü|0u|0U|0ü)`)
+	v = regexp.MustCompile(`[^/,]+\s(AS|TÜ|UÜ|OÜ|As|Tü|Uü|Oü|OU|Ou|TU|Tu|UU|Uu|0Ü|0u|0U|0ü|Ühistu)`)
 	// company symbol at front
 	v2 = regexp.MustCompile(`(AS|TÜ|UÜ|OÜ|OÙ|As|Tü|Uü|Oü|OU|Ou|TU|Tu|UU|Uu|0Ü|0u|0U|0ü)\s[^/,]+$`)
 }
