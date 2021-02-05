@@ -57,9 +57,11 @@ func extract(r *regexp.Regexp, lines []string) string {
 
 func finalFixes(s string) string {
 	// fixes OCR mistakes like O->0 and Ü->Ù
+	// removes Seller: from front of Wolt receipts
 	replacements := map[string]string{
-		"Ù": "U",
-		"0": "O",
+		"Ù":        "U",
+		"0":        "O",
+		"Seller: ": "",
 	}
 	for from, to := range replacements {
 		s = strings.ReplaceAll(s, from, to)
