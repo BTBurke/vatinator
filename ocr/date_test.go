@@ -32,3 +32,21 @@ func TestDates(t *testing.T) {
 		})
 	}
 }
+
+func TestReverseDates(t *testing.T) {
+	tt := []struct {
+		name string
+		in   string
+		out  string
+	}{
+		{"reversed date", "2020-12-29", "29/12/2020"},
+		{"reversed date short year", "20-12-29", "29/12/2020"},
+		// TODO: only handles dates through 2021
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			got := extractDateReversed([]string{tc.in})
+			assert.Equal(t, tc.out, got)
+		})
+	}
+}
