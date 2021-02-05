@@ -15,6 +15,7 @@ import (
 	"github.com/BTBurke/clt"
 	"github.com/BTBurke/vatinator/bundled"
 	"github.com/BTBurke/vatinator/img"
+	"github.com/BTBurke/vatinator/pdf"
 	"github.com/BTBurke/vatinator/svc"
 	"github.com/dgraph-io/badger/v2"
 	"github.com/mholt/archiver/v3"
@@ -244,7 +245,7 @@ func Process(path string, fd FormData, month string, year int, opts *Options) er
 		}
 
 		lowerP := strings.ToLower(path)
-		if !(strings.HasSuffix(lowerP, "jpg") || strings.HasSuffix(lowerP, "png")) {
+		if !(strings.HasSuffix(lowerP, "jpg") || strings.HasSuffix(lowerP, "png") || strings.HasSuffix(lowerP, "pdf")) {
 			return nil
 		}
 
@@ -309,9 +310,23 @@ func Process(path string, fd FormData, month string, year int, opts *Options) er
 		if err != nil {
 			continue
 		}
-		image, err := img.NewImageFromReader(f)
-		if err != nil {
-			continue
+
+		// convert PDF to image if not already done
+		var image img.Image
+		if strings.HasSuffix(task.path, "pdf") {
+			r, err := pdf.PdfToImage(f)
+			if err != nil {
+				continue
+			}
+			image, err = img.NewImageFromReader(r)
+			if err != nil {
+				continue
+			}
+		} else {
+			image, err = img.NewImageFromReader(f)
+			if err != nil {
+				continue
+			}
 		}
 		if err := proc.Add(task.path, image); err != nil {
 			return errors.Wrapf(err, "failed when processing %s", task.path)

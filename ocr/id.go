@@ -11,6 +11,7 @@ var hash2 *regexp.Regexp
 var nr *regexp.Regexp
 var kvarve *regexp.Regexp
 var tseki *regexp.Regexp
+var boltUUID *regexp.Regexp
 
 func init() {
 	kviitung = regexp.MustCompile(`kviitung[^0-9]+([0-9]*\/?[0-9]*)?`)
@@ -21,6 +22,8 @@ func init() {
 	nr = regexp.MustCompile(`nr[^0-9]+([0-9]*)`)
 	kvarve = regexp.MustCompile(`kv-arve[^0-9]+([0-9]*)`)
 	tseki = regexp.MustCompile(`tšek[^0-9]+([0-9]*)`)
+	// bold uses UUIDv4, truncated to first two sections
+	boltUUID = regexp.MustCompile(`document\sno\.\s([0-9a-f]{8}-[0-9a-f]{4})`)
 }
 
 type id struct{}
@@ -50,6 +53,7 @@ func extractID(lines []string) string {
 		nr,
 		kvarve,
 		tseki,
+		boltUUID,
 	}
 	// this tries first with standard OCR output, then tries joining lines
 	// again to see if you get any difference
