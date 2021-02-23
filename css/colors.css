@@ -1,0 +1,8 @@
+:root {
+  --md-primary-fg-color:        #211F30;
+  --md-default-fg-color--light: #211F30;
+  --md-default-fg-color--lighter: #211F30;
+}
+.md-typeset a {
+  color: #217CA3 !important;
+}
