@@ -7,7 +7,7 @@ You have questions.  I have answers.  After you read this, check out the [User G
 Vatinator fills out your Estonian VAT reimbursement forms.  It:
 
 * Extracts data from your receipts
-* Fills out your VAT refund and excise forms
+* Fills out your VAT refund and (gas) excise forms
 * Puts your receipts into a PDF in the format expected by the tax authority
 
 To get the best results, please read the [User Guide](user-guide.md).
@@ -39,11 +39,11 @@ It only collects the bare minimum information necessary to fill out your VAT for
 
 #### Security
 
-Data is encrypted at rest, backed up encrypted, and deleted when it's no longer needed.  The server is locked down hard and I guarantee it's more secure than OpenNet.
+Data is encrypted at rest, backed up encrypted, and deleted when it's no longer needed.  The server is very likely more secure than OpenNet.
 
 #### How it's built
 
-It's built by a guy you know using battle-tested technologies and 20 years of (semi-professional) programming experience.  Countless hours have been spent so that you and I don't have to hand-type crap into excel forms. 
+It's built using battle-tested technologies and many years of (semi-professional) programming experience.  Countless hours have been spent so that you and I don't have to hand-type crap into excel forms. 
 
 ## How can I help?
 
