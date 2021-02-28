@@ -80,6 +80,9 @@ func (s *sessionService) Get(w http.ResponseWriter, r *http.Request) (AccountID,
 	return AccountID(id), nil
 }
 
+// returns sessions keys, this data structure is fucked.  It should be a keypair
+// with (sign, encrypt) so pass (key, nil) when only signing key should be used.
+// TODO: remove the patch for encrypted keys that were issued in Feb 2020 because of bug
 func GetSessionKeys(db *DB) ([][]byte, error) {
 	q := "SELECT * FROM keys ORDER BY created DESC;"
 	resp := []struct {
@@ -100,15 +103,19 @@ func GetSessionKeys(db *DB) ([][]byte, error) {
 		return [][]byte{key}, nil
 	}
 
-	// if it's been more than a month, rotate keys and persist
-	if time.Since(resp[0].Created) > 30*24*time.Hour {
+	// if it's been more than a 3 months, rotate keys and persist
+	if time.Since(resp[0].Created) > 90*24*time.Hour {
 		key := securecookie.GenerateRandomKey(32)
 		if err := insertKey(db, key); err != nil {
 			return nil, err
 		}
-		out := [][]byte{key}
+		out := [][]byte{key, nil}
 		for _, r := range resp {
-			out = append(out, r.Key)
+			out = append(out, r.Key, nil)
+		}
+		// TODO: remove patch
+		if len(resp) >= 2 {
+			out = patch(out, resp[len(resp)-2].Key, resp[len(resp)-1].Key)
 		}
 		return out, nil
 	}
@@ -116,9 +123,20 @@ func GetSessionKeys(db *DB) ([][]byte, error) {
 	// all good, return keys
 	var out [][]byte
 	for _, r := range resp {
-		out = append(out, r.Key)
+		out = append(out, r.Key, nil)
+	}
+	// TODO: remove patch
+	if len(resp) >= 2 {
+		out = patch(out, resp[len(resp)-2].Key, resp[len(resp)-1].Key)
 	}
 	return out, nil
+}
+
+// TODO: remove the patch after first two keys are long expired.
+// This is related to issue where some cookies were inadvertently
+// encrypted due to a bug in month one and two
+func patch(keys [][]byte, key0 []byte, key1 []byte) [][]byte {
+	return append(keys, key0, key1, key1, key0)
 }
 
 func insertKey(db *DB, key []byte) error {
