@@ -25,6 +25,13 @@ Run log:
 {{.RunLog}}
 `
 
+const pwResetEmail = `Someone (hopefully you) requested a password reset.  Click or paste the link below to reset your password:
+
+{{.Link}}
+
+If you didn't request a password reset, you can ignore this email.  Your password will stay the same.
+`
+
 type EmailData struct {
 	FormData FormData
 	Month    string
@@ -36,6 +43,7 @@ type EmailData struct {
 type EmailService interface {
 	SendDownloadEmail(address string, data EmailData) error
 	SendErrorEmail(address string, data EmailData) error
+	SendPasswordResetEmail(address string, data EmailData) error
 }
 
 type emailService struct {
@@ -44,6 +52,31 @@ type emailService struct {
 
 func NewEmailService(serverToken, apiToken string) EmailService {
 	return emailService{postmark.NewClient(serverToken, apiToken)}
+}
+
+func (e emailService) SendPasswordResetEmail(address string, data EmailData) error {
+	t, err := template.New("text").Parse(pwResetEmail)
+	if err != nil {
+		return err
+	}
+	var b bytes.Buffer
+	if err := t.Execute(&b, data); err != nil {
+		return err
+	}
+
+	email := postmark.Email{
+		From:     "forms@vatinator.com",
+		To:       address,
+		Subject:  "Vatinator password reset",
+		HtmlBody: "",
+		TextBody: b.String(),
+	}
+
+	_, err = e.client.SendEmail(email)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (e emailService) SendDownloadEmail(address string, data EmailData) error {

@@ -18,7 +18,9 @@ type AccountService interface {
 	CheckPassword(email, password string) (AccountID, error)
 	UpdateFormData(id AccountID, fd []byte) error
 	GetFormData(id AccountID) ([]byte, error)
+	GetAccountID(email string) (AccountID, error)
 	GetFormAndEmailData(id AccountID) (string, []byte, error)
+	SetPassword(email, password string) error
 }
 
 type accountService struct {
@@ -27,6 +29,21 @@ type accountService struct {
 
 func NewAccountService(db *DB) AccountService {
 	return &accountService{db}
+}
+
+func (a accountService) GetAccountID(email string) (AccountID, error) {
+	q := "SELECT id FROM accounts WHERE email = LOWER($1);"
+
+	id := AccountID(-1)
+	if err := a.db.Get(&id, q, email); err != nil {
+		return nothing, err
+	}
+
+	if id == nothing {
+		return nothing, fmt.Errorf("no account ID found for email")
+	}
+
+	return id, nil
 }
 
 func (a accountService) Create(email, password string) (AccountID, error) {
@@ -49,6 +66,25 @@ func (a accountService) Create(email, password string) (AccountID, error) {
 	return AccountID(id), nil
 }
 
+func (a accountService) SetPassword(email string, password string) error {
+	q := "UPDATE accounts SET password = $1 WHERE email = LOWER($2);"
+
+	hash, err := ss.GenerateFromPassword([]byte(password), ss.DefaultParams)
+	if err != nil {
+		return err
+	}
+
+	resp, err := a.db.Exec(q, hash, email)
+	if err != nil {
+		return err
+	}
+	n, err := resp.RowsAffected()
+	if err != nil || n != 1 {
+		return fmt.Errorf("failed to change password: rows=%d err=%s", n, err)
+	}
+	return nil
+}
+
 func (a accountService) CheckPassword(email, password string) (AccountID, error) {
 	q := "SELECT id, password FROM accounts WHERE email = LOWER($1);"
 	resp := struct {
@@ -58,7 +94,6 @@ func (a accountService) CheckPassword(email, password string) (AccountID, error)
 	if err := a.db.Get(&resp, q, email); err != nil {
 		return nothing, err
 	}
-
 	if err := ss.CompareHashAndPassword(resp.Password, []byte(password)); err != nil {
 		return nothing, LoginFailed
 	}

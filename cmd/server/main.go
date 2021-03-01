@@ -144,6 +144,7 @@ func main() {
 		r.Get("/account", handlers.GetAccountHandler(accountSvc))
 		r.Post("/account", handlers.UpdateAccountHandler(accountSvc))
 		r.Post("/process", handlers.ProcessHandler(processSvc))
+
 	})
 	fs := http.FileServer(http.Dir(viper.GetString("export_dir")))
 	r.With(handlers.TokenMiddleware(tokenSvc)).Handle("/export/*", http.StripPrefix("/export", fs))
@@ -152,8 +153,15 @@ func main() {
 	r.Post("/login", handlers.LoginHandler(accountSvc, sessionSvc))
 	r.Get("/status", func(w http.ResponseWriter, r *http.Request) {
 		resp := []byte(fmt.Sprintf("Version: %s\nCommit: %s\nDate: %s\nUptime: %s\n", version, commit, date, time.Since(serverStart)))
-		w.Write(resp)
+		if _, err := w.Write(resp); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 	})
+	// password resets
+	r.Post("/reset/request", handlers.RequestPasswordReset(accountSvc, tokenSvc))
+	r.Post("/reset/do", handlers.DoPasswordReset(accountSvc, tokenSvc, sessionSvc))
+
+	// existing sessions
 	r.With(handlers.SessionMiddleware(sessionSvc)).Get("/session", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) })
 
 	c := make(chan os.Signal, 1)

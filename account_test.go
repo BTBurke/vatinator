@@ -35,6 +35,15 @@ func TestAccount(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, AccountID(1), id2)
 
+	// change and check password again
+	newPassword := "pass"
+	if err := as.SetPassword(email, newPassword); err != nil {
+		assert.NoError(t, err)
+	}
+	id3, err := as.CheckPassword("test@test.com", newPassword)
+	assert.NoError(t, err)
+	assert.Equal(t, AccountID(1), id3)
+
 	// store some form data
 	fd := FormData{
 		FirstName:    "Test",

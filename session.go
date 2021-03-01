@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -22,9 +21,17 @@ var defaultOptions = sessions.Options{
 	MaxAge: 60 * 60 * 24 * 45,
 }
 
+var deleteOptions = sessions.Options{
+	Domain: ".vatinator.com",
+	Path:   "/",
+	// delete immediately
+	MaxAge: -1,
+}
+
 type SessionService interface {
 	New(w http.ResponseWriter, r *http.Request, id AccountID) error
 	Get(w http.ResponseWriter, r *http.Request) (AccountID, error)
+	Del(w http.ResponseWriter, r *http.Request, id AccountID) error
 }
 
 type Key []byte
@@ -47,15 +54,21 @@ type sessionService struct {
 }
 
 func (s *sessionService) New(w http.ResponseWriter, r *http.Request, id AccountID) error {
+	return s.new(w, r, id, &defaultOptions)
+}
+
+func (s *sessionService) Del(w http.ResponseWriter, r *http.Request, id AccountID) error {
+	return s.new(w, r, id, &deleteOptions)
+}
+
+func (s *sessionService) new(w http.ResponseWriter, r *http.Request, id AccountID, opts *sessions.Options) error {
 	sess, err := s.store.New(r, "vat")
 	if err != nil {
-		log.Printf("got error higher")
 		return err
 	}
-	sess.Options = &defaultOptions
+	sess.Options = opts
 	sess.Values["account_id"] = int64(id)
 	if err := sess.Save(r, w); err != nil {
-		log.Printf("got error here")
 		return err
 	}
 	return nil
@@ -159,4 +172,8 @@ func (devSession) New(w http.ResponseWriter, r *http.Request, id AccountID) erro
 
 func (devSession) Get(w http.ResponseWriter, r *http.Request) (AccountID, error) {
 	return AccountID(1), nil
+}
+
+func (devSession) Del(w http.ResponseWriter, r *http.Request, id AccountID) error {
+	return nil
 }

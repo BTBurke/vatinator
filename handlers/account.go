@@ -22,6 +22,7 @@ func GetAccountHandler(account vatinator.AccountService) http.HandlerFunc {
 		fd, err := account.GetFormData(id)
 		if err != nil {
 			handleError(w, http.StatusInternalServerError, errors.Wrap(err, "database error"))
+			return
 		}
 		if fd == nil {
 			// form data has not been set yet, return 204, no body to trigger form fill
