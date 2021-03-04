@@ -1,9 +1,12 @@
 package vatinator
 
 import (
+	"crypto/rand"
 	"database/sql"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -14,6 +17,9 @@ import (
 	"github.com/gorilla/sessions"
 )
 
+// 3 years
+var defaultCookieDuration int = 3 * 365 * 24 * 60 * 60
+
 var SessionNotValid error = errors.New("session expired or doesnt exist")
 var defaultOptions = sessions.Options{
 	Domain: ".vatinator.com",
@@ -22,9 +28,83 @@ var defaultOptions = sessions.Options{
 	MaxAge: 60 * 60 * 24 * 45,
 }
 
+const sessionSQL = `CREATE TABLE IF NOT EXISTS sessions (
+	cookie TEXT UNIQUE,
+	account_id INTEGER
+);
+CREATE INDEX IF NOT EXISTS session_cookie_idx ON sessions (cookie);
+`
+
 type SessionService interface {
 	New(w http.ResponseWriter, r *http.Request, id AccountID) error
 	Get(w http.ResponseWriter, r *http.Request) (AccountID, error)
+}
+
+type dbSessionService struct {
+	db *DB
+}
+
+func (s dbSessionService) New(w http.ResponseWriter, r *http.Request, id AccountID) error {
+	q := "INSERT INTO sessions (cookie, account_id) VALUES ($1, $2);"
+
+	c, err := newCookie()
+	if err != nil {
+		return err
+	}
+	resp, err := s.db.Exec(q, c.Value, id)
+	if err != nil {
+		return err
+	}
+	rows, err := resp.RowsAffected()
+	if rows == 0 || err != nil {
+		return fmt.Errorf("session persistence in DB failed: %s", err)
+	}
+	http.SetCookie(w, c)
+	return nil
+}
+
+func (s dbSessionService) Get(w http.ResponseWriter, r *http.Request) (AccountID, error) {
+	c, err := r.Cookie("__Host-id")
+	if err != nil {
+		return nothing, SessionNotValid
+	}
+	q := "SELECT account_id FROM sessions WHERE cookie=$1;"
+	id := nothing
+	if err := s.db.Get(&id, q, c.Value); err != nil {
+		return nothing, SessionNotValid
+	}
+	if id == nothing {
+		return nothing, SessionNotValid
+	}
+	return id, nil
+}
+
+func NewDBSessionService(path string) (SessionService, error) {
+	db, err := NewDB(path)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err := db.Exec(sessionSQL); err != nil {
+		return nil, err
+	}
+	return dbSessionService{db}, nil
+}
+
+func newCookie() (*http.Cookie, error) {
+	var value [24]byte
+	if _, err := io.ReadFull(rand.Reader, value[:]); err != nil {
+		return nil, err
+	}
+	valueString := hex.EncodeToString(value[:])
+	return &http.Cookie{
+		Name:     "__Host-id",
+		Value:    valueString,
+		Path:     "/",
+		MaxAge:   defaultCookieDuration,
+		Secure:   true,
+		HttpOnly: true,
+	}, nil
 }
 
 type Key []byte

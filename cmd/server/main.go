@@ -101,7 +101,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	sessionSvc, err := vatinator.NewSessionService(filepath.Join(viper.GetString("data_dir"), "session.db"), keys...)
+	sessionSvc, err := vatinator.NewDBSessionService(filepath.Join(viper.GetString("data_dir"), "sessions.db"))
 	if err != nil {
 		log.Fatal(err)
 	}

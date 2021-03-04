@@ -36,6 +36,29 @@ func TestSessionService(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestDBSessionService(t *testing.T) {
+	tmpdir, err := ioutil.TempDir("", "test-session")
+	require.NoError(t, err)
+	ss, err := NewDBSessionService(filepath.Join(tmpdir, "session.db"))
+	require.NoError(t, err)
+
+	r := httptest.NewRequest("GET", "/", nil)
+	w := httptest.NewRecorder()
+	_, errNoSession := ss.Get(w, r)
+	assert.True(t, errors.Is(errNoSession, SessionNotValid))
+
+	if err := ss.New(w, r, AccountID(1)); err != nil {
+		require.NoError(t, err)
+	}
+	assert.Greater(t, len(w.Header().Get("Set-Cookie")), 0)
+
+	r2 := httptest.NewRequest("GET", "/", nil)
+	r2.Header.Set("Cookie", w.Header().Get("Set-Cookie"))
+	id, err := ss.Get(w, r2)
+	assert.Equal(t, AccountID(1), id)
+	assert.NoError(t, err)
+}
+
 func TestSessionKeys(t *testing.T) {
 	tmpdir, err := ioutil.TempDir("", "test-session")
 	require.NoError(t, err)
