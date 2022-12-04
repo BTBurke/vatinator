@@ -18,7 +18,9 @@ func TestReceiptNumber(t *testing.T) {
 		{name: "partnerkaart", input: "tšeki number: 118288", expect: "118288"},
 		{name: "bold food", input: "document no. 3188271b-eb74-44aa-8251- fa523af5242d", expect: "3188271b-eb74"},
 		{name: "wolt", input: "order id: 601c1721af7e37fd4f032954", expect: "601c1721af7e37fd4f032954"},
+		{name: "wolt2", input: "order id 601c1721af7e37fd4f032954", expect: "601c1721af7e37fd4f032954"},
 		{name: "telia", input: "invoice 473892789234", expect: "473892789234"},
+		{name: "alexela", input: "tsekk/arve 181638-5781", expect: "181638-5781"},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {

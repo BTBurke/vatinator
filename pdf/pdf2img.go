@@ -2,6 +2,7 @@ package pdf
 
 import (
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -47,9 +48,20 @@ func PdfToImage(r io.ReadCloser) (io.ReadCloser, error) {
 	}
 
 	// convert multiple images to single image
+	// check to see how many pngs there are (total files - 1)
+	files, err := ioutil.ReadDir(tmpdir)
+	if err != nil {
+		files = []fs.FileInfo{}
+	}
+
 	inputPngs := filepath.Join(tmpdir, "out*.png")
 	outPng := filepath.Join(tmpdir, "result.png")
 	convertCmd := []string{inputPngs, "-trim", "-append", outPng}
+	if len(files) == 3 {
+		// if there are exactly two pngs (Telia receipts), rotate them first then append
+		// for a better aspect ratio
+		convertCmd = []string{inputPngs, "-rotate", "90", "-trim", "-append", outPng}
+	}
 	cmd2 := exec.Command(convertBin, convertCmd...)
 	output2, err := cmd2.CombinedOutput()
 	if err != nil {

@@ -42,6 +42,7 @@ func TestReverseDates(t *testing.T) {
 	}{
 		{"reversed date", "2021-12-29", "29/12/2021"},
 		{"reversed date short year", "21-12-29", "29/12/2021"},
+		{"hyphen reversed", "2022-09-12", "12/09/2022"},
 		// TODO: only handles dates through 2022
 	}
 	for _, tc := range tt {

@@ -14,6 +14,7 @@ var tseki *regexp.Regexp
 var boltUUID *regexp.Regexp
 var wolt *regexp.Regexp
 var telia *regexp.Regexp
+var alexela *regexp.Regexp
 
 func init() {
 	kviitung = regexp.MustCompile(`kviitung[^0-9]+([0-9]*\/?[0-9]*)?`)
@@ -26,8 +27,9 @@ func init() {
 	tseki = regexp.MustCompile(`tšek[^0-9]+([0-9]*)`)
 	// bolt uses UUIDv4, truncated to first two sections
 	boltUUID = regexp.MustCompile(`document\sno\.\s([0-9a-f]{8}-[0-9a-f]{4})`)
-	wolt = regexp.MustCompile(`order id: ([0-9a-f]+)`)
+	wolt = regexp.MustCompile(`order id\:?\s?([0-9a-f]+)`)
 	telia = regexp.MustCompile(`invoice ([0-9]+)`)
+	alexela = regexp.MustCompile(`.*arve ([0-9]+-[0-9]+)`)
 }
 
 type id struct{}
@@ -50,6 +52,7 @@ func IDRule() Rule {
 // extracts the receipt id number, looking for either kviitung or arve
 func extractID(lines []string) string {
 	regexes := []*regexp.Regexp{
+		alexela,
 		kviitung,
 		arve,
 		hash,

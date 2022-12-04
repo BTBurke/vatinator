@@ -2,6 +2,7 @@ package ocr
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 )
 
@@ -10,13 +11,14 @@ var dr *regexp.Regexp
 
 func init() {
 	d = regexp.MustCompile(`(01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31)\s?\.?\,?\/?\-?\s?(01|02|03|04|05|06|07|08|09|10|11|12)\s?\.?\,?\/?\-?\s?(2021|2022|21|22)`)
-	dr = regexp.MustCompile(`(2021|2022|21|22)\s?\.?\,?\/?\-?\s?(01|02|03|04|05|06|07|08|09|10|11|12)\s?\.?\,?\/?\-?\s?(01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31)`)
+	dr = regexp.MustCompile(`(2021|2022|21|22)\s?\.?\,?\/?-?\s?(01|02|03|04|05|06|07|08|09|10|11|12)\s?\.?\,?\/?-?\s?(01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31)`)
 }
 
 type date struct{}
 
 func (date) Find(r *Result, text []string) error {
 	date := extractDate(text)
+	log.Printf("saw date: %s", date)
 	if date == "" {
 		date = extractDateReversed(text)
 	}
@@ -33,6 +35,7 @@ func (date) Find(r *Result, text []string) error {
 func extractDate(raw []string) string {
 	for _, line := range raw {
 		r := d.FindAllStringSubmatch(line, -1)
+		log.Printf("got first: %v", r)
 		if len(r) > 0 && len(r[0]) == 4 {
 			if len(r[0][3]) == 2 {
 				r[0][3] = fmt.Sprintf("20%s", r[0][3])
@@ -46,6 +49,7 @@ func extractDate(raw []string) string {
 func extractDateReversed(raw []string) string {
 	for _, line := range raw {
 		r := dr.FindAllStringSubmatch(line, -1)
+		log.Printf("got: %v", r)
 		if len(r) > 0 && len(r[0]) == 4 {
 			if len(r[0][1]) == 2 {
 				r[0][1] = fmt.Sprintf("20%s", r[0][1])
