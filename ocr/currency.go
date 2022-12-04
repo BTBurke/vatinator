@@ -1,6 +1,7 @@
 package ocr
 
 import (
+	"math"
 	"regexp"
 	"sort"
 	"strconv"
@@ -95,12 +96,19 @@ func extractTaxTotal(in []int) (tax int, total int) {
 		in[i], in[opp] = in[opp], in[i]
 	}
 
+	maxCost := 0
+	if len(in) > 0 {
+		maxCost = in[0]
+	}
 	for _, i := range in {
 		total = i
 		expectedTax := total - int(float64(total)/1.20)
 		for _, j := range in {
 			if j >= expectedTax-1 && j <= expectedTax+1 {
 				tax = j
+				if math.Abs(float64(maxCost-total)) <= 10 {
+					total = maxCost
+				}
 				return
 			}
 		}

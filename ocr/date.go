@@ -2,7 +2,6 @@ package ocr
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 )
 
@@ -18,7 +17,6 @@ type date struct{}
 
 func (date) Find(r *Result, text []string) error {
 	date := extractDate(text)
-	log.Printf("saw date: %s", date)
 	if date == "" {
 		date = extractDateReversed(text)
 	}
@@ -35,7 +33,6 @@ func (date) Find(r *Result, text []string) error {
 func extractDate(raw []string) string {
 	for _, line := range raw {
 		r := d.FindAllStringSubmatch(line, -1)
-		log.Printf("got first: %v", r)
 		if len(r) > 0 && len(r[0]) == 4 {
 			if len(r[0][3]) == 2 {
 				r[0][3] = fmt.Sprintf("20%s", r[0][3])
@@ -49,7 +46,6 @@ func extractDate(raw []string) string {
 func extractDateReversed(raw []string) string {
 	for _, line := range raw {
 		r := dr.FindAllStringSubmatch(line, -1)
-		log.Printf("got: %v", r)
 		if len(r) > 0 && len(r[0]) == 4 {
 			if len(r[0][1]) == 2 {
 				r[0][1] = fmt.Sprintf("20%s", r[0][1])
