@@ -218,6 +218,7 @@ func serveTLS(ctx context.Context, h http.Handler) (err error) {
 	if err != nil {
 		return err
 	}
+	cfg.NextProtos = append([]string{"h2", "http/1.1"}, cfg.NextProtos...)
 
 	ln, err := tls.Listen("tcp", ":443", cfg)
 	if err != nil {
