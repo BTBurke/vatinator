@@ -36,7 +36,10 @@ tag:
 test-release:
 > goreleaser build --snapshot --rm-dist
 
-server:
-> go build -o bin/server cmd/server/main.go
+deploy:
+> go build -o server cmd/server/main.go
+> mv server /usr/local/bin
+> systemctl restart vat.service
+> systemctl status vat.service
 
-.PHONY: build test assets encrypt tag test-release
+.PHONY: build test assets encrypt tag test-release deploy
