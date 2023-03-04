@@ -2,6 +2,7 @@ package ocr
 
 import (
 	"context"
+	"errors"
 	"os"
 	"testing"
 
@@ -41,6 +42,10 @@ func TestDetectOrientation(t *testing.T) {
 			i, err := vision.NewImageFromReader(r)
 			require.NoError(t, err)
 			ctx := context.Background()
+
+			if _, err := os.Stat("../vatinator-f91ccb107c2c.json"); errors.Is(err, os.ErrNotExist) {
+				t.Skipf("Skipping external API call: no GCS credentials")
+			}
 
 			c, err := vision.NewImageAnnotatorClient(ctx, option.WithCredentialsFile("../vatinator-f91ccb107c2c.json"))
 			require.NoError(t, err)

@@ -29,8 +29,9 @@ func init() {
 	// bolt uses UUIDv4, truncated to first two sections
 	boltUUID = regexp.MustCompile(`document\sno\.\s([0-9a-f]{8}-[0-9a-f]{4})`)
 	wolt = regexp.MustCompile(`order id\:?\s?([0-9a-f]+)`)
-	telia = regexp.MustCompile(`invoice ([0-9]{14}).?`)
-	telia2 = regexp.MustCompile(`([0-9]{14})`)
+	// telia always starts with year
+	telia = regexp.MustCompile(`invoice (2023[0-9]{10}).?`)
+	telia2 = regexp.MustCompile(`(2023[0-9]{10})`)
 	alexela = regexp.MustCompile(`.*arve ([0-9]+-[0-9]+)`)
 }
 

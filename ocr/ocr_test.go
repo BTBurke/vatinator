@@ -2,6 +2,7 @@ package ocr
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"testing"
 
@@ -13,6 +14,11 @@ import (
 
 // TODO: make this more robust beyond just smoke test
 func TestProcess(t *testing.T) {
+
+	if _, err := os.Stat("../vatinator-f91ccb107c2c.json"); errors.Is(err, os.ErrNotExist) {
+		t.Skipf("Skipping external API call: no GCS credentials")
+	}
+
 	snap, err := snapshot.New(snapshot.SnapExtension(".json"))
 	require.NoError(t, err)
 

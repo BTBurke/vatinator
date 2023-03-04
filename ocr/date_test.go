@@ -12,18 +12,18 @@ func TestDates(t *testing.T) {
 		in   string
 		out  string
 	}{
-		// 2022 update
-		{"dot delimited full year", "09.12.2022", "09/12/2022"},
-		{"dot delimited short year", "09.12.22", "09/12/2022"},
-		{"spaces and extra info", "date: 09.12.22", "09/12/2022"},
-		{"slash delimited full year", "09/12/2022", "09/12/2022"},
-		{"slash delimited short year", "09/12/22", "09/12/2022"},
-		{"not delimited full year", "09122022", "09/12/2022"},
-		{"not delimited short year", "091222", "09/12/2022"},
-		{"not delimited full year 22", "09122022", "09/12/2022"},
-		{"spaces inside year", "09.12. 2022", "09/12/2022"},
-		{"hyphen delimited", "09-12-2022", "09/12/2022"},
-		{"pathological from ocr fail", "29.12, 2022", "29/12/2022"},
+		// 2023 update
+		{"dot delimited full year", "09.12.2023", "09/12/2023"},
+		{"dot delimited short year", "09.12.23", "09/12/2023"},
+		{"spaces and extra info", "date: 09.12.23", "09/12/2023"},
+		{"slash delimited full year", "09/12/2023", "09/12/2023"},
+		{"slash delimited short year", "09/12/23", "09/12/2023"},
+		{"not delimited full year", "09122023", "09/12/2023"},
+		{"not delimited short year", "091223", "09/12/2023"},
+		{"not delimited full year 22", "09122023", "09/12/2023"},
+		{"spaces inside year", "09.12. 2023", "09/12/2023"},
+		{"hyphen delimited", "09-12-2023", "09/12/2023"},
+		{"pathological from ocr fail", "29.12, 2023", "29/12/2023"},
 		// TODO: only handles dates through 2022
 	}
 	for _, tc := range tt {
@@ -40,9 +40,9 @@ func TestReverseDates(t *testing.T) {
 		in   string
 		out  string
 	}{
-		{"reversed date", "2021-12-29", "29/12/2021"},
-		{"reversed date short year", "21-12-29", "29/12/2021"},
-		{"hyphen reversed", "2022-09-12", "12/09/2022"},
+		{"reversed date", "2023-12-29", "29/12/2023"},
+		{"reversed date short year", "23-12-29", "29/12/2023"},
+		{"hyphen reversed", "2023-09-12", "12/09/2023"},
 		// TODO: only handles dates through 2022
 	}
 	for _, tc := range tt {
