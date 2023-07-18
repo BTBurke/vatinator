@@ -1,5 +1,6 @@
-define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
+define("./workbox-136208f2.js",['exports'], function (exports) { 'use strict';
 
+    // @ts-ignore
     try {
       self['workbox:core:5.1.4'] && _();
     } catch (e) {}
@@ -16,7 +17,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
       if (!('__WB_DISABLE_DEV_LOGS' in self)) {
         self.__WB_DISABLE_DEV_LOGS = false;
       }
-
       let inGroup = false;
       const methodToColorMap = {
         debug: `#7f8c8d`,
@@ -26,12 +26,10 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         groupCollapsed: `#3498db`,
         groupEnd: null
       };
-
       const print = function (method, args) {
         if (self.__WB_DISABLE_DEV_LOGS) {
           return;
         }
-
         if (method === 'groupCollapsed') {
           // Safari doesn't print all console.groupCollapsed() arguments:
           // https://bugs.webkit.org/show_bug.cgi?id=182754
@@ -40,32 +38,25 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             return;
           }
         }
-
-        const styles = [`background: ${methodToColorMap[method]}`, `border-radius: 0.5em`, `color: white`, `font-weight: bold`, `padding: 2px 0.5em`]; // When in a group, the workbox prefix is not displayed.
-
+        const styles = [`background: ${methodToColorMap[method]}`, `border-radius: 0.5em`, `color: white`, `font-weight: bold`, `padding: 2px 0.5em`];
+        // When in a group, the workbox prefix is not displayed.
         const logPrefix = inGroup ? [] : ['%cworkbox', styles.join(';')];
         console[method](...logPrefix, ...args);
-
         if (method === 'groupCollapsed') {
           inGroup = true;
         }
-
         if (method === 'groupEnd') {
           inGroup = false;
         }
       };
-
       const api = {};
       const loggerMethods = Object.keys(methodToColorMap);
-
       for (const key of loggerMethods) {
         const method = key;
-
         api[method] = (...args) => {
           print(method, args);
         };
       }
-
       return api;
     })();
 
@@ -85,7 +76,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         if (!paramName || !validValueDescription) {
           throw new Error(`Unexpected input to 'invalid-value' error.`);
         }
-
         return `The '${paramName}' parameter was given a value with an ` + `unexpected value. ${validValueDescription} Received a value of ` + `${JSON.stringify(value)}.`;
       },
       'not-an-array': ({
@@ -97,7 +87,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         if (!moduleName || !className || !funcName || !paramName) {
           throw new Error(`Unexpected input to 'not-an-array' error.`);
         }
-
         return `The parameter '${paramName}' passed into ` + `'${moduleName}.${className}.${funcName}()' must be an array.`;
       },
       'incorrect-type': ({
@@ -110,7 +99,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         if (!expectedType || !paramName || !moduleName || !funcName) {
           throw new Error(`Unexpected input to 'incorrect-type' error.`);
         }
-
         return `The parameter '${paramName}' passed into ` + `'${moduleName}.${className ? className + '.' : ''}` + `${funcName}()' must be of type ${expectedType}.`;
       },
       'incorrect-class': ({
@@ -124,11 +112,9 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         if (!expectedClass || !moduleName || !funcName) {
           throw new Error(`Unexpected input to 'incorrect-class' error.`);
         }
-
         if (isReturnValueProblem) {
           return `The return value from ` + `'${moduleName}.${className ? className + '.' : ''}${funcName}()' ` + `must be an instance of class ${expectedClass.name}.`;
         }
-
         return `The parameter '${paramName}' passed into ` + `'${moduleName}.${className ? className + '.' : ''}${funcName}()' ` + `must be an instance of class ${expectedClass.name}.`;
       },
       'missing-a-method': ({
@@ -141,7 +127,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         if (!expectedMethod || !paramName || !moduleName || !className || !funcName) {
           throw new Error(`Unexpected input to 'missing-a-method' error.`);
         }
-
         return `${moduleName}.${className}.${funcName}() expected the ` + `'${paramName}' parameter to expose a '${expectedMethod}' method.`;
       },
       'add-to-cache-list-unexpected-type': ({
@@ -156,7 +141,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         if (!firstEntry || !secondEntry) {
           throw new Error(`Unexpected input to ` + `'add-to-cache-list-duplicate-entries' error.`);
         }
-
         return `Two of the entries passed to ` + `'workbox-precaching.PrecacheController.addToCacheList()' had the URL ` + `${firstEntry._entryId} but different revision details. Workbox is ` + `unable to cache and version the asset correctly. Please remove one ` + `of the entries.`;
       },
       'plugin-error-request-will-fetch': ({
@@ -165,7 +149,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         if (!thrownError) {
           throw new Error(`Unexpected input to ` + `'plugin-error-request-will-fetch', error.`);
         }
-
         return `An error was thrown by a plugins 'requestWillFetch()' method. ` + `The thrown error message was: '${thrownError.message}'.`;
       },
       'invalid-cache-name': ({
@@ -175,7 +158,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         if (!cacheNameId) {
           throw new Error(`Expected a 'cacheNameId' for error 'invalid-cache-name'`);
         }
-
         return `You must provide a name containing at least one character for ` + `setCacheDetails({${cacheNameId}: '...'}). Received a value of ` + `'${JSON.stringify(value)}'`;
       },
       'unregister-route-but-not-found-with-method': ({
@@ -184,7 +166,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         if (!method) {
           throw new Error(`Unexpected input to ` + `'unregister-route-but-not-found-with-method' error.`);
         }
-
         return `The route you're trying to unregister was not  previously ` + `registered for the method type '${method}'.`;
       },
       'unregister-route-route-not-registered': () => {
@@ -246,7 +227,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         if (!paramName || !moduleName || !funcName) {
           throw new Error(`Unexpected input to 'invalid-string' error.`);
         }
-
         return `When using strings, the '${paramName}' parameter must start with ` + `'http' (for cross-origin matches) or '/' (for same-origin matches). ` + `Please see the docs for ${moduleName}.${funcName}() for ` + `more info.`;
       },
       'channel-name-required': () => {
@@ -264,7 +244,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         if (!normalizedRangeHeader) {
           throw new Error(`Unexpected input to 'unit-must-be-bytes' error.`);
         }
-
         return `The 'unit' portion of the Range header must be set to 'bytes'. ` + `The Range header provided was "${normalizedRangeHeader}"`;
       },
       'single-range-only': ({
@@ -273,7 +252,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         if (!normalizedRangeHeader) {
           throw new Error(`Unexpected input to 'single-range-only' error.`);
         }
-
         return `Multiple ranges are not supported. Please use a  single start ` + `value, and optional end value. The Range header provided was ` + `"${normalizedRangeHeader}"`;
       },
       'invalid-range-values': ({
@@ -282,7 +260,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         if (!normalizedRangeHeader) {
           throw new Error(`Unexpected input to 'invalid-range-values' error.`);
         }
-
         return `The Range header is missing both start and end values. At least ` + `one of those values is needed. The Range header provided was ` + `"${normalizedRangeHeader}"`;
       },
       'no-range-header': () => {
@@ -311,11 +288,9 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         error
       }) => {
         let message = `The strategy could not generate a response for '${url}'.`;
-
         if (error) {
           message += ` The underlying error is ${error}.`;
         }
-
         return message;
       },
       'bad-precaching-response': ({
@@ -349,17 +324,13 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
       license that can be found in the LICENSE file or at
       https://opensource.org/licenses/MIT.
     */
-
     const generatorFunction = (code, details = {}) => {
       const message = messages[code];
-
       if (!message) {
         throw new Error(`Unable to find message for code '${code}'.`);
       }
-
       return message(details);
     };
-
     const messageGenerator =  generatorFunction;
 
     /*
@@ -378,7 +349,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      *
      * @private
      */
-
     class WorkboxError extends Error {
       /**
        *
@@ -394,7 +364,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         this.name = errorCode;
         this.details = details;
       }
-
     }
 
     /*
@@ -410,57 +379,47 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      * The destructed and restructured object is so it's clear what is
      * needed.
      */
-
     const isArray = (value, details) => {
       if (!Array.isArray(value)) {
         throw new WorkboxError('not-an-array', details);
       }
     };
-
     const hasMethod = (object, expectedMethod, details) => {
       const type = typeof object[expectedMethod];
-
       if (type !== 'function') {
         details['expectedMethod'] = expectedMethod;
         throw new WorkboxError('missing-a-method', details);
       }
     };
-
     const isType = (object, expectedType, details) => {
       if (typeof object !== expectedType) {
         details['expectedType'] = expectedType;
         throw new WorkboxError('incorrect-type', details);
       }
     };
-
     const isInstance = (object, expectedClass, details) => {
       if (!(object instanceof expectedClass)) {
         details['expectedClass'] = expectedClass;
         throw new WorkboxError('incorrect-class', details);
       }
     };
-
     const isOneOf = (value, validValues, details) => {
       if (!validValues.includes(value)) {
         details['validValueDescription'] = `Valid values are ${JSON.stringify(validValues)}.`;
         throw new WorkboxError('invalid-value', details);
       }
     };
-
     const isArrayOfClass = (value, expectedClass, details) => {
       const error = new WorkboxError('not-array-of-class', details);
-
       if (!Array.isArray(value)) {
         throw error;
       }
-
       for (const item of value) {
         if (!(item instanceof expectedClass)) {
           throw error;
         }
       }
     };
-
     const finalAssertExports =  {
       hasMethod,
       isArray,
@@ -470,6 +429,7 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
       isArrayOfClass
     };
 
+    // @ts-ignore
     try {
       self['workbox:routing:5.1.4'] && _();
     } catch (e) {}
@@ -489,7 +449,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      *
      * @private
      */
-
     const defaultMethod = 'GET';
     /**
      * The list of valid HTTP methods associated with requests that could be routed.
@@ -498,7 +457,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      *
      * @private
      */
-
     const validMethods = ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT'];
 
     /*
@@ -515,7 +473,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      *
      * @private
      */
-
     const normalizeHandler = handler => {
       if (handler && typeof handler === 'object') {
         {
@@ -526,7 +483,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             paramName: 'handler'
           });
         }
-
         return handler;
       } else {
         {
@@ -537,7 +493,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             paramName: 'handler'
           });
         }
-
         return {
           handle: handler
         };
@@ -560,7 +515,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      *
      * @memberof module:workbox-routing
      */
-
     class Route {
       /**
        * Constructor for Route class.
@@ -581,21 +535,18 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             funcName: 'constructor',
             paramName: 'match'
           });
-
           if (method) {
             finalAssertExports.isOneOf(method, validMethods, {
               paramName: 'method'
             });
           }
-        } // These values are referenced directly by Router so cannot be
+        }
+        // These values are referenced directly by Router so cannot be
         // altered by minificaton.
-
-
         this.handler = normalizeHandler(handler);
         this.match = match;
         this.method = method;
       }
-
     }
 
     /*
@@ -618,7 +569,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      * @memberof module:workbox-routing
      * @extends module:workbox-routing.Route
      */
-
     class RegExpRoute extends Route {
       /**
        * If the regular expression contains
@@ -642,38 +592,32 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             paramName: 'pattern'
           });
         }
-
         const match = ({
           url
         }) => {
-          const result = regExp.exec(url.href); // Return immediately if there's no match.
-
+          const result = regExp.exec(url.href);
+          // Return immediately if there's no match.
           if (!result) {
             return;
-          } // Require that the match start at the first character in the URL string
+          }
+          // Require that the match start at the first character in the URL string
           // if it's a cross-origin request.
           // See https://github.com/GoogleChrome/workbox/issues/281 for the context
           // behind this behavior.
-
-
           if (url.origin !== location.origin && result.index !== 0) {
             {
               logger.debug(`The regular expression '${regExp}' only partially matched ` + `against the cross-origin URL '${url}'. RegExpRoute's will only ` + `handle cross-origin requests if they match the entire URL.`);
             }
-
             return;
-          } // If the route matches, but there aren't any capture groups defined, then
+          }
+          // If the route matches, but there aren't any capture groups defined, then
           // this will return [], which is truthy and therefore sufficient to
           // indicate a match.
           // If there are capture groups, then it will return their values.
-
-
           return result.slice(1);
         };
-
         super(match, handler, method);
       }
-
     }
 
     /*
@@ -683,11 +627,10 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
       license that can be found in the LICENSE file or at
       https://opensource.org/licenses/MIT.
     */
-
     const getFriendlyURL = url => {
-      const urlObj = new URL(String(url), location.href); // See https://github.com/GoogleChrome/workbox/issues/2323
+      const urlObj = new URL(String(url), location.href);
+      // See https://github.com/GoogleChrome/workbox/issues/2323
       // We want to include everything, except for the origin if it's same-origin.
-
       return urlObj.href.replace(new RegExp(`^${location.origin}`), '');
     };
 
@@ -715,7 +658,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      *
      * @memberof module:workbox-routing
      */
-
     class Router {
       /**
        * Initializes a new Router.
@@ -728,8 +670,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        * method name ('GET', etc.) to an array of all the corresponding `Route`
        * instances that are registered.
        */
-
-
       get routes() {
         return this._routes;
       }
@@ -737,8 +677,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        * Adds a fetch event listener to respond to events when a route matches
        * the event's request.
        */
-
-
       addFetchListener() {
         // See https://github.com/Microsoft/TypeScript/issues/28357#issuecomment-436484705
         self.addEventListener('fetch', event => {
@@ -749,7 +687,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             request,
             event
           });
-
           if (responsePromise) {
             event.respondWith(responsePromise);
           }
@@ -777,8 +714,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        * }
        * ```
        */
-
-
       addCacheListener() {
         // See https://github.com/Microsoft/TypeScript/issues/28357#issuecomment-436484705
         self.addEventListener('message', event => {
@@ -786,26 +721,23 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             const {
               payload
             } = event.data;
-
             {
               logger.debug(`Caching URLs from the window`, payload.urlsToCache);
             }
-
             const requestPromises = Promise.all(payload.urlsToCache.map(entry => {
               if (typeof entry === 'string') {
                 entry = [entry];
               }
-
               const request = new Request(...entry);
               return this.handleRequest({
                 request
-              }); // TODO(philipwalton): TypeScript errors without this typecast for
+              });
+              // TODO(philipwalton): TypeScript errors without this typecast for
               // some reason (probably a bug). The real type here should work but
               // doesn't: `Array<Promise<Response> | undefined>`.
             })); // TypeScript
-
-            event.waitUntil(requestPromises); // If a MessageChannel was used, reply to the message on success.
-
+            event.waitUntil(requestPromises);
+            // If a MessageChannel was used, reply to the message on success.
             if (event.ports && event.ports[0]) {
               requestPromises.then(() => event.ports[0].postMessage(true));
             }
@@ -825,8 +757,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        *     registered route can handle the request. If there is no matching
        *     route and there's no `defaultHandler`, `undefined` is returned.
        */
-
-
       handleRequest({
         request,
         event
@@ -839,17 +769,13 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             paramName: 'options.request'
           });
         }
-
         const url = new URL(request.url, location.href);
-
         if (!url.protocol.startsWith('http')) {
           {
             logger.debug(`Workbox Router only supports URLs that start with 'http'.`);
           }
-
           return;
         }
-
         const {
           params,
           route
@@ -860,37 +786,30 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         });
         let handler = route && route.handler;
         const debugMessages = [];
-
         {
           if (handler) {
             debugMessages.push([`Found a route to handle this request:`, route]);
-
             if (params) {
               debugMessages.push([`Passing the following params to the route's handler:`, params]);
             }
           }
-        } // If we don't have a handler because there was no matching route, then
+        }
+        // If we don't have a handler because there was no matching route, then
         // fall back to defaultHandler if that's defined.
-
-
         if (!handler && this._defaultHandler) {
           {
             debugMessages.push(`Failed to find a matching route. Falling ` + `back to the default handler.`);
           }
-
           handler = this._defaultHandler;
         }
-
         if (!handler) {
           {
             // No handler so Workbox will do nothing. If logs is set of debug
             // i.e. verbose, we should print out this information.
             logger.debug(`No route found for: ${getFriendlyURL(url)}`);
           }
-
           return;
         }
-
         {
           // We have a handler, meaning Workbox is going to handle the route.
           // print the routing details to the console.
@@ -903,12 +822,10 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             }
           });
           logger.groupEnd();
-        } // Wrap in try and catch in case the handle method throws a synchronous
+        }
+        // Wrap in try and catch in case the handle method throws a synchronous
         // error. It should still callback to the catch handler.
-
-
         let responsePromise;
-
         try {
           responsePromise = handler.handle({
             url,
@@ -919,7 +836,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         } catch (err) {
           responsePromise = Promise.reject(err);
         }
-
         if (responsePromise instanceof Promise && this._catchHandler) {
           responsePromise = responsePromise.catch(err => {
             {
@@ -930,7 +846,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
               logger.error(err);
               logger.groupEnd();
             }
-
             return this._catchHandler.handle({
               url,
               request,
@@ -938,7 +853,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             });
           });
         }
-
         return responsePromise;
       }
       /**
@@ -954,8 +868,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        *     They are populated if a matching route was found or `undefined`
        *     otherwise.
        */
-
-
       findMatchingRoute({
         url,
         request,
@@ -975,9 +887,7 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             paramName: 'options.request'
           });
         }
-
         const routes = this._routes.get(request.method) || [];
-
         for (const route of routes) {
           let params;
           const matchResult = route.match({
@@ -985,11 +895,9 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             request,
             event
           });
-
           if (matchResult) {
             // See https://github.com/GoogleChrome/workbox/issues/2079
             params = matchResult;
-
             if (Array.isArray(matchResult) && matchResult.length === 0) {
               // Instead of passing an empty array in as params, use undefined.
               params = undefined;
@@ -1001,17 +909,15 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
               // don't set params.
               // See https://github.com/GoogleChrome/workbox/pull/2134#issuecomment-513924353
               params = undefined;
-            } // Return early if have a match.
-
-
+            }
+            // Return early if have a match.
             return {
               route,
               params
             };
           }
-        } // If no match was found above, return and empty object.
-
-
+        }
+        // If no match was found above, return and empty object.
         return {};
       }
       /**
@@ -1024,8 +930,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        * @param {module:workbox-routing~handlerCallback} handler A callback
        * function that returns a Promise resulting in a Response.
        */
-
-
       setDefaultHandler(handler) {
         this._defaultHandler = normalizeHandler(handler);
       }
@@ -1036,8 +940,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        * @param {module:workbox-routing~handlerCallback} handler A callback
        * function that returns a Promise resulting in a Response.
        */
-
-
       setCatchHandler(handler) {
         this._catchHandler = normalizeHandler(handler);
       }
@@ -1046,8 +948,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        *
        * @param {module:workbox-routing.Route} route The route to register.
        */
-
-
       registerRoute(route) {
         {
           finalAssertExports.isType(route, 'object', {
@@ -1081,13 +981,11 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             paramName: 'route.method'
           });
         }
-
         if (!this._routes.has(route.method)) {
           this._routes.set(route.method, []);
-        } // Give precedence to all of the earlier routes by adding this additional
+        }
+        // Give precedence to all of the earlier routes by adding this additional
         // route to the end of the array.
-
-
         this._routes.get(route.method).push(route);
       }
       /**
@@ -1095,24 +993,19 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        *
        * @param {module:workbox-routing.Route} route The route to unregister.
        */
-
-
       unregisterRoute(route) {
         if (!this._routes.has(route.method)) {
           throw new WorkboxError('unregister-route-but-not-found-with-method', {
             method: route.method
           });
         }
-
         const routeIndex = this._routes.get(route.method).indexOf(route);
-
         if (routeIndex > -1) {
           this._routes.get(route.method).splice(routeIndex, 1);
         } else {
           throw new WorkboxError('unregister-route-route-not-registered');
         }
       }
-
     }
 
     /*
@@ -1130,15 +1023,13 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      * @private
      * @return {Router}
      */
-
     const getOrCreateDefaultRouter = () => {
       if (!defaultRouter) {
-        defaultRouter = new Router(); // The helpers that use the default Router assume these listeners exist.
-
+        defaultRouter = new Router();
+        // The helpers that use the default Router assume these listeners exist.
         defaultRouter.addFetchListener();
         defaultRouter.addCacheListener();
       }
-
       return defaultRouter;
     };
 
@@ -1168,13 +1059,10 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      *
      * @memberof module:workbox-routing
      */
-
     function registerRoute(capture, handler, method) {
       let route;
-
       if (typeof capture === 'string') {
         const captureUrl = new URL(capture, location.href);
-
         {
           if (!(capture.startsWith('/') || capture.startsWith('http'))) {
             throw new WorkboxError('invalid-string', {
@@ -1182,19 +1070,16 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
               funcName: 'registerRoute',
               paramName: 'capture'
             });
-          } // We want to check if Express-style wildcards are in the pathname only.
+          }
+          // We want to check if Express-style wildcards are in the pathname only.
           // TODO: Remove this log message in v4.
-
-
-          const valueToCheck = capture.startsWith('http') ? captureUrl.pathname : capture; // See https://github.com/pillarjs/path-to-regexp#parameters
-
+          const valueToCheck = capture.startsWith('http') ? captureUrl.pathname : capture;
+          // See https://github.com/pillarjs/path-to-regexp#parameters
           const wildcards = '[*:?+]';
-
           if (new RegExp(`${wildcards}`).exec(valueToCheck)) {
             logger.debug(`The '$capture' parameter contains an Express-style wildcard ` + `character (${wildcards}). Strings are now always interpreted as ` + `exact matches; use a RegExp for partial or wildcard matches.`);
           }
         }
-
         const matchCallback = ({
           url
         }) => {
@@ -1203,11 +1088,9 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
               logger.debug(`${capture} only partially matches the cross-origin URL ` + `${url}. This route will only handle cross-origin requests ` + `if they match the entire URL.`);
             }
           }
-
           return url.href === captureUrl.href;
-        }; // If `capture` is a string then `handler` and `method` must be present.
-
-
+        };
+        // If `capture` is a string then `handler` and `method` must be present.
         route = new Route(matchCallback, handler, method);
       } else if (capture instanceof RegExp) {
         // If `capture` is a `RegExp` then `handler` and `method` must be present.
@@ -1224,7 +1107,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
           paramName: 'capture'
         });
       }
-
       const defaultRouter = getOrCreateDefaultRouter();
       defaultRouter.registerRoute(route);
       return route;
@@ -1244,17 +1126,14 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
       runtime: 'runtime',
       suffix: typeof registration !== 'undefined' ? registration.scope : ''
     };
-
     const _createCacheName = cacheName => {
       return [_cacheNameDetails.prefix, cacheName, _cacheNameDetails.suffix].filter(value => value && value.length > 0).join('-');
     };
-
     const eachCacheNameDetail = fn => {
       for (const key of Object.keys(_cacheNameDetails)) {
         fn(key);
       }
     };
-
     const cacheNames = {
       updateDetails: details => {
         eachCacheNameDetail(key => {
@@ -1291,7 +1170,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      *
      * @private
      **/
-
     function dontWaitFor(promise) {
       // Effective no-op.
       promise.then(() => {});
@@ -1304,7 +1182,7 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
       license that can be found in the LICENSE file or at
       https://opensource.org/licenses/MIT.
     */
-
+    // Callbacks to be executed whenever there's a quota error.
     const quotaErrorCallbacks = new Set();
 
     /*
@@ -1321,7 +1199,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      * @param {Function} callback
      * @memberof module:workbox-core
      */
-
     function registerQuotaErrorCallback(callback) {
       {
         finalAssertExports.isType(callback, 'function', {
@@ -1330,9 +1207,7 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
           paramName: 'callback'
         });
       }
-
       quotaErrorCallbacks.add(callback);
-
       {
         logger.log('Registered a callback to respond to quota errors.', callback);
       }
@@ -1352,7 +1227,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      *
      * @private
      */
-
     class DBWrapper {
       /**
        * @param {string} name
@@ -1371,7 +1245,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         this._name = name;
         this._version = version;
         this._onupgradeneeded = onupgradeneeded;
-
         this._onversionchange = onversionchange || (() => this.close());
       }
       /**
@@ -1380,8 +1253,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        *
        * @private
        */
-
-
       get db() {
         return this._db;
       }
@@ -1392,8 +1263,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        * @return {IDBDatabase}
        * @private
        */
-
-
       async open() {
         if (this._db) return;
         this._db = await new Promise((resolve, reject) => {
@@ -1408,9 +1277,7 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             reject(new Error('The open request was blocked and timed out'));
           }, this.OPEN_TIMEOUT);
           const openRequest = indexedDB.open(this._name, this._version);
-
           openRequest.onerror = () => reject(openRequest.error);
-
           openRequest.onupgradeneeded = evt => {
             if (openRequestTimedOut) {
               openRequest.transaction.abort();
@@ -1419,10 +1286,8 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
               this._onupgradeneeded(evt);
             }
           };
-
           openRequest.onsuccess = () => {
             const db = openRequest.result;
-
             if (openRequestTimedOut) {
               db.close();
             } else {
@@ -1442,8 +1307,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        * @return {Array}
        * @private
        */
-
-
       async getKey(storeName, query) {
         return (await this.getAllKeys(storeName, query, 1))[0];
       }
@@ -1457,8 +1320,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        * @return {Array}
        * @private
        */
-
-
       async getAll(storeName, query, count) {
         return await this.getAllMatching(storeName, {
           query,
@@ -1475,8 +1336,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        * @return {Array}
        * @private
        */
-
-
       async getAllKeys(storeName, query, count) {
         const entries = await this.getAllMatching(storeName, {
           query,
@@ -1502,8 +1361,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        * @return {Array}
        * @private
        */
-
-
       async getAllMatching(storeName, {
         index,
         query = null,
@@ -1517,13 +1374,10 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
           const target = index ? store.index(index) : store;
           const results = [];
           const request = target.openCursor(query, direction);
-
           request.onsuccess = () => {
             const cursor = request.result;
-
             if (cursor) {
               results.push(includeKeys ? cursor : cursor.value);
-
               if (count && results.length >= count) {
                 done(results);
               } else {
@@ -1552,17 +1406,12 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        * @return {*} The result of the transaction ran by the callback.
        * @private
        */
-
-
       async transaction(storeNames, type, callback) {
         await this.open();
         return await new Promise((resolve, reject) => {
           const txn = this._db.transaction(storeNames, type);
-
           txn.onabort = () => reject(txn.error);
-
           txn.oncomplete = () => resolve();
-
           callback(txn, value => resolve(value));
         });
       }
@@ -1576,18 +1425,14 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        * @return {*} The result of the transaction.
        * @private
        */
-
-
       async _call(method, storeName, type, ...args) {
         const callback = (txn, done) => {
-          const objStore = txn.objectStore(storeName); // TODO(philipwalton): Fix this underlying TS2684 error.
+          const objStore = txn.objectStore(storeName);
+          // TODO(philipwalton): Fix this underlying TS2684 error.
           // @ts-ignore
-
           const request = objStore[method].apply(objStore, args);
-
           request.onsuccess = () => done(request.result);
         };
-
         return await this.transaction([storeName], type, callback);
       }
       /**
@@ -1603,26 +1448,21 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        *
        * @private
        */
-
-
       close() {
         if (this._db) {
           this._db.close();
-
           this._db = null;
         }
       }
-
-    } // Exposed on the prototype to let users modify the default timeout on a
+    }
+    // Exposed on the prototype to let users modify the default timeout on a
     // per-instance or global basis.
-
-    DBWrapper.prototype.OPEN_TIMEOUT = 2000; // Wrap native IDBObjectStore methods according to their mode.
-
+    DBWrapper.prototype.OPEN_TIMEOUT = 2000;
+    // Wrap native IDBObjectStore methods according to their mode.
     const methodsToWrap = {
       readonly: ['get', 'count', 'getKey', 'getAll', 'getAllKeys'],
       readwrite: ['add', 'put', 'clear', 'delete']
     };
-
     for (const [mode, methods] of Object.entries(methodsToWrap)) {
       for (const method of methods) {
         if (method in IDBObjectStore.prototype) {
@@ -1650,25 +1490,22 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      * @param {string} name The database name.
      * @private
      */
-
     const deleteDatabase = async name => {
       await new Promise((resolve, reject) => {
         const request = indexedDB.deleteDatabase(name);
-
         request.onerror = () => {
           reject(request.error);
         };
-
         request.onblocked = () => {
           reject(new Error('Delete blocked'));
         };
-
         request.onsuccess = () => {
           resolve();
         };
       });
     };
 
+    // @ts-ignore
     try {
       self['workbox:expiration:5.1.4'] && _();
     } catch (e) {}
@@ -1682,7 +1519,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
     */
     const DB_NAME = 'workbox-expiration';
     const OBJECT_STORE_NAME = 'cache-entries';
-
     const normalizeURL = unNormalizedUrl => {
       const url = new URL(unNormalizedUrl, location.href);
       url.hash = '';
@@ -1693,8 +1529,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      *
      * @private
      */
-
-
     class CacheTimestampsModel {
       /**
        *
@@ -1715,28 +1549,26 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        *
        * @private
        */
-
-
       _handleUpgrade(event) {
-        const db = event.target.result; // TODO(philipwalton): EdgeHTML doesn't support arrays as a keyPath, so we
+        const db = event.target.result;
+        // TODO(philipwalton): EdgeHTML doesn't support arrays as a keyPath, so we
         // have to use the `id` keyPath here and create our own values (a
         // concatenation of `url + cacheName`) instead of simply using
         // `keyPath: ['url', 'cacheName']`, which is supported in other browsers.
-
         const objStore = db.createObjectStore(OBJECT_STORE_NAME, {
           keyPath: 'id'
-        }); // TODO(philipwalton): once we don't have to support EdgeHTML, we can
+        });
+        // TODO(philipwalton): once we don't have to support EdgeHTML, we can
         // create a single index with the keyPath `['cacheName', 'timestamp']`
         // instead of doing both these indexes.
-
         objStore.createIndex('cacheName', 'cacheName', {
           unique: false
         });
         objStore.createIndex('timestamp', 'timestamp', {
           unique: false
-        }); // Previous versions of `workbox-expiration` used `this._cacheName`
+        });
+        // Previous versions of `workbox-expiration` used `this._cacheName`
         // as the IDBDatabase name.
-
         deleteDatabase(this._cacheName);
       }
       /**
@@ -1745,8 +1577,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        *
        * @private
        */
-
-
       async setTimestamp(url, timestamp) {
         url = normalizeURL(url);
         const entry = {
@@ -1768,8 +1598,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        *
        * @private
        */
-
-
       async getTimestamp(url) {
         const entry = await this._db.get(OBJECT_STORE_NAME, this._getId(url));
         return entry.timestamp;
@@ -1785,22 +1613,18 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        *
        * @private
        */
-
-
       async expireEntries(minTimestamp, maxCount) {
         const entriesToDelete = await this._db.transaction(OBJECT_STORE_NAME, 'readwrite', (txn, done) => {
           const store = txn.objectStore(OBJECT_STORE_NAME);
           const request = store.index('timestamp').openCursor(null, 'prev');
           const entriesToDelete = [];
           let entriesNotDeletedCount = 0;
-
           request.onsuccess = () => {
             const cursor = request.result;
-
             if (cursor) {
-              const result = cursor.value; // TODO(philipwalton): once we can use a multi-key index, we
+              const result = cursor.value;
+              // TODO(philipwalton): once we can use a multi-key index, we
               // won't have to check `cacheName` here.
-
               if (result.cacheName === this._cacheName) {
                 // Delete an entry if it's older than the max age or
                 // if we already have the max number allowed.
@@ -1818,24 +1642,21 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
                   entriesNotDeletedCount++;
                 }
               }
-
               cursor.continue();
             } else {
               done(entriesToDelete);
             }
           };
-        }); // TODO(philipwalton): once the Safari bug in the following issue is fixed,
+        });
+        // TODO(philipwalton): once the Safari bug in the following issue is fixed,
         // we should be able to remove this loop and do the entry deletion in the
         // cursor loop above:
         // https://github.com/GoogleChrome/workbox/issues/1978
-
         const urlsDeleted = [];
-
         for (const entry of entriesToDelete) {
           await this._db.delete(OBJECT_STORE_NAME, entry.id);
           urlsDeleted.push(entry.url);
         }
-
         return urlsDeleted;
       }
       /**
@@ -1846,15 +1667,12 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        *
        * @private
        */
-
-
       _getId(url) {
         // Creating an ID from the URL and cache name won't be necessary once
         // Edge switches to Chromium and all browsers we support work with
         // array keyPaths.
         return this._cacheName + '|' + normalizeURL(url);
       }
-
     }
 
     /*
@@ -1871,7 +1689,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      *
      * @memberof module:workbox-expiration
      */
-
     class CacheExpiration {
       /**
        * To construct a new CacheExpiration instance you must provide at least
@@ -1887,7 +1704,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
       constructor(cacheName, config = {}) {
         this._isRunning = false;
         this._rerunRequested = false;
-
         {
           finalAssertExports.isType(cacheName, 'string', {
             moduleName: 'workbox-expiration',
@@ -1895,7 +1711,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             funcName: 'constructor',
             paramName: 'cacheName'
           });
-
           if (!(config.maxEntries || config.maxAgeSeconds)) {
             throw new WorkboxError('max-entries-or-age-required', {
               moduleName: 'workbox-expiration',
@@ -1903,14 +1718,14 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
               funcName: 'constructor'
             });
           }
-
           if (config.maxEntries) {
             finalAssertExports.isType(config.maxEntries, 'number', {
               moduleName: 'workbox-expiration',
               className: 'CacheExpiration',
               funcName: 'constructor',
               paramName: 'config.maxEntries'
-            }); // TODO: Assert is positive
+            });
+            // TODO: Assert is positive
           }
 
           if (config.maxAgeSeconds) {
@@ -1919,7 +1734,8 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
               className: 'CacheExpiration',
               funcName: 'constructor',
               paramName: 'config.maxAgeSeconds'
-            }); // TODO: Assert is positive
+            });
+            // TODO: Assert is positive
           }
         }
 
@@ -1931,24 +1747,19 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
       /**
        * Expires entries for the given cache and given criteria.
        */
-
-
       async expireEntries() {
         if (this._isRunning) {
           this._rerunRequested = true;
           return;
         }
-
         this._isRunning = true;
         const minTimestamp = this._maxAgeSeconds ? Date.now() - this._maxAgeSeconds * 1000 : 0;
-        const urlsExpired = await this._timestampModel.expireEntries(minTimestamp, this._maxEntries); // Delete URLs from the cache
-
+        const urlsExpired = await this._timestampModel.expireEntries(minTimestamp, this._maxEntries);
+        // Delete URLs from the cache
         const cache = await self.caches.open(this._cacheName);
-
         for (const url of urlsExpired) {
           await cache.delete(url);
         }
-
         {
           if (urlsExpired.length > 0) {
             logger.groupCollapsed(`Expired ${urlsExpired.length} ` + `${urlsExpired.length === 1 ? 'entry' : 'entries'} and removed ` + `${urlsExpired.length === 1 ? 'it' : 'them'} from the ` + `'${this._cacheName}' cache.`);
@@ -1959,9 +1770,7 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             logger.debug(`Cache expiration ran and found no entries to remove.`);
           }
         }
-
         this._isRunning = false;
-
         if (this._rerunRequested) {
           this._rerunRequested = false;
           dontWaitFor(this.expireEntries());
@@ -1974,8 +1783,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        *
        * @param {string} url
        */
-
-
       async updateTimestamp(url) {
         {
           finalAssertExports.isType(url, 'string', {
@@ -1985,7 +1792,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             paramName: 'url'
           });
         }
-
         await this._timestampModel.setTimestamp(url, Date.now());
       }
       /**
@@ -1999,8 +1805,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        * @param {string} url
        * @return {boolean}
        */
-
-
       async isURLExpired(url) {
         if (!this._maxAgeSeconds) {
           {
@@ -2019,15 +1823,12 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        * Removes the IndexedDB object store used to keep track of cache expiration
        * metadata.
        */
-
-
       async delete() {
         // Make sure we don't attempt another rerun if we're called in the middle of
         // a cache expiration.
         this._rerunRequested = false;
         await this._timestampModel.expireEntries(Infinity); // Expires all.
       }
-
     }
 
     /*
@@ -2055,7 +1856,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      *
      * @memberof module:workbox-expiration
      */
-
     class ExpirationPlugin {
       /**
        * @param {Object} config
@@ -2093,18 +1893,14 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
           if (!cachedResponse) {
             return null;
           }
-
-          const isFresh = this._isResponseDateFresh(cachedResponse); // Expire entries to ensure that even if the expiration date has
+          const isFresh = this._isResponseDateFresh(cachedResponse);
+          // Expire entries to ensure that even if the expiration date has
           // expired, it'll only be used once.
-
-
           const cacheExpiration = this._getCacheExpiration(cacheName);
-
-          dontWaitFor(cacheExpiration.expireEntries()); // Update the metadata for the request URL to the current timestamp,
+          dontWaitFor(cacheExpiration.expireEntries());
+          // Update the metadata for the request URL to the current timestamp,
           // but don't `await` it as we don't want to block the response.
-
           const updateTimestampDone = cacheExpiration.updateTimestamp(request.url);
-
           if (event) {
             try {
               event.waitUntil(updateTimestampDone);
@@ -2117,7 +1913,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
               }
             }
           }
-
           return isFresh ? cachedResponse : null;
         };
         /**
@@ -2130,8 +1925,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
          *
          * @private
          */
-
-
         this.cacheDidUpdate = async ({
           cacheName,
           request
@@ -2150,13 +1943,10 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
               paramName: 'request'
             });
           }
-
           const cacheExpiration = this._getCacheExpiration(cacheName);
-
           await cacheExpiration.updateTimestamp(request.url);
           await cacheExpiration.expireEntries();
         };
-
         {
           if (!(config.maxEntries || config.maxAgeSeconds)) {
             throw new WorkboxError('max-entries-or-age-required', {
@@ -2165,7 +1955,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
               funcName: 'constructor'
             });
           }
-
           if (config.maxEntries) {
             finalAssertExports.isType(config.maxEntries, 'number', {
               moduleName: 'workbox-expiration',
@@ -2174,7 +1963,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
               paramName: 'config.maxEntries'
             });
           }
-
           if (config.maxAgeSeconds) {
             finalAssertExports.isType(config.maxAgeSeconds, 'number', {
               moduleName: 'workbox-expiration',
@@ -2184,11 +1972,9 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             });
           }
         }
-
         this._config = config;
         this._maxAgeSeconds = config.maxAgeSeconds;
         this._cacheExpirations = new Map();
-
         if (config.purgeOnQuotaError) {
           registerQuotaErrorCallback(() => this.deleteCacheAndMetadata());
         }
@@ -2202,21 +1988,15 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        *
        * @private
        */
-
-
       _getCacheExpiration(cacheName) {
         if (cacheName === cacheNames.getRuntimeName()) {
           throw new WorkboxError('expire-custom-caches-only');
         }
-
         let cacheExpiration = this._cacheExpirations.get(cacheName);
-
         if (!cacheExpiration) {
           cacheExpiration = new CacheExpiration(cacheName, this._config);
-
           this._cacheExpirations.set(cacheName, cacheExpiration);
         }
-
         return cacheExpiration;
       }
       /**
@@ -2225,26 +2005,21 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        *
        * @private
        */
-
-
       _isResponseDateFresh(cachedResponse) {
         if (!this._maxAgeSeconds) {
           // We aren't expiring by age, so return true, it's fresh
           return true;
-        } // Check if the 'date' header will suffice a quick expiration check.
+        }
+        // Check if the 'date' header will suffice a quick expiration check.
         // See https://github.com/GoogleChromeLabs/sw-toolbox/issues/164 for
         // discussion.
-
-
         const dateHeaderTimestamp = this._getDateHeaderTimestamp(cachedResponse);
-
         if (dateHeaderTimestamp === null) {
           // Unable to parse date, so assume it's fresh.
           return true;
-        } // If we have a valid headerTime, then our response is fresh iff the
+        }
+        // If we have a valid headerTime, then our response is fresh iff the
         // headerTime plus maxAgeSeconds is greater than the current time.
-
-
         const now = Date.now();
         return dateHeaderTimestamp >= now - this._maxAgeSeconds * 1000;
       }
@@ -2257,22 +2032,18 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        *
        * @private
        */
-
-
       _getDateHeaderTimestamp(cachedResponse) {
         if (!cachedResponse.headers.has('date')) {
           return null;
         }
-
         const dateHeader = cachedResponse.headers.get('date');
         const parsedDate = new Date(dateHeader);
-        const headerTime = parsedDate.getTime(); // If the Date header was invalid for some reason, parsedDate.getTime()
+        const headerTime = parsedDate.getTime();
+        // If the Date header was invalid for some reason, parsedDate.getTime()
         // will return NaN.
-
         if (isNaN(headerTime)) {
           return null;
         }
-
         return headerTime;
       }
       /**
@@ -2291,20 +2062,16 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        * `caches.delete()` and passing in the cache's name should be sufficient.
        * There is no Workbox-specific method needed for cleanup in that case.
        */
-
-
       async deleteCacheAndMetadata() {
         // Do this one at a time instead of all at once via `Promise.all()` to
         // reduce the chance of inconsistency if a promise rejects.
         for (const [cacheName, cacheExpiration] of this._cacheExpirations) {
           await self.caches.delete(cacheName);
           await cacheExpiration.delete();
-        } // Reset this._cacheExpirations to its initial state.
-
-
+        }
+        // Reset this._cacheExpirations to its initial state.
         this._cacheExpirations = new Map();
       }
-
     }
 
     /*
@@ -2321,20 +2088,16 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      * @memberof module:workbox-core
      * @private
      */
-
     async function executeQuotaErrorCallbacks() {
       {
         logger.log(`About to run ${quotaErrorCallbacks.size} ` + `callbacks to clean up caches.`);
       }
-
       for (const callback of quotaErrorCallbacks) {
         await callback();
-
         {
           logger.log(callback, 'is complete.');
         }
       }
-
       {
         logger.log('Finished running callbacks.');
       }
@@ -2375,40 +2138,29 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      * @private
      * @memberof module:workbox-core
      */
-
     const _getEffectiveRequest = async ({
       request,
       mode,
       plugins = []
     }) => {
-      const cacheKeyWillBeUsedPlugins = pluginUtils.filter(plugins, "cacheKeyWillBeUsed"
-      /* CACHE_KEY_WILL_BE_USED */
-      );
+      const cacheKeyWillBeUsedPlugins = pluginUtils.filter(plugins, "cacheKeyWillBeUsed" /* CACHE_KEY_WILL_BE_USED */);
       let effectiveRequest = request;
-
       for (const plugin of cacheKeyWillBeUsedPlugins) {
-        effectiveRequest = await plugin["cacheKeyWillBeUsed"
-        /* CACHE_KEY_WILL_BE_USED */
-        ].call(plugin, {
+        effectiveRequest = await plugin["cacheKeyWillBeUsed" /* CACHE_KEY_WILL_BE_USED */].call(plugin, {
           mode,
           request: effectiveRequest
         });
-
         if (typeof effectiveRequest === 'string') {
           effectiveRequest = new Request(effectiveRequest);
         }
-
         {
           finalAssertExports.isInstance(effectiveRequest, Request, {
             moduleName: 'Plugin',
-            funcName: "cacheKeyWillBeUsed"
-            /* CACHE_KEY_WILL_BE_USED */
-            ,
+            funcName: "cacheKeyWillBeUsed" /* CACHE_KEY_WILL_BE_USED */,
             isReturnValueProblem: true
           });
         }
       }
-
       return effectiveRequest;
     };
     /**
@@ -2425,8 +2177,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      * @private
      * @memberof module:workbox-core
      */
-
-
     const _isResponseSafeToCache = async ({
       request,
       response,
@@ -2435,39 +2185,29 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
     }) => {
       let responseToCache = response;
       let pluginsUsed = false;
-
       for (const plugin of plugins) {
-        if ("cacheWillUpdate"
-        /* CACHE_WILL_UPDATE */
-        in plugin) {
+        if ("cacheWillUpdate" /* CACHE_WILL_UPDATE */ in plugin) {
           pluginsUsed = true;
-          const pluginMethod = plugin["cacheWillUpdate"
-          /* CACHE_WILL_UPDATE */
-          ];
+          const pluginMethod = plugin["cacheWillUpdate" /* CACHE_WILL_UPDATE */];
           responseToCache = await pluginMethod.call(plugin, {
             request,
             response: responseToCache,
             event
           });
-
           {
             if (responseToCache) {
               finalAssertExports.isInstance(responseToCache, Response, {
                 moduleName: 'Plugin',
-                funcName: "cacheWillUpdate"
-                /* CACHE_WILL_UPDATE */
-                ,
+                funcName: "cacheWillUpdate" /* CACHE_WILL_UPDATE */,
                 isReturnValueProblem: true
               });
             }
           }
-
           if (!responseToCache) {
             break;
           }
         }
       }
-
       if (!pluginsUsed) {
         {
           if (responseToCache) {
@@ -2480,10 +2220,8 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             }
           }
         }
-
         responseToCache = responseToCache && responseToCache.status === 200 ? responseToCache : undefined;
       }
-
       return responseToCache ? responseToCache : null;
     };
     /**
@@ -2501,8 +2239,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      * @private
      * @memberof module:workbox-core
      */
-
-
     const matchWrapper = async ({
       cacheName,
       request,
@@ -2517,7 +2253,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         mode: 'read'
       });
       let cachedResponse = await cache.match(effectiveRequest, matchOptions);
-
       {
         if (cachedResponse) {
           logger.debug(`Found a cached response in '${cacheName}'.`);
@@ -2525,14 +2260,9 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
           logger.debug(`No cached response found in '${cacheName}'.`);
         }
       }
-
       for (const plugin of plugins) {
-        if ("cachedResponseWillBeUsed"
-        /* CACHED_RESPONSE_WILL_BE_USED */
-        in plugin) {
-          const pluginMethod = plugin["cachedResponseWillBeUsed"
-          /* CACHED_RESPONSE_WILL_BE_USED */
-          ];
+        if ("cachedResponseWillBeUsed" /* CACHED_RESPONSE_WILL_BE_USED */ in plugin) {
+          const pluginMethod = plugin["cachedResponseWillBeUsed" /* CACHED_RESPONSE_WILL_BE_USED */];
           cachedResponse = await pluginMethod.call(plugin, {
             cacheName,
             event,
@@ -2540,21 +2270,17 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             cachedResponse,
             request: effectiveRequest
           });
-
           {
             if (cachedResponse) {
               finalAssertExports.isInstance(cachedResponse, Response, {
                 moduleName: 'Plugin',
-                funcName: "cachedResponseWillBeUsed"
-                /* CACHED_RESPONSE_WILL_BE_USED */
-                ,
+                funcName: "cachedResponseWillBeUsed" /* CACHED_RESPONSE_WILL_BE_USED */,
                 isReturnValueProblem: true
               });
             }
           }
         }
       }
-
       return cachedResponse;
     };
     /**
@@ -2574,8 +2300,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      * @private
      * @memberof module:workbox-core
      */
-
-
     const putWrapper = async ({
       cacheName,
       request,
@@ -2592,52 +2316,41 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
           });
         }
       }
-
       const effectiveRequest = await _getEffectiveRequest({
         plugins,
         request,
         mode: 'write'
       });
-
       if (!response) {
         {
           logger.error(`Cannot cache non-existent response for ` + `'${getFriendlyURL(effectiveRequest.url)}'.`);
         }
-
         throw new WorkboxError('cache-put-with-no-response', {
           url: getFriendlyURL(effectiveRequest.url)
         });
       }
-
       const responseToCache = await _isResponseSafeToCache({
         event,
         plugins,
         response,
         request: effectiveRequest
       });
-
       if (!responseToCache) {
         {
           logger.debug(`Response '${getFriendlyURL(effectiveRequest.url)}' will ` + `not be cached.`, responseToCache);
         }
-
         return;
       }
-
       const cache = await self.caches.open(cacheName);
-      const updatePlugins = pluginUtils.filter(plugins, "cacheDidUpdate"
-      /* CACHE_DID_UPDATE */
-      );
+      const updatePlugins = pluginUtils.filter(plugins, "cacheDidUpdate" /* CACHE_DID_UPDATE */);
       const oldResponse = updatePlugins.length > 0 ? await matchWrapper({
         cacheName,
         matchOptions,
         request: effectiveRequest
       }) : null;
-
       {
         logger.debug(`Updating the '${cacheName}' cache with a new Response for ` + `${getFriendlyURL(effectiveRequest.url)}.`);
       }
-
       try {
         await cache.put(effectiveRequest, responseToCache);
       } catch (error) {
@@ -2645,14 +2358,10 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         if (error.name === 'QuotaExceededError') {
           await executeQuotaErrorCallbacks();
         }
-
         throw error;
       }
-
       for (const plugin of updatePlugins) {
-        await plugin["cacheDidUpdate"
-        /* CACHE_DID_UPDATE */
-        ].call(plugin, {
+        await plugin["cacheDidUpdate" /* CACHE_DID_UPDATE */].call(plugin, {
           cacheName,
           event,
           oldResponse,
@@ -2661,7 +2370,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         });
       }
     };
-
     const cacheWrapper = {
       put: putWrapper,
       match: matchWrapper
@@ -2689,7 +2397,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      * @private
      * @memberof module:workbox-core
      */
-
     const wrappedFetch = async ({
       request,
       fetchOptions,
@@ -2698,23 +2405,19 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
     }) => {
       if (typeof request === 'string') {
         request = new Request(request);
-      } // We *should* be able to call `await event.preloadResponse` even if it's
+      }
+      // We *should* be able to call `await event.preloadResponse` even if it's
       // undefined, but for some reason, doing so leads to errors in our Node unit
       // tests. To work around that, explicitly check preloadResponse's value first.
-
-
       if (event instanceof FetchEvent && event.preloadResponse) {
         const possiblePreloadResponse = await event.preloadResponse;
-
         if (possiblePreloadResponse) {
           {
             logger.log(`Using a preloaded navigation response for ` + `'${getFriendlyURL(request.url)}'`);
           }
-
           return possiblePreloadResponse;
         }
       }
-
       {
         finalAssertExports.isInstance(request, Request, {
           paramName: 'request',
@@ -2724,36 +2427,25 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
           funcName: 'wrappedFetch'
         });
       }
-
-      const failedFetchPlugins = pluginUtils.filter(plugins, "fetchDidFail"
-      /* FETCH_DID_FAIL */
-      ); // If there is a fetchDidFail plugin, we need to save a clone of the
+      const failedFetchPlugins = pluginUtils.filter(plugins, "fetchDidFail" /* FETCH_DID_FAIL */);
+      // If there is a fetchDidFail plugin, we need to save a clone of the
       // original request before it's either modified by a requestWillFetch
       // plugin or before the original request's body is consumed via fetch().
-
       const originalRequest = failedFetchPlugins.length > 0 ? request.clone() : null;
-
       try {
         for (const plugin of plugins) {
-          if ("requestWillFetch"
-          /* REQUEST_WILL_FETCH */
-          in plugin) {
-            const pluginMethod = plugin["requestWillFetch"
-            /* REQUEST_WILL_FETCH */
-            ];
+          if ("requestWillFetch" /* REQUEST_WILL_FETCH */ in plugin) {
+            const pluginMethod = plugin["requestWillFetch" /* REQUEST_WILL_FETCH */];
             const requestClone = request.clone();
             request = await pluginMethod.call(plugin, {
               request: requestClone,
               event
             });
-
             if ("development" !== 'production') {
               if (request) {
                 finalAssertExports.isInstance(request, Request, {
                   moduleName: 'Plugin',
-                  funcName: "cachedResponseWillBeUsed"
-                  /* CACHED_RESPONSE_WILL_BE_USED */
-                  ,
+                  funcName: "cachedResponseWillBeUsed" /* CACHED_RESPONSE_WILL_BE_USED */,
                   isReturnValueProblem: true
                 });
               }
@@ -2764,77 +2456,61 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         throw new WorkboxError('plugin-error-request-will-fetch', {
           thrownError: err
         });
-      } // The request can be altered by plugins with `requestWillFetch` making
+      }
+      // The request can be altered by plugins with `requestWillFetch` making
       // the original request (Most likely from a `fetch` event) to be different
       // to the Request we make. Pass both to `fetchDidFail` to aid debugging.
-
-
       const pluginFilteredRequest = request.clone();
-
       try {
-        let fetchResponse; // See https://github.com/GoogleChrome/workbox/issues/1796
-
+        let fetchResponse;
+        // See https://github.com/GoogleChrome/workbox/issues/1796
         if (request.mode === 'navigate') {
           fetchResponse = await fetch(request);
         } else {
           fetchResponse = await fetch(request, fetchOptions);
         }
-
         if ("development" !== 'production') {
           logger.debug(`Network request for ` + `'${getFriendlyURL(request.url)}' returned a response with ` + `status '${fetchResponse.status}'.`);
         }
-
         for (const plugin of plugins) {
-          if ("fetchDidSucceed"
-          /* FETCH_DID_SUCCEED */
-          in plugin) {
-            fetchResponse = await plugin["fetchDidSucceed"
-            /* FETCH_DID_SUCCEED */
-            ].call(plugin, {
+          if ("fetchDidSucceed" /* FETCH_DID_SUCCEED */ in plugin) {
+            fetchResponse = await plugin["fetchDidSucceed" /* FETCH_DID_SUCCEED */].call(plugin, {
               event,
               request: pluginFilteredRequest,
               response: fetchResponse
             });
-
             if ("development" !== 'production') {
               if (fetchResponse) {
                 finalAssertExports.isInstance(fetchResponse, Response, {
                   moduleName: 'Plugin',
-                  funcName: "fetchDidSucceed"
-                  /* FETCH_DID_SUCCEED */
-                  ,
+                  funcName: "fetchDidSucceed" /* FETCH_DID_SUCCEED */,
                   isReturnValueProblem: true
                 });
               }
             }
           }
         }
-
         return fetchResponse;
       } catch (error) {
         {
           logger.error(`Network request for ` + `'${getFriendlyURL(request.url)}' threw an error.`, error);
         }
-
         for (const plugin of failedFetchPlugins) {
-          await plugin["fetchDidFail"
-          /* FETCH_DID_FAIL */
-          ].call(plugin, {
+          await plugin["fetchDidFail" /* FETCH_DID_FAIL */].call(plugin, {
             error,
             event,
             originalRequest: originalRequest.clone(),
             request: pluginFilteredRequest.clone()
           });
         }
-
         throw error;
       }
     };
-
     const fetchWrapper = {
       fetch: wrappedFetch
     };
 
+    // @ts-ignore
     try {
       self['workbox:strategies:5.1.4'] && _();
     } catch (e) {}
@@ -2881,7 +2557,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         if (response.status === 200 || response.status === 0) {
           return response;
         }
-
         return null;
       }
     };
@@ -2908,7 +2583,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      *
      * @memberof module:workbox-strategies
      */
-
     class NetworkFirst {
       /**
        * @param {Object} options
@@ -2930,7 +2604,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        */
       constructor(options = {}) {
         this._cacheName = cacheNames.getRuntimeName(options.cacheName);
-
         if (options.plugins) {
           const isUsingCacheWillUpdate = options.plugins.some(plugin => !!plugin.cacheWillUpdate);
           this._plugins = isUsingCacheWillUpdate ? options.plugins : [cacheOkAndOpaquePlugin, ...options.plugins];
@@ -2938,9 +2611,7 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
           // No plugins passed in, use the default plugin.
           this._plugins = [cacheOkAndOpaquePlugin];
         }
-
         this._networkTimeoutSeconds = options.networkTimeoutSeconds || 0;
-
         {
           if (this._networkTimeoutSeconds) {
             finalAssertExports.isType(this._networkTimeoutSeconds, 'number', {
@@ -2951,7 +2622,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             });
           }
         }
-
         this._fetchOptions = options.fetchOptions;
         this._matchOptions = options.matchOptions;
       }
@@ -2965,18 +2635,14 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        * @param {Event} [options.event] The event that triggered the request.
        * @return {Promise<Response>}
        */
-
-
       async handle({
         event,
         request
       }) {
         const logs = [];
-
         if (typeof request === 'string') {
           request = new Request(request);
         }
-
         {
           finalAssertExports.isInstance(request, Request, {
             moduleName: 'workbox-strategies',
@@ -2985,10 +2651,8 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             paramName: 'makeRequest'
           });
         }
-
         const promises = [];
         let timeoutId;
-
         if (this._networkTimeoutSeconds) {
           const {
             id,
@@ -2998,47 +2662,39 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             event,
             logs
           });
-
           timeoutId = id;
           promises.push(promise);
         }
-
         const networkPromise = this._getNetworkPromise({
           timeoutId,
           request,
           event,
           logs
         });
-
-        promises.push(networkPromise); // Promise.race() will resolve as soon as the first promise resolves.
-
-        let response = await Promise.race(promises); // If Promise.race() resolved with null, it might be due to a network
+        promises.push(networkPromise);
+        // Promise.race() will resolve as soon as the first promise resolves.
+        let response = await Promise.race(promises);
+        // If Promise.race() resolved with null, it might be due to a network
         // timeout + a cache miss. If that were to happen, we'd rather wait until
         // the networkPromise resolves instead of returning null.
         // Note that it's fine to await an already-resolved promise, so we don't
         // have to check to see if it's still "in flight".
-
         if (!response) {
           response = await networkPromise;
         }
-
         {
           logger.groupCollapsed(messages$1.strategyStart('NetworkFirst', request));
-
           for (const log of logs) {
             logger.log(log);
           }
-
           messages$1.printFinalResponse(response);
           logger.groupEnd();
         }
-
         if (!response) {
           throw new WorkboxError('no-response', {
             url: request.url
           });
         }
-
         return response;
       }
       /**
@@ -3050,8 +2706,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        *
        * @private
        */
-
-
       _getTimeoutPromise({
         request,
         logs,
@@ -3063,13 +2717,11 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             {
               logs.push(`Timing out the network response at ` + `${this._networkTimeoutSeconds} seconds.`);
             }
-
             resolve(await this._respondFromCache({
               request,
               event
             }));
           };
-
           timeoutId = setTimeout(onNetworkTimeout, this._networkTimeoutSeconds * 1000);
         });
         return {
@@ -3087,8 +2739,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        *
        * @private
        */
-
-
       async _getNetworkPromise({
         timeoutId,
         request,
@@ -3097,7 +2747,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
       }) {
         let error;
         let response;
-
         try {
           response = await fetchWrapper.fetch({
             request,
@@ -3108,11 +2757,9 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
         } catch (err) {
           error = err;
         }
-
         if (timeoutId) {
           clearTimeout(timeoutId);
         }
-
         {
           if (response) {
             logs.push(`Got response from network.`);
@@ -3120,13 +2767,11 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             logs.push(`Unable to get a response from the network. Will respond ` + `with a cached response.`);
           }
         }
-
         if (error || !response) {
           response = await this._respondFromCache({
             request,
             event
           });
-
           {
             if (response) {
               logs.push(`Found a cached response in the '${this._cacheName}'` + ` cache.`);
@@ -3144,7 +2789,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             event,
             plugins: this._plugins
           });
-
           if (event) {
             try {
               // The event has been responded to so we can keep the SW alive to
@@ -3157,7 +2801,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             }
           }
         }
-
         return response;
       }
       /**
@@ -3170,8 +2813,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        *
        * @private
        */
-
-
       _respondFromCache({
         event,
         request
@@ -3184,7 +2825,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
           plugins: this._plugins
         });
       }
-
     }
 
     /*
@@ -3207,7 +2847,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      *
      * @memberof module:workbox-strategies
      */
-
     class CacheFirst {
       /**
        * @param {Object} options
@@ -3237,18 +2876,14 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        * @param {Event} [options.event] The event that triggered the request.
        * @return {Promise<Response>}
        */
-
-
       async handle({
         event,
         request
       }) {
         const logs = [];
-
         if (typeof request === 'string') {
           request = new Request(request);
         }
-
         {
           finalAssertExports.isInstance(request, Request, {
             moduleName: 'workbox-strategies',
@@ -3257,7 +2892,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             paramName: 'request'
           });
         }
-
         let response = await cacheWrapper.match({
           cacheName: this._cacheName,
           request,
@@ -3266,18 +2900,15 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
           plugins: this._plugins
         });
         let error;
-
         if (!response) {
           {
             logs.push(`No response found in the '${this._cacheName}' cache. ` + `Will respond with a network request.`);
           }
-
           try {
             response = await this._getFromNetwork(request, event);
           } catch (err) {
             error = err;
           }
-
           {
             if (response) {
               logs.push(`Got response from network.`);
@@ -3290,25 +2921,20 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             logs.push(`Found a cached response in the '${this._cacheName}' cache.`);
           }
         }
-
         {
           logger.groupCollapsed(messages$1.strategyStart('CacheFirst', request));
-
           for (const log of logs) {
             logger.log(log);
           }
-
           messages$1.printFinalResponse(response);
           logger.groupEnd();
         }
-
         if (!response) {
           throw new WorkboxError('no-response', {
             url: request.url,
             error
           });
         }
-
         return response;
       }
       /**
@@ -3320,16 +2946,14 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        *
        * @private
        */
-
-
       async _getFromNetwork(request, event) {
         const response = await fetchWrapper.fetch({
           request,
           event,
           fetchOptions: this._fetchOptions,
           plugins: this._plugins
-        }); // Keep the service worker while we put the request to the cache
-
+        });
+        // Keep the service worker while we put the request to the cache
         const responseClone = response.clone();
         const cachePutPromise = cacheWrapper.put({
           cacheName: this._cacheName,
@@ -3338,7 +2962,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
           event,
           plugins: this._plugins
         });
-
         if (event) {
           try {
             event.waitUntil(cachePutPromise);
@@ -3348,10 +2971,8 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             }
           }
         }
-
         return response;
       }
-
     }
 
     /*
@@ -3381,7 +3002,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      *
      * @memberof module:workbox-strategies
      */
-
     class StaleWhileRevalidate {
       /**
        * @param {Object} options
@@ -3398,7 +3018,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
       constructor(options = {}) {
         this._cacheName = cacheNames.getRuntimeName(options.cacheName);
         this._plugins = options.plugins || [];
-
         if (options.plugins) {
           const isUsingCacheWillUpdate = options.plugins.some(plugin => !!plugin.cacheWillUpdate);
           this._plugins = isUsingCacheWillUpdate ? options.plugins : [cacheOkAndOpaquePlugin, ...options.plugins];
@@ -3406,7 +3025,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
           // No plugins passed in, use the default plugin.
           this._plugins = [cacheOkAndOpaquePlugin];
         }
-
         this._fetchOptions = options.fetchOptions;
         this._matchOptions = options.matchOptions;
       }
@@ -3420,18 +3038,14 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        * @param {Event} [options.event] The event that triggered the request.
        * @return {Promise<Response>}
        */
-
-
       async handle({
         event,
         request
       }) {
         const logs = [];
-
         if (typeof request === 'string') {
           request = new Request(request);
         }
-
         {
           finalAssertExports.isInstance(request, Request, {
             moduleName: 'workbox-strategies',
@@ -3440,12 +3054,10 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             paramName: 'request'
           });
         }
-
         const fetchAndCachePromise = this._getFromNetwork({
           request,
           event
         });
-
         let response = await cacheWrapper.match({
           cacheName: this._cacheName,
           request,
@@ -3454,12 +3066,10 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
           plugins: this._plugins
         });
         let error;
-
         if (response) {
           {
             logs.push(`Found a cached response in the '${this._cacheName}'` + ` cache. Will update with the network response in the background.`);
           }
-
           if (event) {
             try {
               event.waitUntil(fetchAndCachePromise);
@@ -3473,32 +3083,26 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
           {
             logs.push(`No response found in the '${this._cacheName}' cache. ` + `Will wait for the network response.`);
           }
-
           try {
             response = await fetchAndCachePromise;
           } catch (err) {
             error = err;
           }
         }
-
         {
           logger.groupCollapsed(messages$1.strategyStart('StaleWhileRevalidate', request));
-
           for (const log of logs) {
             logger.log(log);
           }
-
           messages$1.printFinalResponse(response);
           logger.groupEnd();
         }
-
         if (!response) {
           throw new WorkboxError('no-response', {
             url: request.url,
             error
           });
         }
-
         return response;
       }
       /**
@@ -3509,8 +3113,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
        *
        * @private
        */
-
-
       async _getFromNetwork({
         request,
         event
@@ -3528,7 +3130,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
           event,
           plugins: this._plugins
         });
-
         if (event) {
           try {
             event.waitUntil(cachePutPromise);
@@ -3538,10 +3139,8 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
             }
           }
         }
-
         return response;
       }
-
     }
 
     /*
@@ -3558,7 +3157,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      *
      * @memberof module:workbox-core
      */
-
     function skipWaiting() {
       // We need to explicitly call `self.skipWaiting()` here because we're
       // shadowing `skipWaiting` with this local function.
@@ -3578,7 +3176,6 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
      *
      * @memberof module:workbox-core
      */
-
     function clientsClaim() {
       self.addEventListener('activate', () => self.clients.claim());
     }
@@ -3592,4 +3189,4 @@ define("./workbox-17357acd.js",['exports'], function (exports) { 'use strict';
     exports.skipWaiting = skipWaiting;
 
 });
-//# sourceMappingURL=workbox-17357acd.js.map
+//# sourceMappingURL=workbox-136208f2.js.map

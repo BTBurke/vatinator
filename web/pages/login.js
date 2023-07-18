@@ -15,7 +15,7 @@ export default function Login() {
         .then((response) => {
             setChecking(false);
             if (response.status === 200) {
-                router.push('/forms');
+                router.push('/nag');
             }
         })
         .catch((err) => { 
