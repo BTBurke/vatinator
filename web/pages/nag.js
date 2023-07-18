@@ -3,7 +3,7 @@ import Nav from '../components/nav';
 
 export default function NagPage() {
     const barstyle = {
-        width: '1%'
+        width: '16%'
     }
 
     return (
