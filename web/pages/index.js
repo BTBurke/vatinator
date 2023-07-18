@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavHome } from '../components/nav';
+import '@fontsource/bungee-shade';
 
 export default function IndexPage() {
 
@@ -10,7 +11,7 @@ export default function IndexPage() {
                 <NavHome />
             </div>
 
-            <h1 className="pt-10 font-display text-4xl md:text-6xl text-center md:text-left text-white w-full lg:w-3/4 mx-auto">
+            <h1 className="pt-10 font-display text-4xl md:text-6xl text-center md:text-left text-white w-full lg:w-3/4 mx-auto" style={{fontFamily: 'Bungee Shade'}}>
                 You've found<br></br>the <span className="text-accent-1">Vatinator</span>
             </h1>
             <div className="block md:hidden mx-auto text-center pt-24">
