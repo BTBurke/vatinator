@@ -15,7 +15,7 @@ export default function NagPage() {
                 <div className="py-1">
                     Running the Vatinator isn't free - <strong>it costs about $84/year</strong> for the server that makes this VAT form filling magic possible.
 
-                    Now that your humble software craftsman has left Tallinn, will you help support the cost of keeping the Vatinator alive?
+                    Now that the purveyor of this contraption has left Tallinn, will you help support the cost of keeping the Vatinator alive?
                 </div>
                 <div className="my-4 px-2 py-2 rounded-md bg-white">
                     <div className="flex justify-between mb-1">
@@ -41,7 +41,7 @@ export default function NagPage() {
                 <div className="py-4">
                     <h1 className="text-lg text-accent-1 lg:text-xl font-bold py-2">How to Contribute</h1>
                     <div className="py-2">
-                        Send some money to @BTBurke98 on Venmo... perhaps $10/year?
+                        Send some money to @BTBurke98 on Venmo. How much you ask? $10/year ought to cover it -- less than the price of a beer in Helsinki.
                     </div>
                 </div>
             </div>
