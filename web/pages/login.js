@@ -39,7 +39,7 @@ export default function Login() {
         .then((response) => {
             if (response.status === 200) {
                 setLoading(false);
-                router.push('/forms');
+                router.push('/nag');
             }
         })
         .catch((err) => {
