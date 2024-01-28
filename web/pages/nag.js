@@ -3,7 +3,7 @@ import Nav from '../components/nav';
 
 export default function NagPage() {
     const barstyle = {
-        width: '90%'
+        width: '2%'
     }
 
     return (
@@ -14,8 +14,8 @@ export default function NagPage() {
                 <h1 className="text-2xl text-accent-1 lg:text-4xl font-bold py-2">Support the Vatinator</h1>
                 <div className="py-1">
                     Running the Vatinator isn't free - <strong>it costs about $84/year</strong> for the server that makes this VAT form filling magic possible.
-
-                    Now that the purveyor of this contraption has left Tallinn, will you help support the cost of keeping the Vatinator alive?
+                    <br/><br/>
+                    Now collecting money for 2024!  Without it, <strong>the Vatinator will shut down on August 1.</strong> Thanks to everyone who donated. You've kept it alive much longer than I predicted.
                 </div>
                 <div className="my-4 px-2 py-2 rounded-md bg-white">
                     <div className="flex justify-between mb-1">
