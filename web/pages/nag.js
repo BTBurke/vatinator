@@ -24,6 +24,11 @@ export default function NagPage() {
             <strong>the Vatinator will shut down on February 1, 2026.</strong>{" "}
             Thanks to everyone who donated. You've kept it alive much longer
             than I predicted.
+            <br />
+            <br />
+            Updated for 2026! It now correctly parses dates after I left
+            Tallinn. If you ever have issues, you can email me at{" "}
+            <a href="mailto:bryan@vatinator.com">bryan@vatinator.com</a>.
           </div>
           <div className="my-4 px-2 py-2 rounded-md bg-white">
             <div className="flex justify-between mb-1">
